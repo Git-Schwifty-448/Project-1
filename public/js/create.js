@@ -136,8 +136,157 @@ export class SlotAdder {
   }
 }
 
+/**
+ * Class for creating time slots
+ */
+export class RSlot {
+  /**
+   * @param {boolean} is24 - True: 24 hour time, False: 12 hour
+   */
+  constructor(is24) {
+    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */
+    this.is24 = is24
+
+    /** @member {object} selectors - Group of selectors */
+    this.selectors = {}
+
+    /** @member {Element} group - Element that stores selectors */
+    this.group = document.createElement('div')
+
+    // /** @member {Element} start_span - span to contain start-time selector */
+    // this.start_span = document.createElement('span')
+    // this.start_span.className = "select"
+    // this.start_span.appendChild(this.createStartSlot())
+    // this.group.appendChild(this.start_span)
+
+    /** @member {Element} request_span - span to contain request input field */
+    this.request_span = document.createElement('span')
+    // this.request_span.className = "request input"
+    this.request_span.appendChild(this.createRequestSlot())
+    this.group.appendChild(this.request_span)
+
+    // /** @member {Element} end_span - span to contain end-time selector */
+    // this.end_span = document.createElement('span')
+    // this.end_span.className = "select"
+    // this.end_span.appendChild(this.createEndSlot(1))
+    // this.group.appendChild(this.end_span)
+  }
+
+  createRequestSlot() {
+    this.request = document.createElement('input');
+    this.request.className = "request input";
+
+    return this.request
+  }
+
+  /**
+   * Creates a selector for selecting a time slot
+   * @param {int} exclude - How many time slots to exclude from the selector
+   * @param {int} def - default value of selector
+   * @return {Element} Time slot selector
+   */
+  createSlotSelector(exclude = 0, def) {
+    let slots = Calendar.time_slots(this.is24)
+    let select = document.createElement('select')
+    for (let i in slots) {
+      if (i < exclude || (exclude == -1 && i == slots.length-1)) continue
+      let option = document.createElement('option')
+      option.value = i
+      option.innerHTML = slots[i]
+      select.appendChild(option)
+    }
+    if (def && def >= exclude) select.value = def
+    return select
+  }
+
+  /**
+   * Creates the selector for the start time
+   * @return {Element} Time slot selector
+   */
+  createStartSlot() {
+    let slotsel = this.createSlotSelector(-1)
+    slotsel.addEventListener('change', event => {
+      let prevTime = +this.selectors.end.value
+      this.selectors.end.remove()
+      this.end_span.appendChild(this.createEndSlot(+slotsel.value+1, Math.max(prevTime, +slotsel.value+1)))
+    })
+    this.selectors.start = slotsel
+    return slotsel
+  }
+
+  // /**
+  //  * Creates the selector for the end time
+  //  * @param {int} exclude - How many time slots to exclude from the selector
+  //  * @param {int} def - default value of selector
+  //  * @return {Element} Time slot selector
+  //  */
+  // createEndSlot(exclude = 0, def) {
+  //   let slotsel = this.createSlotSelector(exclude, def)
+  //   this.selectors.end = slotsel
+  //   return slotsel
+  // }
+
+  /**
+   * Get element that stores selectors
+   * @return {Element} Element that stores selectors
+   */
+  getSlotGroup() {
+    return this.group
+  }
+
+  /**
+   * Get range of time slots
+   * @return {int[]} range of time slots
+   */
+  getRange() {
+    return [+this.selectors.start.value, +this.selectors.end.value]
+  }
+}
+
+/**
+ * Class for managing button that adds request slots
+ */
+export class RSlotAdder {
+  /**
+   * Initialize the slot adder
+   */
+  constructor() {
+    /** @member {Element[]} r_slots - Array of groups of time slot selectors */
+    this.slots = []
+
+    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */
+    this.is24 = false
+  }
+
+  /**
+   * Creates the button that adds a group of time selectors
+   * @return {Element} button that adds a group of time selectors
+   */
+  createButton() {
+    let button = document.createElement('button')
+    button.className = "button"
+    button.innerHTML = 'Add a Request'
+    button.addEventListener('click', event => {
+      let slot = new RSlot(this.is24)
+      this.slots.push(slot)
+      $('.r_slots')[0].appendChild(slot.getSlotGroup())
+    })
+    return button
+  }
+
+  /**
+   * Creates array of all times slots that fall inside time slot ranges
+   * @return {int[]} Array of all times slots that fall inside time slot ranges
+   */
+  getTimes() {
+    // Here be dragons
+    return Array.from(new Set([].concat(...this.slots.map(x => Array.from({length: x.getRange()[1]-x.getRange()[0]}, (n,i)=>i+x.getRange()[0]))))).sort((a,b)=>a-b)
+  }
+}
+
 $(() => {
   let slot_adder = new SlotAdder()
+  let rslot_adder = new RSlotAdder()
 
   $('.is24')[0].addEventListener('click', event => {
     slot_adder.is24 = true
@@ -163,6 +312,7 @@ $(() => {
     })
   })
 
+  $('.rslot_button_wrap')[0].appendChild(rslot_adder.createButton())
   $('.slot_button_wrap')[0].appendChild(slot_adder.createButton())
 
   let picker = new Pikaday({ field: $('input.date')[0], minDate: new Date(), trigger: $('button#date_picker')[0] })
