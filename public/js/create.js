@@ -137,15 +137,11 @@ export class SlotAdder {
 }
 
 /**
- * Class for creating time slots
+ * Class for creating request slots
  */
 export class RSlot {
-  /**
-   * @param {boolean} is24 - True: 24 hour time, False: 12 hour
-   */
-  constructor(is24) {
-    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */
-    this.is24 = is24
+
+  constructor() {
 
     /** @member {object} selectors - Group of selectors */
     this.selectors = {}
@@ -153,23 +149,12 @@ export class RSlot {
     /** @member {Element} group - Element that stores selectors */
     this.group = document.createElement('div')
 
-    // /** @member {Element} start_span - span to contain start-time selector */
-    // this.start_span = document.createElement('span')
-    // this.start_span.className = "select"
-    // this.start_span.appendChild(this.createStartSlot())
-    // this.group.appendChild(this.start_span)
-
     /** @member {Element} request_span - span to contain request input field */
     this.request_span = document.createElement('span')
     // this.request_span.className = "request input"
     this.request_span.appendChild(this.createRequestSlot())
     this.group.appendChild(this.request_span)
 
-    // /** @member {Element} end_span - span to contain end-time selector */
-    // this.end_span = document.createElement('span')
-    // this.end_span.className = "select"
-    // this.end_span.appendChild(this.createEndSlot(1))
-    // this.group.appendChild(this.end_span)
   }
 
   createRequestSlot() {
@@ -214,17 +199,6 @@ export class RSlot {
     return slotsel
   }
 
-  // /**
-  //  * Creates the selector for the end time
-  //  * @param {int} exclude - How many time slots to exclude from the selector
-  //  * @param {int} def - default value of selector
-  //  * @return {Element} Time slot selector
-  //  */
-  // createEndSlot(exclude = 0, def) {
-  //   let slotsel = this.createSlotSelector(exclude, def)
-  //   this.selectors.end = slotsel
-  //   return slotsel
-  // }
 
   /**
    * Get element that stores selectors
@@ -232,14 +206,6 @@ export class RSlot {
    */
   getSlotGroup() {
     return this.group
-  }
-
-  /**
-   * Get range of time slots
-   * @return {int[]} range of time slots
-   */
-  getRange() {
-    return [+this.selectors.start.value, +this.selectors.end.value]
   }
 }
 
@@ -251,23 +217,20 @@ export class RSlotAdder {
    * Initialize the slot adder
    */
   constructor() {
-    /** @member {Element[]} r_slots - Array of groups of time slot selectors */
+    /** @member {Element[]} r_slots - Array of requests */
     this.slots = []
-
-    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */
-    this.is24 = false
   }
 
   /**
-   * Creates the button that adds a group of time selectors
-   * @return {Element} button that adds a group of time selectors
+   * Creates the button that adds a request slot
+   * @return {Element} button that adds a request slot
    */
   createButton() {
     let button = document.createElement('button')
     button.className = "button"
     button.innerHTML = 'Add a Request'
     button.addEventListener('click', event => {
-      let slot = new RSlot(this.is24)
+      let slot = new RSlot()
       this.slots.push(slot)
       $('.r_slots')[0].appendChild(slot.getSlotGroup())
     })
