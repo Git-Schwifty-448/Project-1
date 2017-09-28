@@ -136,89 +136,41 @@ export class SlotAdder {
   }
 }
 
+
+
 /**
  * Class for creating request slots
  */
 export class RSlot {
 
-  constructor() {
-
-    /** @member {object} selectors - Group of selectors */
-    this.selectors = {}
-
-    /** @member {Element} group - Element that stores selectors */
-    this.group = document.createElement('div')
-
-    /** @member {Element} request_span - span to contain request input field */
-    this.request_span = document.createElement('span')
-    // this.request_span.className = "request input"
-    this.request_span.appendChild(this.createRequestSlot())
-    this.group.appendChild(this.request_span)
-
-  }
-
-  createRequestSlot() {
-    this.request = document.createElement('input');
-    this.request.className = "request input";
-
-    return this.request
+  constructor(id) {
+    this.identifier = id
+    this.request_input = document.createElement('input');
+    this.request_input.className = "request input " + id;
   }
 
   /**
-   * Creates a selector for selecting a time slot
-   * @param {int} exclude - How many time slots to exclude from the selector
-   * @param {int} def - default value of selector
-   * @return {Element} Time slot selector
-   */
-  createSlotSelector(exclude = 0, def) {
-    let slots = Calendar.time_slots(this.is24)
-    let select = document.createElement('select')
-    for (let i in slots) {
-      if (i < exclude || (exclude == -1 && i == slots.length-1)) continue
-      let option = document.createElement('option')
-      option.value = i
-      option.innerHTML = slots[i]
-      select.appendChild(option)
-    }
-    if (def && def >= exclude) select.value = def
-    return select
-  }
-
-  /**
-   * Creates the selector for the start time
-   * @return {Element} Time slot selector
-   */
-  createStartSlot() {
-    let slotsel = this.createSlotSelector(-1)
-    slotsel.addEventListener('change', event => {
-      let prevTime = +this.selectors.end.value
-      this.selectors.end.remove()
-      this.end_span.appendChild(this.createEndSlot(+slotsel.value+1, Math.max(prevTime, +slotsel.value+1)))
-    })
-    this.selectors.start = slotsel
-    return slotsel
-  }
-
-
-  /**
-   * Get element that stores selectors
-   * @return {Element} Element that stores selectors
+   * Get element that stores the request
+   * @ret {Element} Element that stores requests
    */
   getSlotGroup() {
-    return this.group
+    return this.request_input
   }
+
 }
 
 /**
  * Class for managing button that adds request slots
+ * and returning the strings of requests entered by the user
  */
 export class RSlotAdder {
-  /**
-   * Initialize the slot adder
-   */
+
+   // Initialize the slot adder
   constructor() {
-    /** @member {Element[]} r_slots - Array of requests */
+    // Array of requests elements
     this.slots = []
+    this.identifier_prefix = "req"
+    this.identifier_number = 0;
   }
 
   /**
@@ -227,10 +179,12 @@ export class RSlotAdder {
    */
   createButton() {
     let button = document.createElement('button')
+
     button.className = "button"
     button.innerHTML = 'Add a Request'
     button.addEventListener('click', event => {
-      let slot = new RSlot()
+      let slot = new RSlot(this.identifier_prefix+this.identifier_number)
+      this.identifier_number++;
       this.slots.push(slot)
       $('.r_slots')[0].appendChild(slot.getSlotGroup())
     })
@@ -238,12 +192,17 @@ export class RSlotAdder {
   }
 
   /**
-   * Creates array of all times slots that fall inside time slot ranges
-   * @return {int[]} Array of all times slots that fall inside time slot ranges
+   * Creates array of all requests entered by the user
+   * @ret: {string[]} Array of all requests
    */
-  getTimes() {
-    // Here be dragons
-    return Array.from(new Set([].concat(...this.slots.map(x => Array.from({length: x.getRange()[1]-x.getRange()[0]}, (n,i)=>i+x.getRange()[0]))))).sort((a,b)=>a-b)
+  getRequests() {
+    let requests = []
+
+    for(let i = 0; i < this.slots.length; i++){
+      let class_name = '.req' + i
+      requests.push($(class_name)[0].value)
+    }
+    return(requests)
   }
 }
 
@@ -284,6 +243,7 @@ $(() => {
     let payload = {
       name: $('input.intitle')[0].value,
       description: $('input.description')[0].value,
+      requests: rslot_adder.getRequests(),
       date: $('input.date')[0].value,
       owner: $('input.name')[0].value,
       times: slot_adder.getTimes()
