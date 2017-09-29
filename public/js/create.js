@@ -249,6 +249,8 @@ $(() => {
       times: slot_adder.getTimes()
     }
 
+    console.log(payload)
+
     for (let i of ['title', 'name', 'date']) {
       if (!payload[i.replace('name','owner').replace('title','name')]) {
         alert("You need to enter a "+i+"!")

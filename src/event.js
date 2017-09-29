@@ -24,6 +24,7 @@ function Event() {
     this.name        = "";
     this.description = "";
     this.times       = [];
+    this.task_list   = [];
     this.owner       = "";
     this.attendees   = [];
     this.uid         = "";

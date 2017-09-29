@@ -51,6 +51,7 @@ const Event         = require('./event.js');
         event.name        = req.body.name;
         event.description = req.body.description;
         event.date        = req.body.date;
+        event.task_list   = req.body.task_list;
         event.owner       = req.body.owner;
         event.times       = req.body.times;
         event.uid         = event.hash().substr(0, 11);

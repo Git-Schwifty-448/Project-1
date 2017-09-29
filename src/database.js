@@ -67,6 +67,9 @@ Database.prototype.keyval_parse = function(event, key, value, payload) {
     if (key == "date") {
         event.date = value;
     }
+    if (key == "task_list") {
+        event.task_list = value;
+    }
     if (key == "times") {
         event.times = value;
     }
@@ -97,6 +100,9 @@ Database.prototype.read_event = function(uid, callback) {
         obj.keyval_parse(event, row.key, row.value, row.payload);
         if (typeof event.times === 'string') {
           event.times = event.times.split(',').map(time=>+time)
+        }
+        if (typeof event.task_list === 'string') {
+            event.task_list = event.task_list.split(',')
         }
     }, function(err, rows) {
         if (rows != undefined && rows != 0) {
@@ -173,6 +179,7 @@ Database.prototype.write_event = function(event) {
     [["name",        event.name],
      ["description", event.description],
      ["date",        event.date],
+     ["task_list",   event.task_list.join(',')],
      ["times",       event.times.join(',')],
      ["owner",       event.owner]]
      .forEach(function(keyval) {
