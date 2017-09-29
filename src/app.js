@@ -63,10 +63,11 @@ const Event         = require('./event.js');
 
     // API for adding a person to an event
     app.post('/api/events/register', function(req, res) {
-        let attendee   = {};
-        attendee.event = req.body.uid;
-        attendee.name  = req.body.name;
-        attendee.times = req.body.times;
+        let attendee            = {};
+        attendee.event          = req.body.uid;
+        attendee.name           = req.body.name;
+        attendee.times          = req.body.times;
+        attendee.task_list      = req.body.task_list;
 
         database.register(attendee);
 

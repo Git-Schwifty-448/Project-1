@@ -79,7 +79,9 @@ Database.prototype.keyval_parse = function(event, key, value, payload) {
     if (key == "attendee") {
         let attendee = {};
         attendee.name  = value;
-        attendee.times = payload?payload.split(',').map(a=>+a):[];
+        payload = payload.split('|');
+        attendee.task_list = payload[1].split(',');
+        attendee.times = payload[0]?payload[0].split(',').map(a=>+a):[];
         event.attendees.push(attendee);
     }
 }; // end of function Database#keyval_parse
@@ -156,7 +158,7 @@ Database.prototype.read_events = function(callback) {
 Database.prototype.register = function(attendee) {
     this.db.run(
       "INSERT INTO tb_events (uid, key, value, payload) VALUES ( ? , 'attendee', ? , ? );",
-      [attendee.event, attendee.name, attendee.times.join(',')]
+      [attendee.event, attendee.name, attendee.times.join(',') + "|" + attendee.task_list.join(',')]
     );
 } // end of Database#register
 
