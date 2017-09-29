@@ -122,6 +122,7 @@ export class EventPage {
       let payload = {}
       payload.uid = this.event.uid
       payload.name = this.name.value
+      payload.task_list = []
       payload.times = Array.from($('input[type="checkbox"][value]:checked')).map(el => +el.value)
       if (!payload.name) {
         alert("You must enter your name!")
