@@ -35,7 +35,7 @@ function Attendee() {
  * @post: nothing
  * @return: a sha256 hash unique to the event name and time, randomly nonced
  */
-Event.prototype.hash = function() {
+Attendee.prototype.hash = function() {
     let sha256 = crypto.createHash('sha256');
     sha256.update(this.name);
     sha256.update(this.times.join(' '));
