@@ -18,24 +18,61 @@ var Event   = require('./event.js');
 function Database(path, callback) {
     this.path = path;
 
-    const create_table = "CREATE TABLE IF NOT EXISTS tb_events"
-                       + "("
-                       + "uid TEXT NOT NULL, "
-                       + "key TEXT NOT NULL, "
-                       + "value TEXT NOT NULL, "
-                       + "payload TEXT "
-                       + ");";
+    // const create_table = "CREATE TABLE IF NOT EXISTS tb_events"
+    //                    + "("
+    //                    + "uid TEXT NOT NULL, "
+    //                    + "key TEXT NOT NULL, "
+    //                    + "value TEXT NOT NULL, "
+    //                    + "payload TEXT "
+    //                    + ");";
 
-    let obj = this; // used to access 'this' in the following closure
+    // let obj = this; // used to access 'this' in the following closure
     
-    // create/init connection to db
-    this.db = new sqlite3.Database(path, function() {
+    // // create/init connection to db
+    // this.db = new sqlite3.Database(path, function() {
 
-        // create primary table
-        obj.db.run(create_table, function() {
-            if (callback) callback();
-        });
-    });
+    //     // create primary table
+    //     obj.db.run(create_table, function() {
+    //         if (callback) callback();
+    //     });
+    // });
+
+    // Create the events table
+    const create_events_table = "CREATE TABLE IF NOT EXISTS tb_events"
+                              + "("
+                              + "uid TEXT NOT NULL, "
+                              + "name TEXT NOT NULL, "
+                              + "description TEXT NOT NULL, "
+                              + "owner TEXT NOT NULL, "
+                              + "dates TEXT NOT NULL, "
+                              + "times TEXT NOT NULL, "
+                              + "task_list TEXT, "
+                              + "attendee_list TEXT "
+                              + ");";
+    
+    // Create the attendee table
+    const create_attendee_table = "CREATE TABLE IF NOT EXISTS tb_attendee"
+                                + "("
+                                + "uid TEXT NOT NULL, "
+                                + "name TEXT NOT NULL, "
+                                + "times TEXT NOT NULL, "
+                                + "task_list TEXT"
+                                + ");";
+
+    let obj = this;
+
+    // Create the database and then add the two tables
+    this.db = new sqlite3.Database(path, () => {
+        obj.db.run(create_events_table, () => {
+            if(callback) callback();
+        })
+
+        obj.db.run(create_attendee_table, () => {
+            if(callback) callback();
+        })
+    })
+
+
 }; // end of function Database
 
 /**
