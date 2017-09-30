@@ -10,14 +10,19 @@ let payload = {
     name: "448 Test Event",
     description: "This is a simple event desc",
     task_list: ['string','Requests','array'],
-    times: [[22, 23]],
-    date: ["Mon Oct 02 2017"], 
+    dates: ["Mon Oct 02 2017"],
+    times: [[22, 23],[22,23]],
     owner: event_owner
   }
 
 //   console.log(payload)
 
+
+
 console.log(payload)
+
+let stringi = JSON.stringify(payload);
+console.log(stringi)
 
 fetch("/api/events/new/", {
 

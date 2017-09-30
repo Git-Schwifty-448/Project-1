@@ -206,24 +206,21 @@ Database.prototype.register = function(attendee) {
  * @return: nothing
  * @param: 'event', the object to be written to the db
  */
-Database.prototype.write_event = function(event) {
+Database.prototype.write_event = function(event,owner) {
     let obj = this;
-    let write_keyval = function(key, val) {
-        obj.db.run(
-          "INSERT INTO tb_events (uid, key, value) VALUES ( ? , ? , ? );",
-          [event.uid, key, val]
-        );
-    };
 
-    [["name",        event.name],
-     ["description", event.description],
-     ["date",        event.date],
-     ["task_list",   event.task_list.join(',')],
-     ["times",       event.times.join(',')],
-     ["owner",       event.owner]]
-     .forEach(function(keyval) {
-        write_keyval(keyval[0], keyval[1]);
-    });
+    // Add the event to the event table
+    obj.db.run(
+        "INSERT INTO tb_events (uid, name, description, owner, dates, times, task_list) VALUES ( ? , ? , ? , ? , ? , ? , ?);",
+        [event.uid, event.name, event.description, event.owner, event.dates, event.times, event.task_list]
+    );
+
+    // Add the owner to the attendee table
+    obj.db.run(
+        "INSERT INTO tb_attendee (uid, name, times) VALUES (? , ? , ?);",
+        [owner.uid, owner.name, event.times]
+    );
+    
 }; // end of function Database#write_event
 
 module.exports = Database;

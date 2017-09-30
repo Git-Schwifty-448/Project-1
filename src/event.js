@@ -23,6 +23,7 @@ var crypto = require('crypto');
 function Event() {
     this.name        = "";
     this.description = "";
+    this.dates       = [];
     this.times       = [];
     this.task_list   = [];
     this.owner       = "";
@@ -40,7 +41,6 @@ Event.prototype.hash = function() {
     let sha256 = crypto.createHash('sha256');
     sha256.update(this.name);
     sha256.update(this.description);
-    sha256.update(this.times.join(' '));
     sha256.update("" + (Math.random() * Math.pow(2, 32))); // nonce
 
     return sha256.digest('hex');
