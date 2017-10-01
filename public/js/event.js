@@ -23,26 +23,65 @@ export class EventPage {
     let table = document.createElement('table')
     let tbody = document.createElement('tbody')
     let thead = document.createElement('thead')
+
+    let date_row = document.createElement('tr')
+    let date_cell = document.createElement('th')
+    date_row.appendChild(date_cell);
+
+
+
     let tr = document.createElement('tr')
     let th = document.createElement('th')
     tr.appendChild(th)
-    for (let i in this.event.times) {
-      if (i && this.event.times[i]-this.event.times[i-1] > 1) {
-        let spacer = document.createElement('th')
-        spacer.className = 'spacer'
-        tr.appendChild(spacer)
+    
+    this.event.times = JSON.parse(this.event.times);
+    console.log(this.event.times)
+
+    for(let i in this.event.times) {
+
+      for (let k in this.event.times[i]) {
+        if (i && this.event.times[i][k]-this.event.times[i][k-1] > 1) {
+          
+          let spacer = document.createElement('th')
+          spacer.className = 'spacer'
+          tr.appendChild(spacer)
+        }
+
+        if(k == 0) {
+          let date_cell = document.createElement('th')
+          date_cell.innerHTML = (this.event.dates[i])
+          date_row.appendChild(date_cell)  
+        } else {
+          let date_cell = document.createElement('th')
+          date_row.appendChild(date_cell)  
+        }
+
+
+        let th = document.createElement('th')
+        th.innerHTML = slots[this.event.times[i][k]]
+        tr.appendChild(th)
       }
-      let th = document.createElement('th')
-      th.innerHTML = slots[this.event.times[i]]
-      tr.appendChild(th)
     }
+
+
+
+    thead.appendChild(date_row);
     thead.appendChild(tr)
     table.appendChild(thead)
     table.appendChild(tbody)
+
+
+
+
+    this.event.attendees = JSON.parse(this.event.attendees);
+
+
+    console.log(this.event.attendees);
+
     for (let attendee of this.event.attendees) {
       let tr = document.createElement('tr')
       let name = document.createElement('td')
-      if (attendee.name == this.event.owner) {
+      if (attendee.name == this.event.owner.name) {
         name.className = "owner"
       }
       name.appendChild(document.createTextNode(attendee.name))
@@ -164,10 +203,14 @@ $(() => {
       $('.content_card')[0].innerHTML = "This event does not exist"
       return
     }
-    event.attendees = [].concat({name: event.owner, times: event.times}, event.attendees)
+    event.owner = JSON.parse(event.owner);
+    event.dates = JSON.parse(event.dates);
+    console.log(event.dates);
+    console.log(event.owner);
+    // event.owner = [].concat({name: event.owner, times: event.times}, event.attendees)
     let event_page = new EventPage(event)
     $('h1.title')[0].appendChild(document.createTextNode(event.name))
-    $('h2.event_date')[0].appendChild(document.createTextNode(event.date))
+    $('h2.event_date')[0].appendChild(document.createTextNode("Starting " + event.dates[1]))
     $('h2.subtitle')[0].appendChild(document.createTextNode(event.description))
     $('.content_card')[0].appendChild(event_page.createEventInfo(event))
   })

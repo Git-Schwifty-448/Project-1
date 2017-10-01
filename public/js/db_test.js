@@ -5,12 +5,18 @@ let event_owner = {
     task_list: ""
 }
 
+let attend = {
+    name: "Jake",
+    task_list: "",
+    times: [[22,23]]
+}
+
 
 let payload = {
     name: "448 Test Event",
     description: "This is a simple event desc",
     task_list: ['string','Requests','array'],
-    dates: ["Mon Oct 02 2017"],
+    dates: ["Mon Oct 02 2017", "Tues Oct 03 2017"],
     times: [[22, 23],[22,23]],
     owner: event_owner
   }
@@ -45,20 +51,22 @@ fetch("/api/events/new/", {
 
 // // NOW RECALL EVENTS FROM DATABSE
 
-// let event = null;
+let event = null;
 
-// fetch('/api/events/').then(res => res.json()).then(event_list => {
-//         // console.log(event_list);
+fetch('/api/events/').then(res => res.json()).then(event_list => {
+        console.log(event_list);
 
         
-//         event = event_list[0];
-//         add_attendee();
-//   })
+        event = event_list[0];
+
+        console.log(event);
+  })
 
 
 //   function add_attendee() {
 
-//     console.log(event);
+
+
 //     //   uid = event_list[0].
 
 //     let attendee = {}

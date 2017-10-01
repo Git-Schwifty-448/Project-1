@@ -7,6 +7,7 @@
 var sqlite3 = require('sqlite3').verbose();
 
 var Event   = require('./event.js');
+var Attendee   = require('./attendee.js');
 
 /**
  * Database(path, callback)
@@ -17,25 +18,6 @@ var Event   = require('./event.js');
  */
 function Database(path, callback) {
     this.path = path;
-
-    // const create_table = "CREATE TABLE IF NOT EXISTS tb_events"
-    //                    + "("
-    //                    + "uid TEXT NOT NULL, "
-    //                    + "key TEXT NOT NULL, "
-    //                    + "value TEXT NOT NULL, "
-    //                    + "payload TEXT "
-    //                    + ");";
-
-    // let obj = this; // used to access 'this' in the following closure
-    
-    // // create/init connection to db
-    // this.db = new sqlite3.Database(path, function() {
-
-    //     // create primary table
-    //     obj.db.run(create_table, function() {
-    //         if (callback) callback();
-    //     });
-    // });
 
     // Create the events table
     const create_events_table = "CREATE TABLE IF NOT EXISTS tb_events"
@@ -49,25 +31,12 @@ function Database(path, callback) {
                               + "task_list TEXT, "
                               + "attendee_list TEXT "
                               + ");";
-    
-    // Create the attendee table
-    const create_attendee_table = "CREATE TABLE IF NOT EXISTS tb_attendee"
-                                + "("
-                                + "uid TEXT NOT NULL, "
-                                + "name TEXT NOT NULL, "
-                                + "times TEXT NOT NULL, "
-                                + "task_list TEXT"
-                                + ");";
 
     let obj = this;
 
     // Create the database and then add the two tables
     this.db = new sqlite3.Database(path, () => {
         obj.db.run(create_events_table, () => {
-            if(callback) callback();
-        })
-
-        obj.db.run(create_attendee_table, () => {
             if(callback) callback();
         })
     })
@@ -135,14 +104,15 @@ Database.prototype.read_event = function(uid, callback) {
     let obj   = this;
 
     this.db.each("SELECT * FROM tb_events WHERE uid = ? ;", [uid], function(err, row) {
-        event.uid = uid;
-        obj.keyval_parse(event, row.key, row.value, row.payload);
-        if (typeof event.times === 'string') {
-          event.times = event.times.split(',').map(time=>+time)
-        }
-        if (typeof event.task_list === 'string') {
-            event.task_list = event.task_list.split(',')
-        }
+        event.uid           = uid;
+        event.name          = row.name;
+        event.description   = row.description;
+        event.task_list     = row.task_list;
+        event.dates         = row.dates;
+        event.times         = row.times;
+        event.attendees     = row.attendee_list;
+        event.owner         = row.owner;
+
     }, function(err, rows) {
         if (rows != undefined && rows != 0) {
             callback(event);
@@ -151,6 +121,7 @@ Database.prototype.read_event = function(uid, callback) {
         }
     });
 }; // end of Database#read_event
+
 
 /**
  * Database#read_events(callback)
@@ -194,33 +165,27 @@ Database.prototype.read_events = function(callback) {
  */
 Database.prototype.register = function(attendee) {
     this.db.run(
-      "INSERT INTO tb_events (uid, key, value, payload) VALUES ( ? , 'attendee', ? , ? );",
-      [attendee.event, attendee.name, attendee.times.join(',') + "|" + attendee.task_list.join(',')]
+      "INSERT INTO tb_events (uid, attendee) VALUES ( ? , ? );",
+      [attendee.event, JSON.stringify(attendee)]
     );
 } // end of Database#register
 
-/**
- * Database#write_event(event)
- * @pre: the db is initialized properly
- * @post: event is written to the db
- * @return: nothing
- * @param: 'event', the object to be written to the db
- */
-Database.prototype.write_event = function(event,owner) {
+
+// Database#write_event(event)
+// @pre: the db is initialized properly
+// @post: event is written to the db
+// @return: nothing
+// @param: 'event', the object to be written to the db
+
+Database.prototype.write_event = function(event) {
     let obj = this;
 
     // Add the event to the event table
     obj.db.run(
-        "INSERT INTO tb_events (uid, name, description, owner, dates, times, task_list) VALUES ( ? , ? , ? , ? , ? , ? , ?);",
-        [event.uid, event.name, event.description, event.owner, event.dates, event.times, event.task_list]
+        "INSERT INTO tb_events (uid, name, description, owner, dates, times, task_list, attendee_list) VALUES ( ? , ? , ? , ? , ? , ? , ?, ?);",
+        [event.uid, event.name, event.description, event.owner, event.dates, event.times, event.task_list, event.attendees]
     );
 
-    // Add the owner to the attendee table
-    obj.db.run(
-        "INSERT INTO tb_attendee (uid, name, times) VALUES (? , ? , ?);",
-        [owner.uid, owner.name, event.times]
-    );
-    
 }; // end of function Database#write_event
 
 module.exports = Database;

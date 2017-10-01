@@ -244,9 +244,9 @@ $(() => {
       name: $('input.intitle')[0].value,
       description: $('input.description')[0].value,
       task_list: rslot_adder.getRequests(),
-      date: $('input.date')[0].value,
+      date: [$('input.date')[0].value],
       owner: $('input.name')[0].value,
-      times: slot_adder.getTimes()
+      times: [slot_adder.getTimes()]
     }
 
     console.log(payload)

@@ -52,21 +52,21 @@ const Attendee      = require('./attendee.js');
         let owner         = new Attendee();
         owner.uid         = owner.hash().substr(0,11);
         owner.name        = req.body.owner.name;
-        owner.times       = req.body.times;
-        owner.task_list   = req.body.owner.task_list;
+        owner.times       = JSON.stringify(req.body.times);
+        owner.task_list   = req.body.owner.task_list.toString();
 
         // Create the event
         let event         = new Event();
         event.name        = req.body.name;
         event.description = req.body.description;
-        // event.dates       = req.body.dates.toString();
         event.dates       = JSON.stringify(req.body.dates);
         event.task_list   = req.body.task_list.toString();
-        event.owner       = owner.uid;
+        event.owner       = JSON.stringify(owner);
+        event.attendees   = JSON.stringify([owner]);
         event.times       = JSON.stringify(req.body.times);
         event.uid         = event.hash().substr(0, 11);
 
-        database.write_event(event,owner);
+        database.write_event(event);
 
         res.status(200).json({status: "ok", uid: event.uid});
     });
@@ -76,10 +76,9 @@ const Attendee      = require('./attendee.js');
         let attendee            = new Attendee();
         attendee.event          = req.body.uid;
         attendee.name           = req.body.name;
-        attendee.times          = req.body.times;
-        attendee.task_list      = req.body.task_list;
+        attendee.times          = JSON.stringify(req.body.times);
+        attendee.task_list      = req.body.task_list.toString();
         attendee.uid            = attendee.hash().substr(0, 11);
-
         database.register(attendee);
 
         res.status(200).json({status: "ok"});
