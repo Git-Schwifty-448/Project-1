@@ -266,22 +266,22 @@ $(() => {
       name: $('input.intitle')[0].value,
       description: $('input.description')[0].value,
       task_list: rslot_adder.getRequests(),
-      date: $('input.date')[0].value,
+      dates: [$('input.date')[0].value],
       owner: $('input.name')[0].value,
       times: slot_adder.getTimes()
     }
 
     console.log(payload)
 
-    for (let i of ['title', 'name', 'date']) {
-      if (!payload[i.replace('name','owner').replace('title','name')]) {
-        alert("You need to enter a "+i+"!")
-        return
-      }
-    }
-    if (!payload.times.length) {
-      payload.times = Array.from({length: 48}).map((_,i)=>i)
-    }
+    // for (let i of ['title', 'name', 'date']) {
+    //   if (!payload[i.replace('name','owner').replace('title','name')]) {
+    //     alert("You need to enter a "+i+"!")
+    //     return
+    //   }
+    // }
+    // if (!payload.times.length) {
+    //   payload.times = Array.from({length: 48}).map((_,i)=>i)
+    // }
 
     fetch("/api/events/new/", {
       headers: {'Content-Type': 'application/json'},

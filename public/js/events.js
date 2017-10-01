@@ -9,7 +9,11 @@ export class EventsPage {
    */
   constructor(event_list) {
     /** @member {object[]} events - List of event objects sorted by date */
-    this.events = event_list.sort((e1, e2) => (new Date(e1.date)).getTime() - (new Date(e2.date)).getTime())
+    this.events = event_list;
+    for(let i in this.events) {
+      this.events[i].dates = JSON.parse(this.events[i].dates);
+    }
+    this.events = this.events.sort((e1, e2) => (new Date(e1.dates[0])).getTime() - (new Date(e2.dates[0])).getTime())
   }
 
   /**
@@ -24,7 +28,15 @@ export class EventsPage {
         divRow.className = "row"
 
         let dateText = document.createElement('span')
-        dateText.appendChild(document.createTextNode(this.events[i].date))
+        // this.events[i].dates = JSON.parse(this.events[i].dates);
+
+        for (let k in this.events[i].dates) {
+          dateText.appendChild(document.createTextNode(this.events[i].dates[k]));
+          if (!(k == this.events[i].dates.length-1)) {
+            dateText.appendChild(document.createTextNode(","))
+            dateText.appendChild(document.createElement("br"));
+          }
+        }
 
         let nameText = document.createElement('a')
         nameText.appendChild(document.createTextNode(this.events[i].name))

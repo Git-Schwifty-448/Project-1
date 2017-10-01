@@ -1,35 +1,33 @@
 /**
- * @file: event.js
+ * @file: attendee.js
  * @date: September 2017
- * @brief: Event object description
+ * @brief: Event attendee description
+ * @author: Abraham Dick
  */
 
 var crypto = require('crypto');
 
-/* The fields Event has:
+/* The fields attendee has:
+ * uid: strig
  * name: string
- * description: string
- * time_slots: array
- * attendees: array
+ * time_slots: 2d array
+ * task_list: array
+ * is_owner: bool
  * Note: We can't verify the types of these fields, just their existence
  */
 
 /**
- * Event()
+ * Attendee()
  * @pre: nothing
  * @post: the fields are set to their defaults
- * @return: an Event object
+ * @return: an Attendee object
  */
-function Event() {
+function Attendee() {
+    this.uid         = "";
     this.name        = "";
-    this.description = "";
-    this.dates       = [];
     this.times       = [];
     this.task_list   = [];
-    this.owner       = "";
-    this.attendees   = [];
-    this.uid         = "";
-} // end of function Event
+} // end of function Attendee
 
 /**
  * Event#hash()
@@ -37,14 +35,14 @@ function Event() {
  * @post: nothing
  * @return: a sha256 hash unique to the event name and time, randomly nonced
  */
-Event.prototype.hash = function() {
+Attendee.prototype.hash = function() {
     let sha256 = crypto.createHash('sha256');
     sha256.update(this.name);
-    sha256.update(this.description);
+    sha256.update(this.times.join(' '));
     sha256.update("" + (Math.random() * Math.pow(2, 32))); // nonce
 
     return sha256.digest('hex');
 } // end of function Event#hash
 
 
-module.exports = Event;
+module.exports = Attendee;
