@@ -163,11 +163,16 @@ Database.prototype.read_events = function(callback) {
  * @return: nothing
  * @param: 'attendee', the person to register
  */
-Database.prototype.register = function(attendee) {
+Database.prototype.register = function(uid, task_list,attendees) {
+    // this.db.run(
+    //   "INSERT INTO tb_events (uid, attendee) VALUES ( ? , ? );",
+    //   [attendee.event, JSON.stringify(attendee)]
+    // );
+
     this.db.run(
-      "INSERT INTO tb_events (uid, attendee) VALUES ( ? , ? );",
-      [attendee.event, JSON.stringify(attendee)]
-    );
+        "UPDATE tb_events SET task_list = ? , attendee_list = ? WHERE uid = ?;",
+        [task_list.toString(),attendees,uid]
+    )
 } // end of Database#register
 
 

@@ -52,7 +52,7 @@ const Attendee      = require('./attendee.js');
         let owner         = new Attendee();
         owner.uid         = owner.hash().substr(0,11);
         owner.name        = req.body.owner;
-        owner.times       = JSON.stringify(req.body.times);
+        owner.times       = [req.body.times];
         owner.task_list   = JSON.stringify(req.body.owner.task_list);
 
         // Create the event
@@ -63,7 +63,7 @@ const Attendee      = require('./attendee.js');
         event.task_list   = req.body.task_list.toString();
         event.owner       = JSON.stringify(owner);
         event.attendees   = JSON.stringify([owner]);
-        event.times       = JSON.stringify(req.body.times);
+        event.times       = JSON.stringify([req.body.times]);
         event.uid         = event.hash().substr(0, 11);
 
         database.write_event(event);
@@ -73,13 +73,25 @@ const Attendee      = require('./attendee.js');
 
     // API for adding a person to an event
     app.post('/api/events/register', function(req, res) {
+
+
         let attendee            = new Attendee();
-        attendee.event          = req.body.uid;
-        attendee.name           = req.body.name;
-        attendee.times          = JSON.stringify(req.body.times);
-        attendee.task_list      = req.body.task_list.toString();
         attendee.uid            = attendee.hash().substr(0, 11);
-        database.register(attendee);
+        attendee.name           = req.body.name;
+        attendee.times          = req.body.times;
+        attendee.task_list      = req.body.attendee_task_list.toString();
+
+        let event_uid           = req.body.event_uid;
+        let task_list           = req.body.new_event_task_list 
+        // let attendees           = attendee
+        let attendees           = req.body.all_attendees
+        attendees.push(attendee);
+
+        // for(let i = 0; i < attendees.length; i++){
+        //     attendees[i] = JSON.stringify(attendees[i]);
+        // }
+    
+        database.register(event_uid, task_list, JSON.stringify(attendees));
 
         res.status(200).json({status: "ok"});
     });

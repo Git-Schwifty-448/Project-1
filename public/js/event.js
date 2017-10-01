@@ -13,8 +13,6 @@ export class EventPage {
     this.event.attendees = JSON.parse(this.event.attendees);
     this.event.dates = JSON.parse(this.event.dates);
     this.event.times = JSON.parse(this.event.times);
-
-    // console.log(this.event)
   }
 
   /**
@@ -66,15 +64,15 @@ export class EventPage {
     table.appendChild(thead)
     table.appendChild(tbody)
 
-
-
     for (let j = 0; j < this.event.attendees.length; j++) {
-      this.event.attendees[j].times = JSON.parse(this.event.attendees[j].times);
+      console.log(this.event.attendees[j])
+      console.log(this.event.attendees[j].times)
 
       let tr = document.createElement('tr')
       let name = document.createElement('td')
 
       if (this.event.attendees[j].name == this.event.attendees[0].name) {
+        // this.event.attendees[j].times = JSON.parse(this.event.attendees[j].times);
         name.className = "owner"
       }
       name.appendChild(document.createTextNode(this.event.attendees[j].name))
@@ -93,6 +91,7 @@ export class EventPage {
           let checkbox = document.createElement('input')
           checkbox.type = 'checkbox'
 
+          console.log(this.event.attendees[j])
           if (this.event.attendees[j].times[i].includes(this.event.times[i][k])) {
             checkbox.checked = "checked"
           }
@@ -163,13 +162,13 @@ export class EventPage {
         }
 
         // tbody.appendChild(ttr)
-        t_cont.appendChild(table)
-        return t_cont
-      }
-      */
+        */
+        
+    t_cont.appendChild(table)
+    return t_cont
+  }
 
 
-      
   /**
    * Creates the Register button
    * @return {Element} button for registering a new attendee
@@ -178,16 +177,35 @@ export class EventPage {
     let button = document.createElement('button')
     button.innerHTML = 'Register'
     button.className = 'button is-primary'
+
+    console.log(this.event)
+    console.log(this.event.attendees);
+    console.log(this.event.uid)
+
+
+
     button.addEventListener('click', event => {
       let payload = {}
-      payload.uid = this.event.uid
+      payload.event_uid = this.event.uid
+      payload.all_attendees = this.event.attendees;
+
       payload.name = this.name.value
-      payload.task_list = []
-      payload.times = Array.from($('input[type="checkbox"][value]:checked')).map(el => +el.value)
+      payload.times = [Array.from($('input[type="checkbox"][value]:checked')).map(el => +el.value)]
       if (!payload.name) {
         alert("You must enter your name!")
         return
       }
+
+      /**
+       * This still needs to be implemented. Somehow a list of tasks from the event objects needs to be
+       * selectable for the participant at signup, then the task is removed from the event obj task list
+       * and added to the user task list. Both of these will need to be sent to the database
+       * 
+       * I would implement a function that makes it work remotely as to not clutter the payload
+       */
+      payload.attendee_task_list = [];
+      payload.new_event_task_list = this.event.task_list;
+
       fetch('/api/events/register/', {
         headers: {'Content-Type': 'application/json'},
         method: "POST",
