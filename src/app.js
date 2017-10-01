@@ -51,7 +51,7 @@ const Attendee      = require('./attendee.js');
         // Create the Owner
         let owner         = new Attendee();
         owner.uid         = owner.hash().substr(0,11);
-        owner.name        = req.body.owner.name;
+        owner.name        = req.body.owner;
         owner.times       = JSON.stringify(req.body.times);
         owner.task_list   = JSON.stringify(req.body.owner.task_list);
 

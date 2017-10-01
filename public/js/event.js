@@ -9,7 +9,12 @@ export class EventPage {
    */
   constructor(event) {
     /** @member {object} event - Event information */
-    this.event = event
+    this.event = event;
+    this.event.attendees = JSON.parse(this.event.attendees);
+    this.event.dates = JSON.parse(this.event.dates);
+    this.event.times = JSON.parse(this.event.times);
+
+    // console.log(this.event)
   }
 
   /**
@@ -33,21 +38,10 @@ export class EventPage {
     let tr = document.createElement('tr')
     let th = document.createElement('th')
     tr.appendChild(th)
-    
-    this.event.times = JSON.parse(this.event.times);
-    console.log(this.event.times)
 
-    for(let i in this.event.times) {
-
-      for (let k in this.event.times[i]) {
-        if (i && this.event.times[i][k]-this.event.times[i][k-1] > 1) {
-          
-          let spacer = document.createElement('th')
-          spacer.className = 'spacer'
-          tr.appendChild(spacer)
-        }
-
-        if(k == 0) {
+    for(let i = 0; i < this.event.times.length; i++) {
+      for (let k = 0; k<this.event.times[i].length; k++) {
+        if(k == 0 && i == 0 || k == 1 && i != 0 ) {
           let date_cell = document.createElement('th')
           date_cell.innerHTML = (this.event.dates[i])
           date_row.appendChild(date_cell)  
@@ -56,14 +50,16 @@ export class EventPage {
           date_row.appendChild(date_cell)  
         }
 
-
         let th = document.createElement('th')
         th.innerHTML = slots[this.event.times[i][k]]
         tr.appendChild(th)
       }
+      if(i < this.event.times.length-1) {
+        let spacer = document.createElement('th')
+        spacer.className = 'spacer'
+        tr.appendChild(spacer)
+      }
     }
-
-
 
     thead.appendChild(date_row);
     thead.appendChild(tr)
@@ -72,38 +68,42 @@ export class EventPage {
 
 
 
+    for (let j = 0; j < this.event.attendees.length; j++) {
+      this.event.attendees[j].times = JSON.parse(this.event.attendees[j].times);
 
-    this.event.attendees = JSON.parse(this.event.attendees);
-
-
-    console.log(this.event.attendees);
-
-    for (let attendee of this.event.attendees) {
       let tr = document.createElement('tr')
       let name = document.createElement('td')
-      if (attendee.name == this.event.owner.name) {
+
+      if (this.event.attendees[j].name == this.event.attendees[0].name) {
         name.className = "owner"
       }
-      name.appendChild(document.createTextNode(attendee.name))
+      name.appendChild(document.createTextNode(this.event.attendees[j].name))
       tr.appendChild(name)
-      for (let i in this.event.times) {
-        let td = document.createElement('td')
-        if (i && this.event.times[i]-this.event.times[i-1] > 1) {
-          let spacer = document.createElement('td')
-          spacer.className = 'spacer'
-          tr.appendChild(spacer)
+      
+      for(let i = 0;i<this.event.times.length; i++) {
+        for (let k = 0; k<this.event.times[i].length; k++) {
+          let td = document.createElement('td')
+
+          if(k == 0 && i != 0 ) {
+            let spacer = document.createElement('td')
+            spacer.className = 'spacer'
+            tr.appendChild(spacer)
+          }
+
+          let checkbox = document.createElement('input')
+          checkbox.type = 'checkbox'
+
+          if (this.event.attendees[j].times[i].includes(this.event.times[i][k])) {
+            checkbox.checked = "checked"
+          }
+          checkbox.disabled = true
+          td.appendChild(checkbox)
+          tr.appendChild(td)
         }
-        let checkbox = document.createElement('input')
-        checkbox.type = 'checkbox'
-        if (attendee.times.includes(this.event.times[i])) {
-          checkbox.checked = "checked"
-        }
-        checkbox.disabled = true
-        td.appendChild(checkbox)
-        tr.appendChild(td)
       }
       tbody.appendChild(tr)
     }
+
     let utr = document.createElement('tr')
     utr.className = 'user-tr'
     let utd = document.createElement('td')
@@ -114,41 +114,62 @@ export class EventPage {
     this.name = uinput
     utd.appendChild(uinput)
     utr.appendChild(utd)
-    for (let i in this.event.times) {
-      if (i && this.event.times[i]-this.event.times[i-1] > 1) {
-        let spacer = document.createElement('td')
-        spacer.className = 'spacer'
-        utr.appendChild(spacer)
+
+    for(let i = 0;i<this.event.times.length; i++) {
+      for (let k = 0; k<this.event.times[i].length; k++) {
+
+        if(k == 0 && i != 0 ) {
+          let spacer = document.createElement('td')
+          spacer.className = 'spacer'
+          utr.appendChild(spacer)
+        }
+
+        let td = document.createElement('td')
+        let checkbox = document.createElement('input')
+        checkbox.type = 'checkbox'
+        checkbox.value = this.event.times[i][k]
+        td.appendChild(checkbox)
+        utr.appendChild(td)
+
       }
-      let td = document.createElement('td')
-      let checkbox = document.createElement('input')
-      checkbox.type = 'checkbox'
-      checkbox.value = this.event.times[i]
-      td.appendChild(checkbox)
-      utr.appendChild(td)
     }
     tbody.appendChild(utr)
-    let ttr = document.createElement('tr')
-    let ttd = document.createElement('td')
-    ttd.innerHTML = 'Participants'
-    ttd.className = 'check_count'
-    ttr.appendChild(ttd)
-    for (let i in this.event.times) {
-      if (i && this.event.times[i]-this.event.times[i-1] > 1) {
-        let spacer = document.createElement('td')
-        spacer.className = 'spacer'
-        ttr.appendChild(spacer)
-      }
-      let td = document.createElement('td')
-      td.className = 'check_count'
-      td.innerHTML = [].concat(...this.event.attendees.map(a=>a.times)).filter(a=>a==this.event.times[i]).length
-      ttr.appendChild(td)
-    }
-    tbody.appendChild(ttr)
-    t_cont.appendChild(table)
-    return t_cont
-  }
 
+    // NOT ENTIRELY SURE THAT THE PARTICIPANTS ROW IS NECCESSARY
+    // KNOWN BUG: The participants map in the commented code below does not work
+    
+
+        /*
+        let ttr = document.createElement('tr')
+        let ttd = document.createElement('td')
+        ttd.innerHTML = 'Participants'
+        ttd.className = 'check_count'
+        ttr.appendChild(ttd)
+
+        for(let i = 0;i<this.event.times.length; i++) {
+          for (let k = 0; k<this.event.times[i].length; k++) {
+            if(k == 0 && i != 0 ) {
+              let spacer = document.createElement('td')
+              spacer.className = 'spacer'
+              ttr.appendChild(spacer)
+            }
+            let td = document.createElement('td')
+            td.className = 'check_count'
+            console.log(this.event.attendees);
+
+            td.innerHTML = [].concat(...this.event.attendees.map(a=>a.times)).filter(a=>a==this.event.times[i]).length
+            ttr.appendChild(td)
+          }
+        }
+
+        // tbody.appendChild(ttr)
+        t_cont.appendChild(table)
+        return t_cont
+      }
+      */
+
+
+      
   /**
    * Creates the Register button
    * @return {Element} button for registering a new attendee
@@ -203,14 +224,14 @@ $(() => {
       $('.content_card')[0].innerHTML = "This event does not exist"
       return
     }
-    event.owner = JSON.parse(event.owner);
-    event.dates = JSON.parse(event.dates);
-    console.log(event.dates);
-    console.log(event.owner);
+    // event.owner = JSON.parse(event.owner);
+    // event.dates = JSON.parse(event.dates);
+    // console.log(event.dates);
+    // console.log(event.owner);
     // event.owner = [].concat({name: event.owner, times: event.times}, event.attendees)
     let event_page = new EventPage(event)
     $('h1.title')[0].appendChild(document.createTextNode(event.name))
-    $('h2.event_date')[0].appendChild(document.createTextNode("Starting " + event.dates[1]))
+    $('h2.event_date')[0].appendChild(document.createTextNode("Starting " + event.dates[0]))
     $('h2.subtitle')[0].appendChild(document.createTextNode(event.description))
     $('.content_card')[0].appendChild(event_page.createEventInfo(event))
   })
