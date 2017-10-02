@@ -29,6 +29,7 @@ function Database(path, callback) {
                               + "dates TEXT NOT NULL, "
                               + "times TEXT NOT NULL, "
                               + "task_list TEXT, "
+                              + "task_list_taken TEXT, "
                               + "attendee_list TEXT "
                               + ");";
 

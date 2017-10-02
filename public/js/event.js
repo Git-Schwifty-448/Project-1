@@ -65,14 +65,11 @@ export class EventPage {
     table.appendChild(tbody)
 
     for (let j = 0; j < this.event.attendees.length; j++) {
-      console.log(this.event.attendees[j])
-      console.log(this.event.attendees[j].times)
 
       let tr = document.createElement('tr')
       let name = document.createElement('td')
 
       if (this.event.attendees[j].name == this.event.attendees[0].name) {
-        // this.event.attendees[j].times = JSON.parse(this.event.attendees[j].times);
         name.className = "owner"
       }
       name.appendChild(document.createTextNode(this.event.attendees[j].name))
@@ -90,8 +87,7 @@ export class EventPage {
 
           let checkbox = document.createElement('input')
           checkbox.type = 'checkbox'
-
-          console.log(this.event.attendees[j])
+          
           if (this.event.attendees[j].times[i].includes(this.event.times[i][k])) {
             checkbox.checked = "checked"
           }
@@ -178,9 +174,9 @@ export class EventPage {
     button.innerHTML = 'Register'
     button.className = 'button is-primary'
 
-    console.log(this.event)
-    console.log(this.event.attendees);
-    console.log(this.event.uid)
+    // console.log(this.event)
+    // console.log(this.event.attendees);
+    // console.log(this.event.uid)
 
 
 
@@ -242,11 +238,6 @@ $(() => {
       $('.content_card')[0].innerHTML = "This event does not exist"
       return
     }
-    // event.owner = JSON.parse(event.owner);
-    // event.dates = JSON.parse(event.dates);
-    // console.log(event.dates);
-    // console.log(event.owner);
-    // event.owner = [].concat({name: event.owner, times: event.times}, event.attendees)
     let event_page = new EventPage(event)
     $('h1.title')[0].appendChild(document.createTextNode(event.name))
     $('h2.event_date')[0].appendChild(document.createTextNode("Starting " + event.dates[0]))
