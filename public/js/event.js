@@ -13,6 +13,10 @@ export class EventPage {
     this.event.attendees = JSON.parse(this.event.attendees);
     this.event.dates = JSON.parse(this.event.dates);
     this.event.times = JSON.parse(this.event.times);
+
+    this.event.task_list = this.event.task_list.split(',');
+
+    this.attendee_task_list = [];
   }
 
   /**
@@ -36,6 +40,9 @@ export class EventPage {
     let tr = document.createElement('tr')
     let th = document.createElement('th')
     tr.appendChild(th)
+
+
+    // CREATE TABLE HEADER INFORMATION
 
     for(let i = 0; i < this.event.times.length; i++) {
       for (let k = 0; k<this.event.times[i].length; k++) {
@@ -64,11 +71,14 @@ export class EventPage {
     table.appendChild(thead)
     table.appendChild(tbody)
 
+    // CREATE EACH ATTENDEE ROW WITH ATTENDANCE INFORMATION
+
     for (let j = 0; j < this.event.attendees.length; j++) {
 
       let tr = document.createElement('tr')
       let name = document.createElement('td')
 
+      console.log(this.event.attendees[j].name)
       if (this.event.attendees[j].name == this.event.attendees[0].name) {
         name.className = "owner"
       }
@@ -98,6 +108,21 @@ export class EventPage {
       }
       tbody.appendChild(tr)
     }
+
+    // CREATE SPACER ROW
+
+    let str = document.createElement('tr');
+    let std = document.createElement('td');
+
+
+    std.appendChild(document.createElement('br'));
+    std.appendChild(document.createTextNode("Sign Up"));
+    std.appendChild(document.createElement('br'));
+    std.className = "owner"
+    str.appendChild(std);
+    tbody.appendChild(str)
+
+    // SET UP REGISTRATION DATA
 
     let utr = document.createElement('tr')
     utr.className = 'user-tr'
@@ -157,7 +182,7 @@ export class EventPage {
           }
         }
 
-        // tbody.appendChild(ttr)
+        tbody.appendChild(ttr)
         */
         
     t_cont.appendChild(table)
@@ -172,15 +197,13 @@ export class EventPage {
   createSignupButton() {
     let button = document.createElement('button')
     button.innerHTML = 'Register'
-    button.className = 'button is-primary'
-
-    // console.log(this.event)
-    // console.log(this.event.attendees);
-    // console.log(this.event.uid)
-
-
+    button.className = 'submit button is-primary'
+    console.log(this.event)
+    console.log(this.event.attendees);
+    console.log(this.event.uid)
 
     button.addEventListener('click', event => {
+
       let payload = {}
       payload.event_uid = this.event.uid
       payload.all_attendees = this.event.attendees;
@@ -192,16 +215,11 @@ export class EventPage {
         return
       }
 
-      /**
-       * This still needs to be implemented. Somehow a list of tasks from the event objects needs to be
-       * selectable for the participant at signup, then the task is removed from the event obj task list
-       * and added to the user task list. Both of these will need to be sent to the database
-       * 
-       * I would implement a function that makes it work remotely as to not clutter the payload
-       */
-      payload.attendee_task_list = [];
-      payload.new_event_task_list = this.event.task_list;
+      payload.attendee_task_list = this.attendee_task_list;
+      payload.new_event_task_list = this.event.task_list.filter(x => this.attendee_task_list.indexOf(x) == -1);
 
+
+      console.log(payload);
       fetch('/api/events/register/', {
         headers: {'Content-Type': 'application/json'},
         method: "POST",
@@ -218,6 +236,18 @@ export class EventPage {
   }
 
   /**
+   * Creates the task list button
+   * @return {Element} button for registering for a task
+   */
+  createTaskButton() {
+    let button = document.createElement('button')
+    button.innerHTML = 'Help Out'
+    button.className = 'submit button is-small'
+    return button
+  }
+
+
+  /**
    * Creates a div that contains the Attendee table and Register Button
    * @return {Element} div containing page contents
    */
@@ -225,11 +255,73 @@ export class EventPage {
     let eventInfo = document.createElement('div')
 
     eventInfo.appendChild(this.createAttendeeTable())
-    eventInfo.appendChild(this.createSignupButton())
+
+    let task_list = document.createElement('div');
+
+    eventInfo.appendChild(task_list);
+
+    // If there are requests, create the request form
+    if(this.event.task_list.length > 0) {
+      let task_button = document.createElement('div');
+
+      let task_list_button = this.createTaskButton()
+
+      task_button.appendChild(task_list_button)
+      eventInfo.appendChild(task_button);
+
+      task_list_button.addEventListener('click', event => {
+      
+        eventInfo.removeChild(task_button);
+
+        let header = document.createElement('div')
+        header.innerHTML = "Select tasks"
+
+        task_list.appendChild(header);
+
+        let task_button_container = document.createElement('div');
+        task_button_container.className = "field is-grouped is-grouped-multiline";
+
+        let tasks = [];
+
+        for(let i in this.event.task_list) {
+          let task = document.createElement('p')
+          task.className = "control button is-small";
+          task.innerHTML = this.event.task_list[i];
+          task_button_container.appendChild(task);
+          tasks.push(task);
+        }
+
+        for(let i in tasks) {
+          tasks[i].addEventListener('click', event => {
+
+            if(!this.attendee_task_list.includes(tasks[i].innerHTML)) {
+              tasks[i].className = "control button is-primary is-small";
+              this.attendee_task_list.push(tasks[i].innerHTML)
+            } else {
+              tasks[i].className = "control button is-small task";
+              let loc = this.attendee_task_list.indexOf(tasks[i].innerHTML);
+              this.attendee_task_list.splice(loc,1)
+            }
+
+            console.log(this.attendee_task_list);
+          })
+        }
+        task_list.appendChild(task_button_container);
+    })
+
+    }
+
+    // Submit the form
+    let submit_button = document.createElement('div');
+    submit_button.className = "submit_container";
+    submit_button.appendChild(this.createSignupButton())
+
+    eventInfo.appendChild(submit_button);
 
     return eventInfo
   }
 }
+
 
 $(() => {
   let event_id = (new URLSearchParams(window.location.search)).get('id')
