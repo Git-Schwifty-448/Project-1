@@ -279,17 +279,7 @@ $(() => {
       times: slot_adder.getTimes()
     }
 
-    console.log(payload)
-
-    // for (let i of ['title', 'name', 'date']) {
-    //   if (!payload[i.replace('name','owner').replace('title','name')]) {
-    //     alert("You need to enter a "+i+"!")
-    //     return
-    //   }
-    // }
-    // if (!payload.times.length) {
-    //   payload.times = Array.from({length: 48}).map((_,i)=>i)
-    // }
+    console.log(payload);
 
     fetch("/api/events/new/", {
       headers: {'Content-Type': 'application/json'},
