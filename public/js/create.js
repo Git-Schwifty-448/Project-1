@@ -143,32 +143,32 @@ export class SlotAdder {
  */
 export class RSlot {
 
-  constructor(id) {
+  constructor(id, parent) {
     this.identifier = id
 
-	// generate html
-	this.request_div = document.createElement('div');
+    // generate html
+    this.request_div = document.createElement('div');
     this.request_input = document.createElement('input');
     this.request_input.className = "request input " + id;
-	this.request_button = document.createElement('button')
-	this.request_button.innerHTML = 'X'
-	this.request_button.className = 'button'
-	this.request_button.addEventListener('click', event => {
-		this.request_div.parentNode.removeChild(this.request_div)
-	})
+    this.request_button = document.createElement('button')
+    this.request_button.innerHTML = 'X'
+    this.request_button.className = 'button'
+    this.request_button.addEventListener('click', event => {
+      parent.deleteRequest(this);
+      this.request_div.parentNode.removeChild(this.request_div);
+	  })
 
-	//input and button each get their own div
-	this.request_input_div = document.createElement('div');
-	this.request_input_div.style.float = 'left'
-	this.request_input_div.style.width = '88%'
-	this.request_input_div.appendChild(this.request_input)
-	this.request_button_div = document.createElement('div');
-	this.request_button_div.style.float = 'right'
-	this.request_button_div.appendChild(this.request_button)
+  	//input and button each get their own div
+  	this.request_input_div = document.createElement('div');
+  	this.request_input_div.style.float = 'left'
+  	this.request_input_div.style.width = '88%'
+  	this.request_input_div.appendChild(this.request_input)
+  	this.request_button_div = document.createElement('div');
+  	this.request_button_div.style.float = 'right'
+  	this.request_button_div.appendChild(this.request_button)
 
-
-	this.request_div.appendChild(this.request_input_div)
-	this.request_div.appendChild(this.request_button_div)
+    this.request_div.appendChild(this.request_input_div)
+    this.request_div.appendChild(this.request_button_div)
   }
 
   /**
@@ -177,6 +177,11 @@ export class RSlot {
    */
   getSlotGroup() {
     return this.request_div
+  }
+
+  getValue() {
+    alert(this.request_input.value);
+    return this.request_input.value;
   }
 
 }
@@ -205,12 +210,16 @@ export class RSlotAdder {
     button.className = "button"
     button.innerHTML = 'Add a Request'
     button.addEventListener('click', event => {
-      let slot = new RSlot(this.identifier_prefix+this.identifier_number)
+      let slot = new RSlot(this.identifier_prefix+this.identifier_number, this);
       this.identifier_number++;
       this.slots.push(slot)
       $('.r_slots')[0].appendChild(slot.getSlotGroup())
     })
     return button
+  }
+
+  deleteRequest(request) {
+    this.slots.splice(this.slots.indexOf(request), 1);
   }
 
   /**
@@ -221,8 +230,7 @@ export class RSlotAdder {
     let requests = []
 
     for(let i = 0; i < this.slots.length; i++){
-      let class_name = '.req' + i
-      requests.push($(class_name)[0].value)
+      requests.push(this.slots[i].getValue());
     }
     return(requests)
   }
