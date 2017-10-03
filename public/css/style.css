@@ -1,3 +1,4 @@
+
 .submit_container {
   text-align: right;
 }
@@ -92,14 +93,14 @@ input[type="checkbox"]:checked:after {
   color: green;
   font-size: 12px;
 }
-.tabs {
+/* .tabs {
   position: fixed;
   z-index: 1000;
   background: white;
   width: 100%;
-}
+} */
 div.below-navbar {
-  padding-top: 80px;
+  padding-top: 40px;
 }
 .tabs li a {
   padding: 1em 1em;

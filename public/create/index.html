@@ -11,16 +11,20 @@
   <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.6.1/css/pikaday.css">
 </head>
 <body>
-  <div class="tabs">
-    <ul>
-      <li><big><big><b>Event Planner</b></big></big></li>
-      <li class="is-active"><a>Create an Event</a></li>
-      <li><a href="/events/">Event List</a></li>
-      <li class="navbar-end"><a href="https://github.com/Team-A-Prime/Project-1">
-        <img class="github-image" src="/img/gh.png" alt="Github">
-      </a></li>
-    </ul>
-  </div>
+  <nav class="navbar is-warning">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+         <div class="title">Event Planner</div>
+        </a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item is-active" href="/create/">Create Event</a>
+            <a class="navbar-item " href="/events/">Current Events</a>
+        </div>
+      </div>
+    </nav>
+
   <div class="below-navbar admin_page column is-half is-offset-one-quarter">
     <h1 class="title">Create an Event</h1>
     <div class="content_card box">
@@ -63,7 +67,7 @@
       <div class="t_slots field"></div>
       <div class="slot_button_wrap"></div>
       <div class="submit_container">
-        <button class="submit button is-primary">Submit</button>
+        <button class="submit button is-dark">Submit</button>
       </div>
     </div>
   </div>

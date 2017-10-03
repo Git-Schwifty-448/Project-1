@@ -279,8 +279,6 @@ $(() => {
       times: slot_adder.getTimes()
     }
 
-    console.log(payload);
-
     fetch("/api/events/new/", {
       headers: {'Content-Type': 'application/json'},
       method: "POST",

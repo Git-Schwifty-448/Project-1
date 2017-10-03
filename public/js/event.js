@@ -1,5 +1,6 @@
 import $ from '/js/init.js'
 import Calendar from '/js/calendar.js'
+
 /**
  * Class for Event Page methods
  */
@@ -38,7 +39,6 @@ export class EventPage {
     tr.appendChild(th)
 
     // CREATE TABLE HEADER INFORMATION
-
     for(let i = 0; i < this.event.times.length; i++) {
       for (let k = 0; k<this.event.times[i].length; k++) {
         if(k == 0 && i == 0 || k == 1 && i != 0 ) {
@@ -71,7 +71,6 @@ export class EventPage {
     table.appendChild(tbody)
 
     // CREATE EACH ATTENDEE ROW WITH ATTENDANCE INFORMATION
-
     for (let j = 0; j < this.event.attendees.length; j++) {
 
       let tr = document.createElement('tr')
@@ -109,7 +108,6 @@ export class EventPage {
     }
 
     // CREATE SPACER ROW
-
     let str = document.createElement('tr');
     let std = document.createElement('td');
 
@@ -121,7 +119,6 @@ export class EventPage {
     tbody.appendChild(str)
 
     // SET UP REGISTRATION DATA
-
     let utr = document.createElement('tr')
     utr.className = 'user-tr'
     let utd = document.createElement('td')
@@ -187,7 +184,6 @@ export class EventPage {
     return t_cont
   }
 
-
   /**
    * Creates the Register button
    * @return {Element} button for registering a new attendee
@@ -195,7 +191,7 @@ export class EventPage {
   createSignupButton() {
     let button = document.createElement('button')
     button.innerHTML = 'Register'
-    button.className = 'submit button is-primary'
+    button.className = 'submit button is-dark'
 
     button.addEventListener('click', event => {
 
@@ -205,16 +201,12 @@ export class EventPage {
 
       payload.name = this.name.value
       payload.times = [Array.from($('input[type="checkbox"][value]:checked')).map(el => +el.value)]
+      payload.attendee_task_list = this.attendee_task_list;
+      payload.new_event_task_list = this.event.task_list.filter(x => this.attendee_task_list.indexOf(x) == -1);
       if (!payload.name) {
         alert("You must enter your name!")
         return
       }
-
-      payload.attendee_task_list = this.attendee_task_list;
-      payload.new_event_task_list = this.event.task_list.filter(x => this.attendee_task_list.indexOf(x) == -1);
-
-
-      console.log(payload);
       fetch('/api/events/register/', {
         headers: {'Content-Type': 'application/json'},
         method: "POST",
@@ -241,26 +233,21 @@ export class EventPage {
     return button
   }
 
-
   /**
    * Creates a div that contains the Attendee table and Register Button
    * @return {Element} div containing page contents
    */
   createEventInfo() {
     let eventInfo = document.createElement('div')
-
     eventInfo.appendChild(this.createAttendeeTable())
 
     let task_list = document.createElement('div');
-
     eventInfo.appendChild(task_list);
 
     // If there are requests, create the request form
     if(this.event.task_list.length > 0 && this.event.task_list[0].length > 1) {
       let task_button = document.createElement('div');
-
       let task_list_button = this.createTaskButton()
-
       task_button.appendChild(task_list_button)
       eventInfo.appendChild(task_button);
 
@@ -286,7 +273,7 @@ export class EventPage {
           tasks[i].addEventListener('click', event => {
 
             if(!this.attendee_task_list.includes(tasks[i].innerHTML)) {
-              tasks[i].className = "control button is-primary is-small";
+              tasks[i].className = "control button is-dark is-small";
               this.attendee_task_list.push(tasks[i].innerHTML)
             } else {
               tasks[i].className = "control button is-small task";
@@ -313,7 +300,7 @@ export class EventPage {
     eventInfo.appendChild(task_table);
 
     let info_tab = document.createElement('div');
-    info_tab.innerHTML = "<a>Clear here to see what people are already bringing</a>";
+    info_tab.innerHTML = "<a class='has-text-grey-light'>Clear here to see what people are already bringing</a>";
     eventInfo.appendChild(info_tab)
 
     info_tab.addEventListener( "click", event => {
@@ -339,31 +326,33 @@ export class EventPage {
         let ttd = document.createElement('td')
         
         if(this.event.attendees[i].task_list == undefined || this.event.attendees[i].task_list == "") {
-          ttd.innerHTML = "-"
+          ttd.innerHTML = "&nbsp;-"
         } else {
           ttd.innerHTML = this.event.attendees[i].task_list
         }
         ttd.style.width = "70%"
         task_list_table.appendChild(atr)
 
+        // style the table
         if (i % 2 == 0){
-          atd.style.backgroundColor = "#eeeeee"
-          atr.style.backgroundColor = "#eeeeee"
+          atd.style.backgroundColor = "#fcfcfc"
+          atr.style.backgroundColor = "#fcfcfc"
         }
+        atd.style.borderWidth = "1px";
+        atd.style.borderColor = "#fff";
+        atd.style.borderStyle = "solid";
+        ttd.style.borderWidth = "1px";
+        ttd.style.borderColor = "#fff";
+        ttd.style.borderStyle = "solid";
         
         atr.appendChild(atd)
         atr.appendChild(ttd)
       }
-
-
       task_table.appendChild(task_list_table)
-
     })
-
     return eventInfo
   }
 }
-
 
 $(() => {
   let event_id = (new URLSearchParams(window.location.search)).get('id')
@@ -373,9 +362,9 @@ $(() => {
       return
     }
     let event_page = new EventPage(event)
-    $('h1.title')[0].appendChild(document.createTextNode(event.name))
+    $('h1.titleext')[0].appendChild(document.createTextNode(event.name))
     $('h2.event_date')[0].appendChild(document.createTextNode("Starting " + event.dates[0]))
-    $('h2.subtitle')[0].appendChild(document.createTextNode(event.description))
+    $('h2.subtitleext')[0].appendChild(document.createTextNode(event.description))
     $('.content_card')[0].appendChild(event_page.createEventInfo(event))
   })
 })
