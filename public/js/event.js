@@ -13,9 +13,7 @@ export class EventPage {
     this.event.attendees = JSON.parse(this.event.attendees);
     this.event.dates = JSON.parse(this.event.dates);
     this.event.times = JSON.parse(this.event.times);
-
     this.event.task_list = this.event.task_list.split(',');
-
     this.attendee_task_list = [];
   }
 
@@ -35,12 +33,9 @@ export class EventPage {
     let date_cell = document.createElement('th')
     date_row.appendChild(date_cell);
 
-
-
     let tr = document.createElement('tr')
     let th = document.createElement('th')
     tr.appendChild(th)
-
 
     // CREATE TABLE HEADER INFORMATION
 
@@ -48,10 +43,14 @@ export class EventPage {
       for (let k = 0; k<this.event.times[i].length; k++) {
         if(k == 0 && i == 0 || k == 1 && i != 0 ) {
           let date_cell = document.createElement('th')
+          date_cell.setAttribute("colspan",this.event.times[i].length)
           date_cell.innerHTML = (this.event.dates[i])
+          date_cell.style.textAlign = 'left';
+          date_cell.style.fontWeight = 'bold'
           date_row.appendChild(date_cell)  
-        } else {
+        } else if( k == 0 ) {
           let date_cell = document.createElement('th')
+          date_cell.style.width = '10px';
           date_row.appendChild(date_cell)  
         }
 
@@ -78,10 +77,10 @@ export class EventPage {
       let tr = document.createElement('tr')
       let name = document.createElement('td')
 
-      console.log(this.event.attendees[j].name)
       if (this.event.attendees[j].name == this.event.attendees[0].name) {
         name.className = "owner"
       }
+
       name.appendChild(document.createTextNode(this.event.attendees[j].name))
       tr.appendChild(name)
       
@@ -113,7 +112,6 @@ export class EventPage {
 
     let str = document.createElement('tr');
     let std = document.createElement('td');
-
 
     std.appendChild(document.createElement('br'));
     std.appendChild(document.createTextNode("Sign Up"));
@@ -198,9 +196,6 @@ export class EventPage {
     let button = document.createElement('button')
     button.innerHTML = 'Register'
     button.className = 'submit button is-primary'
-    console.log(this.event)
-    console.log(this.event.attendees);
-    console.log(this.event.uid)
 
     button.addEventListener('click', event => {
 
@@ -261,7 +256,7 @@ export class EventPage {
     eventInfo.appendChild(task_list);
 
     // If there are requests, create the request form
-    if(this.event.task_list.length > 0) {
+    if(this.event.task_list.length > 0 && this.event.task_list[0].length > 1) {
       let task_button = document.createElement('div');
 
       let task_list_button = this.createTaskButton()
@@ -270,17 +265,13 @@ export class EventPage {
       eventInfo.appendChild(task_button);
 
       task_list_button.addEventListener('click', event => {
-      
         eventInfo.removeChild(task_button);
-
         let header = document.createElement('div')
         header.innerHTML = "Select tasks"
-
         task_list.appendChild(header);
 
         let task_button_container = document.createElement('div');
         task_button_container.className = "field is-grouped is-grouped-multiline";
-
         let tasks = [];
 
         for(let i in this.event.task_list) {
@@ -302,13 +293,13 @@ export class EventPage {
               let loc = this.attendee_task_list.indexOf(tasks[i].innerHTML);
               this.attendee_task_list.splice(loc,1)
             }
-
-            console.log(this.attendee_task_list);
           })
         }
         task_list.appendChild(task_button_container);
     })
 
+    } else {
+      eventInfo.appendChild(document.createTextNode("All requests have been met."))
     }
 
     // Submit the form
@@ -317,6 +308,57 @@ export class EventPage {
     submit_button.appendChild(this.createSignupButton())
 
     eventInfo.appendChild(submit_button);
+
+    let task_table = document.createElement('div');
+    eventInfo.appendChild(task_table);
+
+    let info_tab = document.createElement('div');
+    info_tab.innerHTML = "<a>Clear here to see what people are already bringing</a>";
+    eventInfo.appendChild(info_tab)
+
+    info_tab.addEventListener( "click", event => {
+      eventInfo.removeChild(info_tab);
+
+      let task_list_table = document.createElement('table')
+      task_list_table.style.width = "66%"
+      let tr = document.createElement('tr')
+      let td_attendee = document.createElement('td')
+      td_attendee.innerHTML = "Attendee"
+      td_attendee.style.fontWeight = "bold"
+      td_attendee.setAttribute("colspan",2)
+      tr.appendChild(td_attendee)
+      task_list_table.appendChild(tr)
+
+      for(let i in this.event.attendees) {
+
+        let atr = document.createElement('tr')
+        let atd = document.createElement('td')
+        atd.innerHTML = this.event.attendees[i].name
+        atd.style.width = "30%"
+        
+        let ttd = document.createElement('td')
+        
+        if(this.event.attendees[i].task_list == undefined || this.event.attendees[i].task_list == "") {
+          ttd.innerHTML = "-"
+        } else {
+          ttd.innerHTML = this.event.attendees[i].task_list
+        }
+        ttd.style.width = "70%"
+        task_list_table.appendChild(atr)
+
+        if (i % 2 == 0){
+          atd.style.backgroundColor = "#eeeeee"
+          atr.style.backgroundColor = "#eeeeee"
+        }
+        
+        atr.appendChild(atd)
+        atr.appendChild(ttd)
+      }
+
+
+      task_table.appendChild(task_list_table)
+
+    })
 
     return eventInfo
   }

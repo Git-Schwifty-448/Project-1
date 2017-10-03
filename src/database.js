@@ -29,7 +29,7 @@ function Database(path, callback) {
                               + "dates TEXT NOT NULL, "
                               + "times TEXT NOT NULL, "
                               + "task_list TEXT, "
-                              + "task_list_taken TEXT, "
+                              + "task_list_master TEXT, "
                               + "attendee_list TEXT "
                               + ");";
 
@@ -105,14 +105,15 @@ Database.prototype.read_event = function(uid, callback) {
     let obj   = this;
 
     this.db.each("SELECT * FROM tb_events WHERE uid = ? ;", [uid], function(err, row) {
-        event.uid           = uid;
-        event.name          = row.name;
-        event.description   = row.description;
-        event.task_list     = row.task_list;
-        event.dates         = row.dates;
-        event.times         = row.times;
-        event.attendees     = row.attendee_list;
-        event.owner         = row.owner;
+        event.uid               = uid;
+        event.name              = row.name;
+        event.description       = row.description;
+        event.task_list         = row.task_list;
+        event.task_list_master  = row.task_list_master
+        event.dates             = row.dates;
+        event.times             = row.times;
+        event.attendees         = row.attendee_list;
+        event.owner             = row.owner;
 
     }, function(err, rows) {
         if (rows != undefined && rows != 0) {
@@ -188,8 +189,8 @@ Database.prototype.write_event = function(event) {
 
     // Add the event to the event table
     obj.db.run(
-        "INSERT INTO tb_events (uid, name, description, owner, dates, times, task_list, attendee_list) VALUES ( ? , ? , ? , ? , ? , ? , ?, ?);",
-        [event.uid, event.name, event.description, event.owner, event.dates, event.times, event.task_list, event.attendees]
+        "INSERT INTO tb_events (uid, name, description, owner, dates, times, task_list, task_list_master, attendee_list) VALUES ( ? , ? , ? , ? , ? , ? , ?, ? , ?);",
+        [event.uid, event.name, event.description, event.owner, event.dates, event.times, event.task_list, event.task_list,event.attendees]
     );
 
 }; // end of function Database#write_event
