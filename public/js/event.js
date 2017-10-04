@@ -16,6 +16,7 @@ export class EventPage {
     this.event.times = JSON.parse(this.event.times);
     this.event.task_list = this.event.task_list.split(',');
     this.attendee_task_list = [];
+    let eventInfo = null
   }
 
   /**
@@ -215,11 +216,16 @@ export class EventPage {
 
       payload.name = this.name.value
       payload.times = time
-      // [Array.from($('input[type="checkbox"][value]:checked')).map(el => +el.value)]
       payload.attendee_task_list = this.attendee_task_list;
       payload.new_event_task_list = this.event.task_list.filter(x => this.attendee_task_list.indexOf(x) == -1);
       if (!payload.name) {
-        alert("You must enter your name!")
+        this.createErrorModal(this.eventInfo,"You must enter a name.")
+        return
+      }
+      if (payload.times.every( (day_array) => {
+        if (day_array.length == 0) { return(true) }
+      })) {
+        this.createErrorModal(this.eventInfo,"You must choose at least one time.")
         return
       }
 
@@ -251,77 +257,18 @@ export class EventPage {
   }
 
   /**
-   * Creates a div that contains the Attendee table and Register Button
-   * @return {Element} div containing page contents
+   * Creates the modal with the table of registered guests
+   * @param {div} div an html div object that gives place to insert the modal
    */
-  createEventInfo() {
-    let eventInfo = document.createElement('div')
-    eventInfo.appendChild(this.createAttendeeTable())
-
-    let task_list = document.createElement('div');
-    eventInfo.appendChild(task_list);
-
-    // If there are requests, create the request form
-    if(this.event.task_list.length > 0 && this.event.task_list[0].length > 1) {
-      let task_button = document.createElement('div');
-      let task_list_button = this.createTaskButton()
-      task_button.appendChild(task_list_button)
-      eventInfo.appendChild(task_button);
-
-      task_list_button.addEventListener('click', event => {
-        eventInfo.removeChild(task_button);
-        let header = document.createElement('div')
-        header.innerHTML = "Select tasks"
-        task_list.appendChild(header);
-
-        let task_button_container = document.createElement('div');
-        task_button_container.className = "field is-grouped is-grouped-multiline";
-        let tasks = [];
-
-        for(let i in this.event.task_list) {
-          let task = document.createElement('p')
-          task.className = "control button is-small";
-          task.innerHTML = this.event.task_list[i];
-          task_button_container.appendChild(task);
-          tasks.push(task);
-        }
-
-        for(let i in tasks) {
-          tasks[i].addEventListener('click', event => {
-
-            if(!this.attendee_task_list.includes(tasks[i].innerHTML)) {
-              tasks[i].className = "control button is-dark is-small";
-              this.attendee_task_list.push(tasks[i].innerHTML)
-            } else {
-              tasks[i].className = "control button is-small task";
-              let loc = this.attendee_task_list.indexOf(tasks[i].innerHTML);
-              this.attendee_task_list.splice(loc,1)
-            }
-          })
-        }
-        task_list.appendChild(task_button_container);
-    })
-
-    } else {
-      eventInfo.appendChild(document.createTextNode("All requests have been met."))
-    }
-
-    // Submit the form
-    let submit_button = document.createElement('div');
-    submit_button.className = "submit_container";
-    submit_button.appendChild(this.createSignupButton())
-
-    eventInfo.appendChild(submit_button);
-
+  createModal(div) {
     let task_table = document.createElement('div');
-    eventInfo.appendChild(task_table);
+    div.appendChild(task_table);
 
     let info_tab = document.createElement('div');
     info_tab.innerHTML = "<a class='has-text-grey-light'>Clear here to see what people are already bringing</a>";
-    eventInfo.appendChild(info_tab)
+    div.appendChild(info_tab)
 
     info_tab.addEventListener( "click", event => {
-
       let modal = document.createElement('div')
       modal.className = "modal"
 
@@ -345,7 +292,6 @@ export class EventPage {
       modal_content.appendChild(subheader)
 
       let task_list_table = document.createElement('table')
-      // task_list_table.style.border = "1px solid #0f0f0f"
       task_list_table.style.width = "100%"
       let tr = document.createElement('tr')
       let td_attendee = document.createElement('td')
@@ -400,14 +346,140 @@ export class EventPage {
 
       modal.appendChild(modal_background)
       modal_content.appendChild(task_list_table)
-
+      modal_content.appendChild(modal_close)
       modal.appendChild(modal_content)
-      modal.appendChild(modal_close)
       
       modal.className = "modal is-active"
       task_table.appendChild(modal)
     })
-    return eventInfo
+  }
+
+  /**
+   * Creates the modal with the table of registered guests
+   * @param {div} div an html div object that gives place to insert the modal
+   * @param {string} msg a string containing an error message to place in the modal
+   */
+  createErrorModal(div,msg) {
+    let task_table = document.createElement('div');
+    div.appendChild(task_table);
+
+    let info_tab = document.createElement('div');
+    div.appendChild(info_tab)
+
+      let modal = document.createElement('div')
+      modal.className = "modal"
+
+      let modal_background = document.createElement('div')
+      modal_background.className = "modal-background"
+
+      let modal_content = document.createElement('div')
+      modal_content.className = "modal-content"
+      modal_content.style.backgroundColor = "#fff"
+      modal_content.style.borderRadius="5px"
+      modal_content.style.padding = "2%"
+
+      let header = document.createElement('h1')
+      header.className = "title"
+      header.innerHTML = "Error"
+      modal_content.appendChild(header)
+
+      let subheader = document.createElement('h2')
+      subheader.className = "subtitle"
+      subheader.innerHTML = msg
+      modal_content.appendChild(subheader)
+
+    
+      let modal_close = document.createElement('a')
+      modal_close.className = "button is-warning"
+      modal_close.innerHTML = "Ok"
+
+      modal_close.addEventListener("click", event => {
+        modal.className = "modal"
+      })
+
+      modal.appendChild(modal_background)
+      modal_content.appendChild(modal_close)
+      modal.appendChild(modal_content)
+      
+      modal.className = "modal is-active"
+      task_table.appendChild(modal)
+  }
+
+
+  /**
+   * Create task requests
+   * @param {div} parentDiv an html div object to place the help out button
+   */
+  createTaskAdder(parentDiv) {
+    let task_list = document.createElement('div');
+    parentDiv.appendChild(task_list);
+
+    let task_button = document.createElement('div');
+    let task_list_button = this.createTaskButton()
+    task_button.appendChild(task_list_button)
+
+    parentDiv.appendChild(task_button);
+
+    task_list_button.addEventListener('click', event => {
+      parentDiv.removeChild(task_button);
+      let header = document.createElement('div')
+      header.innerHTML = "Select tasks"
+      task_list.appendChild(header);
+
+      let task_button_container = document.createElement('div');
+      task_button_container.className = "field is-grouped is-grouped-multiline";
+      let tasks = [];
+
+      for(let i in this.event.task_list) {
+        let task = document.createElement('p')
+        task.className = "control button is-small";
+        task.innerHTML = this.event.task_list[i];
+        task_button_container.appendChild(task);
+        tasks.push(task);
+      }
+
+      for(let i in tasks) {
+        tasks[i].addEventListener('click', event => {
+          if(!this.attendee_task_list.includes(tasks[i].innerHTML)) {
+            tasks[i].className = "control button is-dark is-small";
+            this.attendee_task_list.push(tasks[i].innerHTML)
+          } else {
+            tasks[i].className = "control button is-small task";
+            let loc = this.attendee_task_list.indexOf(tasks[i].innerHTML);
+            this.attendee_task_list.splice(loc,1)
+          }
+        })
+      }
+      task_list.appendChild(task_button_container);
+  })
+  }
+
+  /**
+   * Creates a div that contains the Attendee table, Register Button, and Task List information
+   * @return {Element} div containing page contents
+   */
+  createEventInfo() {
+    this.eventInfo = document.createElement('div')
+    this.eventInfo.appendChild(this.createAttendeeTable())
+
+    // If there are requests still needing assigned, create the button and list 
+    // else print that all requests have been met
+    if(this.event.task_list.length > 0 && this.event.task_list[0].length > 1) {
+      this.createTaskAdder(this.eventInfo);
+    } else {
+      this.eventInfo.appendChild(document.createTextNode("All requests have been met."))
+    }
+
+    // Registration Button
+    let submit_button = document.createElement('div');
+    submit_button.className = "submit_container";
+    submit_button.appendChild(this.createSignupButton())
+    this.eventInfo.appendChild(submit_button);
+
+    // Handle modal that holds which requests have been met by attendees
+    this.createModal(this.eventInfo)
+    
+    return this.eventInfo
   }
 }
 
