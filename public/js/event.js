@@ -321,14 +321,37 @@ export class EventPage {
     eventInfo.appendChild(info_tab)
 
     info_tab.addEventListener( "click", event => {
-      eventInfo.removeChild(info_tab);
+
+      let modal = document.createElement('div')
+      modal.className = "modal"
+
+      let modal_background = document.createElement('div')
+      modal_background.className = "modal-background"
+
+      let modal_content = document.createElement('div')
+      modal_content.className = "modal-content"
+      modal_content.style.backgroundColor = "#fff"
+      modal_content.style.borderRadius="5px"
+      modal_content.style.padding = "2%"
+
+      let header = document.createElement('h1')
+      header.className = "title"
+      header.innerHTML = this.event.name + " Guests"
+      modal_content.appendChild(header)
+
+      let subheader = document.createElement('h2')
+      subheader.className = "subtitle"
+      subheader.innerHTML = "Who is bringing what?"
+      modal_content.appendChild(subheader)
 
       let task_list_table = document.createElement('table')
-      task_list_table.style.width = "66%"
+      // task_list_table.style.border = "1px solid #0f0f0f"
+      task_list_table.style.width = "100%"
       let tr = document.createElement('tr')
       let td_attendee = document.createElement('td')
       td_attendee.innerHTML = "Attendee"
       td_attendee.style.fontWeight = "bold"
+      
       td_attendee.setAttribute("colspan",2)
       tr.appendChild(td_attendee)
       task_list_table.appendChild(tr)
@@ -352,9 +375,10 @@ export class EventPage {
 
         // style the table
         if (i % 2 == 0){
-          atd.style.backgroundColor = "#fcfcfc"
-          atr.style.backgroundColor = "#fcfcfc"
+          atd.style.backgroundColor = "#f0f0f0"
+          atr.style.backgroundColor = "#f0f0f0"
         }
+
         atd.style.borderWidth = "1px";
         atd.style.borderColor = "#fff";
         atd.style.borderStyle = "solid";
@@ -365,7 +389,23 @@ export class EventPage {
         atr.appendChild(atd)
         atr.appendChild(ttd)
       }
-      task_table.appendChild(task_list_table)
+
+      let modal_close = document.createElement('button')
+      modal_close.className = "modal-close is-large"
+      modal_close.setAttribute("aria-label","close")
+
+      modal_close.addEventListener("click", event => {
+        modal.className = "modal"
+      })
+
+      modal.appendChild(modal_background)
+      modal_content.appendChild(task_list_table)
+
+      modal.appendChild(modal_content)
+      modal.appendChild(modal_close)
+      
+      modal.className = "modal is-active"
+      task_table.appendChild(modal)
     })
     return eventInfo
   }

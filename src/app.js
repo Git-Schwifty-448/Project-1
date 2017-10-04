@@ -48,14 +48,12 @@ const Attendee      = require('./attendee.js');
 
     // API for creating a new event
     app.post('/api/events/new', function(req, res) {  
-        // Create the Owner
         let owner         = new Attendee();
         owner.uid         = owner.hash().substr(0,11);
         owner.name        = req.body.owner;
         owner.times       = [req.body.times];
         owner.task_list   = JSON.stringify(req.body.owner.task_list);
 
-        // Create the event
         let event         = new Event();
         event.name        = req.body.name;
         event.description = req.body.description;
@@ -83,13 +81,8 @@ const Attendee      = require('./attendee.js');
 
         let event_uid           = req.body.event_uid;
         let task_list           = req.body.new_event_task_list 
-        // let attendees           = attendee
         let attendees           = req.body.all_attendees
         attendees.push(attendee);
-
-        // for(let i = 0; i < attendees.length; i++){
-        //     attendees[i] = JSON.stringify(attendees[i]);
-        // }
     
         database.register(event_uid, task_list, JSON.stringify(attendees));
 
