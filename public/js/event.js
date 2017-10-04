@@ -142,7 +142,8 @@ export class EventPage {
         let td = document.createElement('td')
         let checkbox = document.createElement('input')
         checkbox.type = 'checkbox'
-        checkbox.value = this.event.times[i][k]
+        checkbox.value = i + "," + this.event.times[i][k]
+        checkbox.setAttribute("Day",i)
         td.appendChild(checkbox)
         utr.appendChild(td)
 
@@ -195,18 +196,34 @@ export class EventPage {
 
     button.addEventListener('click', event => {
 
+      let unprocessed_times = Array.from($('input[type="checkbox"][value]:checked')).map(el => el.value)
+      let time = []
+
+      for(let i in this.event.dates) {
+        time[i] = []
+      }
+
+      for(let i in unprocessed_times) {
+        unprocessed_times[i] = unprocessed_times[i].split(',')
+        time[unprocessed_times[i][0]].push(parseInt(unprocessed_times[i][1]))
+      }
+
+
       let payload = {}
       payload.event_uid = this.event.uid
       payload.all_attendees = this.event.attendees;
 
       payload.name = this.name.value
-      payload.times = [Array.from($('input[type="checkbox"][value]:checked')).map(el => +el.value)]
+      payload.times = time
+      // [Array.from($('input[type="checkbox"][value]:checked')).map(el => +el.value)]
       payload.attendee_task_list = this.attendee_task_list;
       payload.new_event_task_list = this.event.task_list.filter(x => this.attendee_task_list.indexOf(x) == -1);
       if (!payload.name) {
         alert("You must enter your name!")
         return
       }
+
+      console.log(payload);
       fetch('/api/events/register/', {
         headers: {'Content-Type': 'application/json'},
         method: "POST",

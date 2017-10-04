@@ -37,7 +37,7 @@ input[type="checkbox"] {
   height: 40px;
   -webkit-appearance: unset;
   appearance: unset;
-  background: #feedea;
+  background: hsl(0, 0%, 96%);
   margin: 0px 0.5px -5px;
   outline: none;
 }
