@@ -283,7 +283,7 @@ export class EventPage {
 
       let header = document.createElement('h1')
       header.className = "title"
-      header.innerHTML = this.event.name + " Guests"
+      header.textContent = this.event.name + " Guests"
       modal_content.appendChild(header)
 
       let subheader = document.createElement('h2')
@@ -306,7 +306,7 @@ export class EventPage {
 
         let atr = document.createElement('tr')
         let atd = document.createElement('td')
-        atd.innerHTML = this.event.attendees[i].name
+        atd.textContent = this.event.attendees[i].name
         atd.style.width = "30%"
         
         let ttd = document.createElement('td')
@@ -314,7 +314,7 @@ export class EventPage {
         if(this.event.attendees[i].task_list == undefined || this.event.attendees[i].task_list == "") {
           ttd.innerHTML = "&nbsp;-"
         } else {
-          ttd.innerHTML = this.event.attendees[i].task_list
+          ttd.textContent = this.event.attendees[i].task_list
         }
         ttd.style.width = "70%"
         task_list_table.appendChild(atr)
@@ -433,7 +433,7 @@ export class EventPage {
       for(let i in this.event.task_list) {
         let task = document.createElement('p')
         task.className = "control button is-small";
-        task.innerHTML = this.event.task_list[i];
+        task.textContent = this.event.task_list[i];
         task_button_container.appendChild(task);
         tasks.push(task);
       }
