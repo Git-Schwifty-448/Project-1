@@ -111,7 +111,6 @@ export class EventPage {
 		// NOT ENTIRELY SURE THAT THE PARTICIPANTS ROW IS NECCESSARY
 		// KNOWN BUG: The participants map in the commented code below does not work
 
-
 		/*
 		let ttr = document.createElement('tr')
 		let ttd = document.createElement('td')
@@ -469,7 +468,11 @@ export class EventPage {
 		if (this.event.task_list.length > 0 && this.event.task_list[0].length > 1) {
 			this.createTaskAdder(this.eventInfo);
 		} else {
-			this.eventInfo.appendChild(document.createTextNode("All requests have been met."))
+			if(this.event.task_list_master.length == 0) {
+				this.eventInfo.appendChild(document.createTextNode("There are no requests from the event creator."))
+			} else {
+				this.eventInfo.appendChild(document.createTextNode("All requests have been met."))
+			}
 		}
 
 		// Registration Button
