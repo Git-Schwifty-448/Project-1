@@ -349,6 +349,7 @@ export class SlotAdder {
  */
 export class RSlot {
 
+<<<<<<< HEAD
     constructor(id, parent) {
         this.identifier = id
 
@@ -389,6 +390,48 @@ export class RSlot {
     getValue() {
         return this.request_input.value;
     }
+=======
+  constructor(id, parent) {
+    this.identifier = id
+
+    // generate html
+    this.request_div = document.createElement('div');
+    this.request_input = document.createElement('input');
+    this.request_input.className = "request input " + id;
+    this.request_button = document.createElement('button')
+    this.request_button.innerHTML = 'X'
+    this.request_button.className = 'button is-danger is-outlined'
+    this.request_button.addEventListener('click', event => {
+      parent.deleteRequest(this);
+      this.request_div.parentNode.removeChild(this.request_div);
+	  })
+
+  	//input and button each get their own div
+  	this.request_input_div = document.createElement('div');
+  	this.request_input_div.style.float = 'left'
+  	this.request_input_div.style.width = '88%'
+  	this.request_input_div.appendChild(this.request_input)
+  	this.request_button_div = document.createElement('div');
+  	this.request_button_div.style.float = 'right'
+  	this.request_button_div.appendChild(this.request_button)
+
+    this.request_div.appendChild(this.request_input_div)
+    this.request_div.appendChild(this.request_button_div)
+  }
+
+  /**
+   * Get element that stores the request
+   * @ret {Element} Element that stores requests
+   */
+  getSlotGroup() {
+    return this.request_div
+  }
+
+  getValue() {
+    alert(this.request_input.value);
+    return this.request_input.value;
+  }
+>>>>>>> fdc3c35223e34321495f4df75dbd1667d008051c
 
 }
 
