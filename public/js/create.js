@@ -1,10 +1,11 @@
 import $ from '/js/init.js'
 import Calendar from '/js/calendar.js'
 
+//Pragma mark = CreateMain
+
 export class Day {
 
     constructor() {
-        this.test = "test"
         this.slot_adder = new SlotAdder()
         this.date_input_field = undefined
         this.id = 0
@@ -107,9 +108,7 @@ export class Day {
         let times = this.slot_adder.getTimes()
         return [date, times]
     }
-
 }
-
 
 export class DayAdder {
     /**
@@ -165,7 +164,7 @@ export class DayAdder {
     }
 }
 
-/**
+/*
  * Class for creating time slots
  */
 export class Slot {
@@ -260,7 +259,7 @@ export class Slot {
     }
 }
 
-/**
+/*
  * Class for managing button that adds time slots
  */
 export class SlotAdder {
@@ -345,9 +344,7 @@ export class SlotAdder {
     }
 }
 
-
-
-/**
+/*
  * Class for creating request slots
  */
 export class RSlot {
@@ -395,7 +392,7 @@ export class RSlot {
 
 }
 
-/**
+/*
  * Class for managing button that adds request slots
  * and returning the strings of requests entered by the user
  */
@@ -498,6 +495,10 @@ export class Error {
     }
 
 }
+
+/*
+ * pragma mark = CreateMain
+ */
 
 $(() => {
     // let slot_adder = new SlotAdder()
