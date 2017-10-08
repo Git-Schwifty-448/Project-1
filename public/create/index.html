@@ -1,72 +1,73 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Create An Event - Event Scheduler (EECS 448 Project 1) by Team A'</title>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.6.1/pikaday.js"></script>
-  <script type="module" src="/js/init.js"></script>
-  <script type="module" src="/js/calendar.js"></script>
-  <script type="module" src="/js/create.js"></script>
-  <link type="text/css" rel="stylesheet" href="/css/style.css">
-  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.2/css/bulma.css">
-  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.6.1/css/pikaday.css">
-</head>
-<body>
-    <nav class="navbar is-warning is-active">
-        <div class="navbar-brand">
-          <a class="navbar-item" href="/">
-            <div class="title">Event Planner</div>
-          </a>
-          <a class="navbar-item is-active" href="/create/">Create Event</a>
-          <a class="navbar-item" href="/events/">Current Events</a>
-          <a class="navbar-item" href="/about/">About</a>
-        </div>
-      </nav>
 
-  <div class="below-navbar admin_page column is-half is-offset-one-quarter">
-    <h1 class="title">Create an Event</h1>
-    <div class="content_card box">
-      <div class="field">
-        <label class="label">Title</label>
-        <input class="intitle input"><br>
-      </div>
-      <div class="field">
-        <label class="label">Description</label>
-        <input class="description input"><br>
-      </div>
-      <div class="field">
-        <label class="label">Add Guest Requests</label>
-        <div class="r_slots field"></div>
-        <div class="rslot_button_wrap"></div>
-      </div>
-      <div class="field">
-        <label class="label">Your Name</label>
-        <input class="name input"><br>
-      </div>
-      <div class="field">
-        <label class="label">Date</label>
-        <div class="field has-addons">
-          <div class="control"><input class="date input" disabled></div>
-          <div class="control"><button id="date_picker" class="button">Choose Date</button></div>
-        </div>
-      </div>
-      <div class="field">
-        <label class="label">Time Format</label>
-        <div class="field">
-          <button value="12" class="button is12 is-info">
-            12 Hour
-          </button>
-          <button value="24" class="button is24">
-            24 Hour
-          </button>
-        </div>
-      </div>
-      <label class="label">Time</label>
-      <div class="t_slots field"></div>
-      <div class="slot_button_wrap"></div>
-      <div class="submit_container">
-        <button class="submit button is-dark">Submit</button>
-      </div>
-    </div>
-  </div>
+<head>
+	<title>Create An Event - Event Scheduler (EECS 448 Project 1) by Team A'</title>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.6.1/pikaday.js"></script>
+	<script type="module" src="/js/init.js"></script>
+	<script type="module" src="/js/calendar.js"></script>
+	<script type="module" src="/js/create.js"></script>
+	<link type="text/css" rel="stylesheet" href="/css/style.css">
+	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.2/css/bulma.css">
+	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.6.1/css/pikaday.css">
+</head>
+
+<body>
+	<nav class="navbar is-warning is-active">
+		<div class="navbar-brand">
+			<a class="navbar-item" href="/">
+				<div class="title">Event Planner</div>
+			</a>
+			<a class="navbar-item is-active" href="/create/">Create Event</a>
+			<a class="navbar-item" href="/events/">Current Events</a>
+			<a class="navbar-item" href="/about/">About</a>
+		</div>
+	</nav>
+
+	<div class="below-navbar admin_page column is-half is-offset-one-quarter">
+		<h1 class="title">Create an Event</h1>
+		<div class="content_card box">
+			<div class="field">
+				<label class="label">Title</label>
+				<input class="intitle input">
+				<br>
+			</div>
+			<div class="field">
+				<label class="label">Description</label>
+				<input class="description input">
+				<br>
+			</div>
+			<div class="field">
+				<label class="label">Add Guest Requests</label>
+				<div class="r_slots field"></div>
+				<div class="rslot_button_wrap"></div>
+			</div>
+			<div class="field">
+				<label class="label">Your Name</label>
+				<input class="name input">
+				<br>
+			</div>
+			<div class="field">
+				<label class="label">Time Format</label>
+				<div class="field">
+					<button value="12" class="button is12 is-info">
+						12 Hour
+					</button>
+					<button value="24" class="button is24">
+						24 Hour
+					</button>
+				</div>
+			</div>
+
+			<div class="dates"></div>
+			<div class="dates_button"></div>
+			<div class="error_container"></div>
+
+			<div class="submit_container">
+				<button class="submit button is-dark">Submit</button>
+			</div>
+		</div>
+	</div>
 </body>
+
 </html>
