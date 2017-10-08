@@ -21,15 +21,15 @@ var crypto = require('crypto');
  * @return: an Event object
  */
 function Event() {
-    this.name               = "";
-    this.description        = "";
-    this.dates              = [];
-    this.times              = [];
-    this.task_list          = [];
-    this.task_list_master   = [];
-    this.owner              = "";
-    this.attendees          = [];
-    this.uid                = "";
+	this.name = "";
+	this.description = "";
+	this.dates = [];
+	this.times = [];
+	this.task_list = [];
+	this.task_list_master = [];
+	this.owner = "";
+	this.attendees = [];
+	this.uid = "";
 } // end of function Event
 
 /**
@@ -38,13 +38,13 @@ function Event() {
  * @post: nothing
  * @return: a sha256 hash unique to the event name and time, randomly nonced
  */
-Event.prototype.hash = function() {
-    let sha256 = crypto.createHash('sha256');
-    sha256.update(this.name);
-    sha256.update(this.description);
-    sha256.update("" + (Math.random() * Math.pow(2, 32))); // nonce
+Event.prototype.hash = function () {
+	let sha256 = crypto.createHash('sha256');
+	sha256.update(this.name);
+	sha256.update(this.description);
+	sha256.update("" + (Math.random() * Math.pow(2, 32))); // nonce
 
-    return sha256.digest('hex');
+	return sha256.digest('hex');
 } // end of function Event#hash
 
 

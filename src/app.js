@@ -5,12 +5,12 @@
  * @brief: Initializationa nd entry point of the server
  */
 
-const express       = require('express');
-const bodyParser    = require('body-parser');
+const express = require('express');
+const bodyParser = require('body-parser');
 
-const Database      = require('./database.js');
-const Event         = require('./event.js');
-const Attendee      = require('./attendee.js');
+const Database = require('./database.js');
+const Event = require('./event.js');
+const Attendee = require('./attendee.js');
 
 /**
  * Anonymous main function
@@ -19,8 +19,8 @@ const Attendee      = require('./attendee.js');
  * @return: nothing
  */
 /* main */ (() => {
-    let app      = express();
-    let database = new Database('./storage/events.db', function() {
+    let app = express();
+    let database = new Database('./storage/events.db', function () {
         database.db.parallelize();
     });
     database.db.serialize();
@@ -34,69 +34,69 @@ const Attendee      = require('./attendee.js');
     app.use('/docs', express.static('./docs/public'))
 
     // API for getting the current list of events
-    app.get('/api/events', function(req, res) {
+    app.get('/api/events', function (req, res) {
         if (req.query.uid != undefined) {
-            database.read_event(req.query.uid, function(event) {
+            database.read_event(req.query.uid, function (event) {
                 res.send(JSON.stringify(event));
             });
         } else {
-            database.read_events(function(events) {
+            database.read_events(function (events) {
                 res.send(JSON.stringify(events));
             });
         }
     });
 
     // API for creating a new event
-    app.post('/api/events/new', function(req, res) {  
-        let owner         = new Attendee();
-        owner.uid         = owner.hash().substr(0,11);
-        owner.name        = req.body.owner;
-        owner.times       = [req.body.times];
-        owner.task_list   = JSON.stringify(req.body.owner.task_list);
+    app.post('/api/events/new', function (req, res) {
+        let owner = new Attendee();
+        owner.uid = owner.hash().substr(0, 11);
+        owner.name = req.body.owner;
+        owner.times = [req.body.times];
+        owner.task_list = JSON.stringify(req.body.owner.task_list);
 
-        let event         = new Event();
-        event.name        = req.body.name;
+        let event = new Event();
+        event.name = req.body.name;
         event.description = req.body.description;
-        event.dates       = JSON.stringify(req.body.dates);
-        event.task_list   = req.body.task_list.toString();
-        event.owner       = owner.name;
-        event.attendees   = JSON.stringify([owner]);
-        event.times       = JSON.stringify([req.body.times]);
-        event.uid         = event.hash().substr(0, 11);
+        event.dates = JSON.stringify(req.body.dates);
+        event.task_list = req.body.task_list.toString();
+        event.owner = owner.name;
+        event.attendees = JSON.stringify([owner]);
+        event.times = JSON.stringify([req.body.times]);
+        event.uid = event.hash().substr(0, 11);
 
         database.write_event(event);
 
-        res.status(200).json({status: "ok", uid: event.uid});
+        res.status(200).json({ status: "ok", uid: event.uid });
     });
 
     // API for adding a person to an event
-    app.post('/api/events/register', function(req, res) {
+    app.post('/api/events/register', function (req, res) {
 
 
-        let attendee            = new Attendee();
-        attendee.uid            = attendee.hash().substr(0, 11);
-        attendee.name           = req.body.name;
-        attendee.times          = req.body.times;
-        attendee.task_list      = req.body.attendee_task_list.toString();
+        let attendee = new Attendee();
+        attendee.uid = attendee.hash().substr(0, 11);
+        attendee.name = req.body.name;
+        attendee.times = req.body.times;
+        attendee.task_list = req.body.attendee_task_list.toString();
 
-        let event_uid           = req.body.event_uid;
-        let task_list           = req.body.new_event_task_list 
-        let attendees           = req.body.all_attendees
+        let event_uid = req.body.event_uid;
+        let task_list = req.body.new_event_task_list
+        let attendees = req.body.all_attendees
         attendees.push(attendee);
-    
+
         database.register(event_uid, task_list, JSON.stringify(attendees));
 
-        res.status(200).json({status: "ok"});
+        res.status(200).json({ status: "ok" });
     });
 
     // API for deleting an event
-    app.post('/api/events/delete', function(req, res) {
+    app.post('/api/events/delete', function (req, res) {
 
         if (req.body.uid != undefined) {
             database.delete_event(req.body.uid);
-            res.status(200).json({status: "ok"});
+            res.status(200).json({ status: "ok" });
         } else {
-            res.status(500).json({status: "no event uid sent!"});
+            res.status(500).json({ status: "no event uid sent!" });
         }
 
     });
