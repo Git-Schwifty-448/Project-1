@@ -609,16 +609,16 @@ $(() => {
             times: processed_days[1]
         }
 
-        // fetch("/api/events/new/", {
-        //  headers: { 'Content-Type': 'application/json' },
-        //  method: "POST",
-        //  body: JSON.stringify(payload)
-        // }).then(res => res.json()).then(res => {
-        //  if (res.status != "ok") {
-        //      alert("Could not contact server, please try again")
-        //      return
-        //  }
-        //  window.location.href = '/event/?id=' + res.uid
-        // })
+        fetch("/api/events/new/", {
+         headers: { 'Content-Type': 'application/json' },
+         method: "POST",
+         body: JSON.stringify(payload)
+        }).then(res => res.json()).then(res => {
+         if (res.status != "ok") {
+             alert("Could not contact server, please try again")
+             return
+         }
+         window.location.href = '/event/?id=' + res.uid
+        })
     })
 })
