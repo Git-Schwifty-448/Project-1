@@ -12,6 +12,24 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
+    "project-1/js/create.js~day",
+    "class/js/create.js~Day.html",
+    "<span>Day</span> <span class=\"search-result-import-path\">Project-1/js/create.js</span>",
+    "class"
+  ],
+  [
+    "project-1/js/create.js~dayadder",
+    "class/js/create.js~DayAdder.html",
+    "<span>DayAdder</span> <span class=\"search-result-import-path\">Project-1/js/create.js</span>",
+    "class"
+  ],
+  [
+    "project-1/js/create.js~error",
+    "class/js/create.js~Error.html",
+    "<span>Error</span> <span class=\"search-result-import-path\">Project-1/js/create.js</span>",
+    "class"
+  ],
+  [
     "project-1/js/event.js~eventpage",
     "class/js/event.js~EventPage.html",
     "<span>EventPage</span> <span class=\"search-result-import-path\">Project-1/js/event.js</span>",
@@ -348,6 +366,108 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
+    "js/create.js~day#constructor",
+    "class/js/create.js~Day.html#instance-constructor-constructor",
+    "js/create.js~Day#constructor",
+    "method"
+  ],
+  [
+    "js/create.js~day#copy",
+    "class/js/create.js~Day.html#instance-member-copy",
+    "js/create.js~Day#copy",
+    "member"
+  ],
+  [
+    "js/create.js~day#create",
+    "class/js/create.js~Day.html#instance-method-create",
+    "js/create.js~Day#create",
+    "method"
+  ],
+  [
+    "js/create.js~day#date_div",
+    "class/js/create.js~Day.html#instance-method-date_div",
+    "js/create.js~Day#date_div",
+    "method"
+  ],
+  [
+    "js/create.js~day#date_input_field",
+    "class/js/create.js~Day.html#instance-member-date_input_field",
+    "js/create.js~Day#date_input_field",
+    "member"
+  ],
+  [
+    "js/create.js~day#get_day_information",
+    "class/js/create.js~Day.html#instance-method-get_day_information",
+    "js/create.js~Day#get_day_information",
+    "method"
+  ],
+  [
+    "js/create.js~day#id",
+    "class/js/create.js~Day.html#instance-member-id",
+    "js/create.js~Day#id",
+    "member"
+  ],
+  [
+    "js/create.js~day#slot_adder",
+    "class/js/create.js~Day.html#instance-member-slot_adder",
+    "js/create.js~Day#slot_adder",
+    "member"
+  ],
+  [
+    "js/create.js~day#test",
+    "class/js/create.js~Day.html#instance-member-test",
+    "js/create.js~Day#test",
+    "member"
+  ],
+  [
+    "js/create.js~day#time_div",
+    "class/js/create.js~Day.html#instance-method-time_div",
+    "js/create.js~Day#time_div",
+    "method"
+  ],
+  [
+    "js/create.js~dayadder#constructor",
+    "class/js/create.js~DayAdder.html#instance-constructor-constructor",
+    "js/create.js~DayAdder#constructor",
+    "method"
+  ],
+  [
+    "js/create.js~dayadder#createbutton",
+    "class/js/create.js~DayAdder.html#instance-method-createButton",
+    "js/create.js~DayAdder#createButton",
+    "method"
+  ],
+  [
+    "js/create.js~dayadder#createinitial",
+    "class/js/create.js~DayAdder.html#instance-method-createInitial",
+    "js/create.js~DayAdder#createInitial",
+    "method"
+  ],
+  [
+    "js/create.js~dayadder#day_count",
+    "class/js/create.js~DayAdder.html#instance-member-day_count",
+    "js/create.js~DayAdder#day_count",
+    "member"
+  ],
+  [
+    "js/create.js~dayadder#days",
+    "class/js/create.js~DayAdder.html#instance-member-days",
+    "js/create.js~DayAdder#days",
+    "member"
+  ],
+  [
+    "js/create.js~dayadder#getdays",
+    "class/js/create.js~DayAdder.html#instance-method-getDays",
+    "js/create.js~DayAdder#getDays",
+    "method"
+  ],
+  [
+    "js/create.js~error#createerrormodal",
+    "class/js/create.js~Error.html#instance-method-createErrorModal",
+    "js/create.js~Error#createErrorModal",
+    "method"
+  ],
+  [
     "js/create.js~rslot#constructor",
     "class/js/create.js~RSlot.html#instance-constructor-constructor",
     "js/create.js~RSlot#constructor",
@@ -522,6 +642,18 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "js/create.js~slotadder#createcopybutton",
+    "class/js/create.js~SlotAdder.html#instance-method-createCopyButton",
+    "js/create.js~SlotAdder#createCopyButton",
+    "method"
+  ],
+  [
+    "js/create.js~slotadder#createinitial",
+    "class/js/create.js~SlotAdder.html#instance-method-createInitial",
+    "js/create.js~SlotAdder#createInitial",
+    "method"
+  ],
+  [
     "js/create.js~slotadder#gettimes",
     "class/js/create.js~SlotAdder.html#instance-method-getTimes",
     "js/create.js~SlotAdder#getTimes",
@@ -534,10 +666,28 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "js/create.js~slotadder#request_button",
+    "class/js/create.js~SlotAdder.html#instance-member-request_button",
+    "js/create.js~SlotAdder#request_button",
+    "member"
+  ],
+  [
     "js/create.js~slotadder#slots",
     "class/js/create.js~SlotAdder.html#instance-member-slots",
     "js/create.js~SlotAdder#slots",
     "member"
+  ],
+  [
+    "js/create.js~slotadder#times_button",
+    "class/js/create.js~SlotAdder.html#instance-member-times_button",
+    "js/create.js~SlotAdder#times_button",
+    "member"
+  ],
+  [
+    "js/create.js~slotadder#toggleslots",
+    "class/js/create.js~SlotAdder.html#instance-method-toggleSlots",
+    "js/create.js~SlotAdder#toggleSlots",
+    "method"
   ],
   [
     "js/event.js",

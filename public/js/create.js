@@ -1,6 +1,10 @@
 import $ from '/js/init.js'
 import Calendar from '/js/calendar.js'
 
+/**
+ * Class for creating days
+ */
+
 export class Day {
 
 	constructor() {
@@ -110,7 +114,9 @@ export class Day {
 
 }
 
-
+/**
+ * Class for managing process of adding days
+ */
 export class DayAdder {
     /**
      * Initialize the slot adder
@@ -352,19 +358,13 @@ export class SlotAdder {
  */
 export class RSlot {
 
-
 	constructor(id, parent) {
-		/** @member {int} id - ID, passed in by the RSlotAdder */
 		this.identifier = id
 
 		// generate html
-
-		/** @member {Element} - div containing the entire slot */
 		this.request_div = document.createElement('div');
-		/** @member {Element} - input box */
 		this.request_input = document.createElement('input');
 		this.request_input.className = "request input " + id;
-		/** @member {Element} - button for deleting slot */
 		this.request_button = document.createElement('button')
 		this.request_button.innerHTML = 'X'
 		this.request_button.className = 'button'
@@ -374,13 +374,11 @@ export class RSlot {
 		})
 
 		//input and button each get their own div
-		/** @member {Element} - div for containing input */
 		this.request_input_div = document.createElement('div');
 		this.request_input_div.style.marginBottom = "1%"
 		this.request_input_div.style.float = 'left'
 		this.request_input_div.style.width = '88%'
 		this.request_input_div.appendChild(this.request_input)
-		/** @member {Element} - div for containing remove button */
 		this.request_button_div = document.createElement('div');
 		this.request_button_div.style.float = 'right'
 		this.request_button_div.appendChild(this.request_button)
@@ -588,18 +586,7 @@ $(() => {
 				error.createErrorModal($('.error_container')[0], "You must select a date for Day " + (parseInt(i) + 1) + "!")
 				return
 			}
-
 		}
-
-		let duplicate = function hasDuplicates(array) {
-			return (new Set(array)).size !== array.length;
-		}
-
-		if (duplicate(date_array)) {
-			error.createErrorModal($('.error_container')[0], "You have selected the same date twice!")
-			return
-		}
-
 
 		// Posting
 		let payload = {

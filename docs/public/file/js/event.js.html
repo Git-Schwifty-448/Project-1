@@ -30,6 +30,9 @@
   <ul>
     
   <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/calendar.js~Calendar.html">Calendar</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~Day.html">Day</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~DayAdder.html">DayAdder</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~Error.html">Error</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~RSlot.html">RSlot</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html">RSlotAdder</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~Slot.html">Slot</a></span></span></li>
@@ -86,18 +89,15 @@ export class EventPage {
 		// CREATE TABLE HEADER INFORMATION
 		for (let i = 0; i &lt; this.event.times.length; i++) {
 			for (let k = 0; k &lt; this.event.times[i].length; k++) {
-				if (k == 0 &amp;&amp; i == 0 || k == 1 &amp;&amp; i != 0) {
+				if(k == 0) {
 					let date_cell = document.createElement(&apos;th&apos;)
-					date_cell.setAttribute(&quot;colspan&quot;, this.event.times[i].length)
+					date_cell.setAttribute(&quot;colspan&quot;, this.event.times[i].length+1)
+					date_cell.style.minWidth = &quot;120px&quot;
 					date_cell.innerHTML = (this.event.dates[i])
 					date_cell.style.textAlign = &apos;left&apos;;
 					date_cell.style.fontWeight = &apos;bold&apos;
 					date_row.appendChild(date_cell)
-				} else if (k == 0) {
-					let date_cell = document.createElement(&apos;th&apos;)
-					date_cell.style.width = &apos;10px&apos;;
-					date_row.appendChild(date_cell)
-				}
+				} 
 
 				let th = document.createElement(&apos;th&apos;)
 				th.innerHTML = slots[this.event.times[i][k]]
@@ -154,7 +154,6 @@ export class EventPage {
 
 		// NOT ENTIRELY SURE THAT THE PARTICIPANTS ROW IS NECCESSARY
 		// KNOWN BUG: The participants map in the commented code below does not work
-
 
 		/*
 		let ttr = document.createElement(&apos;tr&apos;)
@@ -513,7 +512,11 @@ export class EventPage {
 		if (this.event.task_list.length &gt; 0 &amp;&amp; this.event.task_list[0].length &gt; 1) {
 			this.createTaskAdder(this.eventInfo);
 		} else {
-			this.eventInfo.appendChild(document.createTextNode(&quot;All requests have been met.&quot;))
+			if(this.event.task_list_master.length == 0) {
+				this.eventInfo.appendChild(document.createTextNode(&quot;There are no requests from the event creator.&quot;))
+			} else {
+				this.eventInfo.appendChild(document.createTextNode(&quot;All requests have been met.&quot;))
+			}
 		}
 
 		// Registration Button

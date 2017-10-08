@@ -30,6 +30,9 @@
   <ul>
     
   <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/calendar.js~Calendar.html">Calendar</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~Day.html">Day</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~DayAdder.html">DayAdder</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~Error.html">Error</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~RSlot.html">RSlot</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html">RSlotAdder</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~Slot.html">Slot</a></span></span></li>
@@ -46,138 +49,353 @@
 import Calendar from &apos;/js/calendar.js&apos;
 
 /**
+ * Class for creating days
+ */
+
+export class Day {
+
+	constructor() {
+		this.test = &quot;test&quot;
+		this.slot_adder = new SlotAdder()
+		this.date_input_field = undefined
+		this.id = 0
+		this.copy = false
+	}
+
+	create(day_id) {
+		this.id = day_id
+
+		if (day_id &gt; 1) {
+			this.copy = true
+		}
+
+		// Create the container for the day
+		let day_div = document.createElement(&apos;div&apos;)
+		day_div.appendChild(document.createElement(&apos;br&apos;))
+
+		let title = document.createElement(&apos;label&apos;)
+		title.className = &quot;label&quot;
+		title.innerText = &quot;Day &quot; + day_id
+		day_div.appendChild(title)
+
+		let day_info = document.createElement(&apos;div&apos;)
+		day_info.className = &quot;content_card box&quot;
+
+		// Get the date field
+		day_info.appendChild(this.date_div())
+
+		// Get the time fields
+		day_info.appendChild(this.time_div())
+
+		day_div.appendChild(day_info)
+		return day_div
+	}
+
+	date_div() {
+		let date_field = document.createElement(&apos;div&apos;)
+		date_field.className = &quot;field&quot;
+
+		// Create the date label
+		let date_label = document.createElement(&apos;label&apos;)
+		date_label.className = &quot;label&quot;
+		date_label.innerText = &quot;Date&quot;
+
+		date_field.appendChild(date_label)
+
+		// Create the date field
+		let date_input_field_div = document.createElement(&apos;div&apos;)
+		date_input_field_div.className = &quot;field has-addons&quot;
+
+		let date_control = document.createElement(&apos;div&apos;)
+		date_control.className = &quot;control&quot;
+
+		this.date_input_field = document.createElement(&apos;input&apos;)
+		this.date_input_field.className = &quot;date input&quot;
+		this.date_input_field.disabled = true
+
+		date_control.appendChild(this.date_input_field)
+		date_input_field_div.appendChild(date_control)
+		date_field.appendChild(date_input_field_div)
+
+		// Create the date picker button
+		let button_control = document.createElement(&apos;div&apos;)
+		button_control.className = &quot;control&quot;
+
+		let date_button = document.createElement(&apos;button&apos;)
+		date_button.className = &quot;button&quot;
+		date_button.setAttribute(&quot;id&quot;, &quot;date_picker&quot;)
+		date_button.innerText = &quot;Choose Date&quot;
+
+		button_control.appendChild(date_button)
+		date_input_field_div.appendChild(button_control)
+
+		let picker = new Pikaday({ field: this.date_input_field, minDate: new Date(), trigger: date_button })
+
+
+		return (date_field)
+	}
+
+	time_div() {
+		let time_field = document.createElement(&apos;div&apos;)
+
+		let slot_field = document.createElement(&apos;div&apos;)
+		time_field.appendChild(slot_field)
+
+		if (!this.copy) {
+			time_field.appendChild(this.slot_adder.createInitial())
+		}
+		time_field.appendChild(this.slot_adder.createButton(slot_field))
+
+		if (this.copy) {
+			time_field.appendChild(this.slot_adder.createCopyButton(slot_field))
+		}
+
+		return time_field
+	}
+
+	get_day_information() {
+		let date = this.date_input_field.value
+		let times = this.slot_adder.getTimes()
+		return [date, times]
+	}
+
+}
+
+/**
+ * Class for managing process of adding days
+ */
+export class DayAdder {
+    /**
+     * Initialize the slot adder
+     */
+	constructor() {
+		/** @member {Element[]} slots - Array of groups of time slot selectors */
+		this.days = []
+		this.day_count = 0
+
+
+	}
+
+    /**
+     * Creates the button that adds a group of time selectors
+     * @return {Element} button that adds a group of time selectors
+     */
+	createButton(div) {
+		let button = document.createElement(&apos;button&apos;)
+		button.className = &quot;button&quot;
+		button.innerHTML = &apos;Add Another Day&apos;
+		button.style.marginTop = &quot;3%&quot;
+		button.addEventListener(&apos;click&apos;, event =&gt; {
+			let day = new Day()
+			this.days.push(day)
+			this.day_count++
+			div.appendChild(day.create(this.day_count))
+
+		})
+		return button
+	}
+
+	createInitial() {
+		let day = new Day()
+		this.days.push(day)
+		this.day_count++
+		return (day.create(this.day_count))
+	}
+
+    /**
+     * Creates array of all times slots that fall inside time slot ranges
+     * @return {int[]} Array of all times slots that fall inside time slot ranges
+     */
+	getDays() {
+
+		let day_info = []
+
+		for (let i in this.days) {
+			day_info.push(this.days[i].get_day_information())
+		}
+
+		return day_info
+	}
+}
+
+/**
  * Class for creating time slots
  */
 export class Slot {
-  /**
-   * @param {boolean} is24 - True: 24 hour time, False: 12 hour
-   */
-  constructor(is24) {
-    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */
-    this.is24 = is24
+    /**
+     * @param {boolean} is24 - True: 24 hour time, False: 12 hour
+     */
+	constructor(is24) {
+		/** @member {boolean} is24 - True: 24 hour time, False: 12 hour */
+		this.is24 = is24
 
-    /** @member {object} selectors - Group of selectors */
-    this.selectors = {}
+		/** @member {object} selectors - Group of selectors */
+		this.selectors = {}
 
-    /** @member {Element} group - Element that stores selectors */
-    this.group = document.createElement(&apos;div&apos;)
+		/** @member {Element} group - Element that stores selectors */
+		this.group = document.createElement(&apos;div&apos;)
+		this.group.className = &quot;pair&quot;
 
-    /** @member {Element} start_span - span to contain start-time selector */
-    this.start_span = document.createElement(&apos;span&apos;)
-    this.start_span.className = &quot;select&quot;
-    this.start_span.appendChild(this.createStartSlot())
-    this.group.appendChild(this.start_span)
+		/** @member {Element} start_span - span to contain start-time selector */
+		this.start_span = document.createElement(&apos;span&apos;)
+		this.start_span.className = &quot;select&quot;
+		this.start_span.appendChild(this.createStartSlot())
+		this.group.appendChild(this.start_span)
 
-    /** @member {Element} end_span - span to contain end-time selector */
-    this.end_span = document.createElement(&apos;span&apos;)
-    this.end_span.className = &quot;select&quot;
-    this.end_span.appendChild(this.createEndSlot(1))
-    this.group.appendChild(this.end_span)
-  }
+		/** @member {Element} end_span - span to contain end-time selector */
+		this.end_span = document.createElement(&apos;span&apos;)
+		this.end_span.className = &quot;select&quot;
+		this.end_span.appendChild(this.createEndSlot(1))
+		this.group.appendChild(this.end_span)
+	}
 
-  /**
-   * Creates a selector for selecting a time slot
-   * @param {int} exclude - How many time slots to exclude from the selector
-   * @param {int} def - default value of selector
-   * @return {Element} Time slot selector
-   */
-  createSlotSelector(exclude = 0, def) {
-    let slots = Calendar.time_slots(this.is24)
-    let select = document.createElement(&apos;select&apos;)
-    for (let i in slots) {
-      if (i &lt; exclude || (exclude == -1 &amp;&amp; i == slots.length-1)) continue
-      let option = document.createElement(&apos;option&apos;)
-      option.value = i
-      option.innerHTML = slots[i]
-      select.appendChild(option)
-    }
-    if (def &amp;&amp; def &gt;= exclude) select.value = def
-    return select
-  }
+    /**
+     * Creates a selector for selecting a time slot
+     * @param {int} exclude - How many time slots to exclude from the selector
+     * @param {int} def - default value of selector
+     * @return {Element} Time slot selector
+     */
+	createSlotSelector(exclude = 0, def) {
+		let slots = Calendar.time_slots(this.is24)
+		let select = document.createElement(&apos;select&apos;)
+		for (let i in slots) {
+			if (i &lt; exclude || (exclude == -1 &amp;&amp; i == slots.length - 1)) continue
+			let option = document.createElement(&apos;option&apos;)
+			option.value = i
+			option.innerHTML = slots[i]
+			select.appendChild(option)
+		}
+		if (def &amp;&amp; def &gt;= exclude) select.value = def
+		return select
+	}
 
-  /**
-   * Creates the selector for the start time
-   * @return {Element} Time slot selector
-   */
-  createStartSlot() {
-    let slotsel = this.createSlotSelector(-1)
-    slotsel.addEventListener(&apos;change&apos;, event =&gt; {
-      let prevTime = +this.selectors.end.value
-      this.selectors.end.remove()
-      this.end_span.appendChild(this.createEndSlot(+slotsel.value+1, Math.max(prevTime, +slotsel.value+1)))
-    })
-    this.selectors.start = slotsel
-    return slotsel
-  }
+    /**
+     * Creates the selector for the start time
+     * @return {Element} Time slot selector
+     */
+	createStartSlot() {
+		let slotsel = this.createSlotSelector(-1)
+		slotsel.addEventListener(&apos;change&apos;, event =&gt; {
+			let prevTime = +this.selectors.end.value
+			this.selectors.end.remove()
+			this.end_span.appendChild(this.createEndSlot(+slotsel.value + 1, Math.max(prevTime, +slotsel.value + 1)))
+		})
+		this.selectors.start = slotsel
+		return slotsel
+	}
 
-  /**
-   * Creates the selector for the end time
-   * @param {int} exclude - How many time slots to exclude from the selector
-   * @param {int} def - default value of selector
-   * @return {Element} Time slot selector
-   */
-  createEndSlot(exclude = 0, def) {
-    let slotsel = this.createSlotSelector(exclude, def)
-    this.selectors.end = slotsel
-    return slotsel
-  }
+    /**
+     * Creates the selector for the end time
+     * @param {int} exclude - How many time slots to exclude from the selector
+     * @param {int} def - default value of selector
+     * @return {Element} Time slot selector
+     */
+	createEndSlot(exclude = 0, def) {
+		let slotsel = this.createSlotSelector(exclude, def)
+		this.selectors.end = slotsel
+		return slotsel
+	}
 
-  /**
-   * Get element that stores selectors
-   * @return {Element} Element that stores selectors
-   */
-  getSlotGroup() {
-    return this.group
-  }
+    /**
+     * Get element that stores selectors
+     * @return {Element} Element that stores selectors
+     */
+	getSlotGroup() {
+		return this.group
+	}
 
-  /**
-   * Get range of time slots
-   * @return {int[]} range of time slots
-   */
-  getRange() {
-    return [+this.selectors.start.value, +this.selectors.end.value]
-  }
+    /**
+     * Get range of time slots
+     * @return {int[]} range of time slots
+     */
+	getRange() {
+		return [+this.selectors.start.value, +this.selectors.end.value]
+	}
 }
 
 /**
  * Class for managing button that adds time slots
  */
 export class SlotAdder {
-  /**
-   * Initialize the slot adder
-   */
-  constructor() {
-    /** @member {Element[]} slots - Array of groups of time slot selectors */
-    this.slots = []
+    /**
+     * Initialize the slot adder
+     */
+	constructor() {
+		/** @member {Element[]} slots - Array of groups of time slot selectors */
+		this.slots = []
 
-    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */
-    this.is24 = false
-  }
+		/** @member {boolean} is24 - True: 24 hour time, False: 12 hour */
+		this.is24 = false
 
-  /**
-   * Creates the button that adds a group of time selectors
-   * @return {Element} button that adds a group of time selectors
-   */
-  createButton() {
-    let button = document.createElement(&apos;button&apos;)
-    button.className = &quot;button&quot;
-    button.innerHTML = &apos;Add a Time&apos;
-    button.addEventListener(&apos;click&apos;, event =&gt; {
-      let slot = new Slot(this.is24)
-      this.slots.push(slot)
-      $(&apos;.t_slots&apos;)[0].appendChild(slot.getSlotGroup())
-    })
-    return button
-  }
+		this.times_button = undefined
+		this.request_button = undefined
+	}
 
-  /**
-   * Creates array of all times slots that fall inside time slot ranges
-   * @return {int[]} Array of all times slots that fall inside time slot ranges
-   */
-  getTimes() {
-    // Here be dragons
-    return Array.from(new Set([].concat(...this.slots.map(x =&gt; Array.from({length: x.getRange()[1]-x.getRange()[0]}, (n,i)=&gt;i+x.getRange()[0]))))).sort((a,b)=&gt;a-b)
-  }
+    /**
+     * Creates the button that adds a group of time selectors
+     * @return {Element} button that adds a group of time selectors
+     */
+	createButton(div) {
+		let button = document.createElement(&apos;button&apos;)
+		button.className = &quot;button&quot;
+		button.innerHTML = &apos;Add a Time&apos;
+		button.style.marginRight = &quot;2%&quot;
+		button.style.marginTop = &quot;2%&quot;
+		button.addEventListener(&apos;click&apos;, event =&gt; {
+			let slot = new Slot(this.is24)
+			this.slots.push(slot)
+			div.appendChild(slot.getSlotGroup())
+		})
+		this.times_button = button
+
+		return button
+	}
+
+	createCopyButton(div) {
+		let button = document.createElement(&apos;button&apos;)
+		button.className = &quot;button is-dark&quot;
+		button.innerHTML = &apos;Use Same Times as First Day&apos;
+		button.style.marginTop = &quot;2%&quot;
+		this.times_button.disabled = true
+		this.toggleSlots(div)
+		button.addEventListener(&apos;click&apos;, event =&gt; {
+			if (button.className == &quot;button&quot;) {
+				button.className = &quot;button is-dark&quot;
+				this.times_button.disabled = true
+				this.toggleSlots(div)
+			} else {
+				button.className = &quot;button&quot;
+				this.times_button.disabled = false
+			}
+		})
+		return button
+	}
+
+	toggleSlots(parentDiv) {
+		this.slots = []
+		while (parentDiv.hasChildNodes()) {
+			parentDiv.removeChild(parentDiv.lastChild)
+		}
+	}
+
+	createInitial(div) {
+		let slot = new Slot(this.is24)
+		this.slots.push(slot)
+		return (slot.getSlotGroup())
+	}
+
+    /**
+     * Creates array of all times slots that fall inside time slot ranges
+     * @return {int[]} Array of all times slots that fall inside time slot ranges
+     */
+	getTimes() {
+		if (this.copy) {
+			return []
+		}
+
+		// Here be dragons
+		return Array.from(new Set([].concat(...this.slots.map(x =&gt; Array.from({ length: x.getRange()[1] - x.getRange()[0] }, (n, i) =&gt; i + x.getRange()[0]))))).sort((a, b) =&gt; a - b)
+	}
 }
 
 
@@ -187,46 +405,46 @@ export class SlotAdder {
  */
 export class RSlot {
 
-  constructor(id, parent) {
-    this.identifier = id
+	constructor(id, parent) {
+		this.identifier = id
 
-    // generate html
-    this.request_div = document.createElement(&apos;div&apos;);
-    this.request_input = document.createElement(&apos;input&apos;);
-    this.request_input.className = &quot;request input &quot; + id;
-    this.request_button = document.createElement(&apos;button&apos;)
-    this.request_button.innerHTML = &apos;X&apos;
-    this.request_button.className = &apos;button is-danger is-outlined&apos;
-    this.request_button.addEventListener(&apos;click&apos;, event =&gt; {
-      parent.deleteRequest(this);
-      this.request_div.parentNode.removeChild(this.request_div);
-	  })
+		// generate html
+		this.request_div = document.createElement(&apos;div&apos;);
+		this.request_input = document.createElement(&apos;input&apos;);
+		this.request_input.className = &quot;request input &quot; + id;
+		this.request_button = document.createElement(&apos;button&apos;)
+		this.request_button.innerHTML = &apos;X&apos;
+		this.request_button.className = &apos;button&apos;
+		this.request_button.addEventListener(&apos;click&apos;, event =&gt; {
+			parent.deleteRequest(this);
+			this.request_div.parentNode.removeChild(this.request_div);
+		})
 
-  	//input and button each get their own div
-  	this.request_input_div = document.createElement(&apos;div&apos;);
-  	this.request_input_div.style.float = &apos;left&apos;
-  	this.request_input_div.style.width = &apos;88%&apos;
-  	this.request_input_div.appendChild(this.request_input)
-  	this.request_button_div = document.createElement(&apos;div&apos;);
-  	this.request_button_div.style.float = &apos;right&apos;
-  	this.request_button_div.appendChild(this.request_button)
+		//input and button each get their own div
+		this.request_input_div = document.createElement(&apos;div&apos;);
+		this.request_input_div.style.marginBottom = &quot;1%&quot;
+		this.request_input_div.style.float = &apos;left&apos;
+		this.request_input_div.style.width = &apos;88%&apos;
+		this.request_input_div.appendChild(this.request_input)
+		this.request_button_div = document.createElement(&apos;div&apos;);
+		this.request_button_div.style.float = &apos;right&apos;
+		this.request_button_div.appendChild(this.request_button)
 
-    this.request_div.appendChild(this.request_input_div)
-    this.request_div.appendChild(this.request_button_div)
-  }
+		this.request_div.appendChild(this.request_input_div)
+		this.request_div.appendChild(this.request_button_div)
+	}
 
-  /**
-   * Get element that stores the request
-   * @ret {Element} Element that stores requests
-   */
-  getSlotGroup() {
-    return this.request_div
-  }
+    /**
+     * Get element that stores the request
+     * @ret {Element} Element that stores requests
+     */
+	getSlotGroup() {
+		return this.request_div
+	}
 
-  getValue() {
-    alert(this.request_input.value);
-    return this.request_input.value;
-  }
+	getValue() {
+		return this.request_input.value;
+	}
 
 }
 
@@ -236,105 +454,209 @@ export class RSlot {
  */
 export class RSlotAdder {
 
-   // Initialize the slot adder
-  constructor() {
-    // Array of requests elements
-    this.slots = []
-    this.identifier_prefix = &quot;req&quot;
-    this.identifier_number = 0;
-  }
+	// Initialize the slot adder
+	constructor() {
+		// Array of requests elements
+		this.slots = []
+		this.identifier_prefix = &quot;req&quot;
+		this.identifier_number = 0;
+	}
 
-  /**
-   * Creates the button that adds a request slot
-   * @return {Element} button that adds a request slot
-   */
-  createButton() {
-    let button = document.createElement(&apos;button&apos;)
+    /**
+     * Creates the button that adds a request slot
+     * @return {Element} button that adds a request slot
+     */
+	createButton() {
+		let button = document.createElement(&apos;button&apos;)
 
-    button.className = &quot;button&quot;
-    button.innerHTML = &apos;Add a Request&apos;
-    button.addEventListener(&apos;click&apos;, event =&gt; {
-      let slot = new RSlot(this.identifier_prefix+this.identifier_number, this);
-      this.identifier_number++;
-      this.slots.push(slot)
-      $(&apos;.r_slots&apos;)[0].appendChild(slot.getSlotGroup())
-    })
-    return button
-  }
+		button.className = &quot;button&quot;
+		button.innerHTML = &apos;Add a Request&apos;
+		button.addEventListener(&apos;click&apos;, event =&gt; {
+			let slot = new RSlot(this.identifier_prefix + this.identifier_number, this);
+			this.identifier_number++;
+			this.slots.push(slot)
+			$(&apos;.r_slots&apos;)[0].appendChild(slot.getSlotGroup())
+		})
+		return button
+	}
 
-  deleteRequest(request) {
-    this.slots.splice(this.slots.indexOf(request), 1);
-  }
+	deleteRequest(request) {
+		this.slots.splice(this.slots.indexOf(request), 1);
+	}
 
-  /**
-   * Creates array of all requests entered by the user
-   * @ret: {string[]} Array of all requests
-   */
-  getRequests() {
-    let requests = []
+    /**
+     * Creates array of all requests entered by the user
+     * @ret: {string[]} Array of all requests
+     */
+	getRequests() {
+		let requests = []
 
-    for(let i = 0; i &lt; this.slots.length; i++){
-      requests.push(this.slots[i].getValue());
-    }
-    return(requests)
-  }
+		for (let i = 0; i &lt; this.slots.length; i++) {
+			requests.push(this.slots[i].getValue());
+		}
+		return (requests)
+	}
+}
+
+export class Error {
+    /**
+     * Creates the modal with the table of registered guests
+     * @param {div} div an html div object that gives place to insert the modal
+     * @param {string} msg a string containing an error message to place in the modal
+     */
+	createErrorModal(div, msg) {
+		let task_table = document.createElement(&apos;div&apos;);
+		div.appendChild(task_table);
+
+		let info_tab = document.createElement(&apos;div&apos;);
+		div.appendChild(info_tab)
+
+		let modal = document.createElement(&apos;div&apos;)
+		modal.className = &quot;modal&quot;
+
+		let modal_background = document.createElement(&apos;div&apos;)
+		modal_background.className = &quot;modal-background&quot;
+
+		let modal_content = document.createElement(&apos;div&apos;)
+		modal_content.className = &quot;modal-content&quot;
+		modal_content.style.backgroundColor = &quot;#fff&quot;
+		modal_content.style.borderRadius = &quot;5px&quot;
+		modal_content.style.padding = &quot;2%&quot;
+
+		let header = document.createElement(&apos;h1&apos;)
+		header.className = &quot;title&quot;
+		header.innerHTML = &quot;Error&quot;
+		modal_content.appendChild(header)
+
+		let subheader = document.createElement(&apos;h2&apos;)
+		subheader.className = &quot;subtitle&quot;
+		subheader.innerHTML = msg
+		modal_content.appendChild(subheader)
+
+
+		let modal_close = document.createElement(&apos;a&apos;)
+		modal_close.className = &quot;button is-warning&quot;
+		modal_close.innerHTML = &quot;Ok&quot;
+
+		modal_close.addEventListener(&quot;click&quot;, event =&gt; {
+			modal.className = &quot;modal&quot;
+		})
+
+		modal.appendChild(modal_background)
+		modal_content.appendChild(modal_close)
+		modal.appendChild(modal_content)
+
+		modal.className = &quot;modal is-active&quot;
+		task_table.appendChild(modal)
+	}
+
 }
 
 $(() =&gt; {
-  let slot_adder = new SlotAdder()
-  let rslot_adder = new RSlotAdder()
+	// let slot_adder = new SlotAdder()
+	let rslot_adder = new RSlotAdder()
 
-  $(&apos;.is24&apos;)[0].addEventListener(&apos;click&apos;, event =&gt; {
-    slot_adder.is24 = true
-    $(&apos;.is12&apos;)[0].className=&apos;button is12&apos;
-    $(&apos;.is24&apos;)[0].className=&apos;button is24 is-info&apos;
-    let times = Calendar.time_slots(true)
-    $(&apos;select&apos;).forEach(select =&gt; {
-      Array.from(select.children).forEach(option =&gt; {
-        option.innerHTML = times[option.value]
-      })
-    })
-  })
+	$(&apos;.is24&apos;)[0].addEventListener(&apos;click&apos;, event =&gt; {
+		// slot_adder.is24 = true
+		$(&apos;.is12&apos;)[0].className = &apos;button is12&apos;
+		$(&apos;.is24&apos;)[0].className = &apos;button is24 is-info&apos;
+		let times = Calendar.time_slots(true)
+		$(&apos;select&apos;).forEach(select =&gt; {
+			Array.from(select.children).forEach(option =&gt; {
+				option.innerHTML = times[option.value]
+			})
+		})
+	})
 
-  $(&apos;.is12&apos;)[0].addEventListener(&apos;click&apos;, event =&gt; {
-    slot_adder.is24 = false
-    $(&apos;.is12&apos;)[0].className=&apos;button is12 is-info&apos;
-    $(&apos;.is24&apos;)[0].className=&apos;button is24&apos;
-    let times = Calendar.time_slots(false)
-    $(&apos;select&apos;).forEach(select =&gt; {
-      Array.from(select.children).forEach(option =&gt; {
-        option.innerHTML = times[option.value]
-      })
-    })
-  })
+	$(&apos;.is12&apos;)[0].addEventListener(&apos;click&apos;, event =&gt; {
+		// slot_adder.is24 = false
+		$(&apos;.is12&apos;)[0].className = &apos;button is12 is-info&apos;
+		$(&apos;.is24&apos;)[0].className = &apos;button is24&apos;
+		let times = Calendar.time_slots(false)
+		$(&apos;select&apos;).forEach(select =&gt; {
+			Array.from(select.children).forEach(option =&gt; {
+				option.innerHTML = times[option.value]
+			})
+		})
+	})
 
-  $(&apos;.rslot_button_wrap&apos;)[0].appendChild(rslot_adder.createButton())
-  $(&apos;.slot_button_wrap&apos;)[0].appendChild(slot_adder.createButton())
+	$(&apos;.rslot_button_wrap&apos;)[0].appendChild(rslot_adder.createButton())
 
-  let picker = new Pikaday({ field: $(&apos;input.date&apos;)[0], minDate: new Date(), trigger: $(&apos;button#date_picker&apos;)[0] })
+	let new_day = new DayAdder()
+	$(&apos;.dates&apos;)[0].appendChild(new_day.createInitial())
 
-  $(&apos;button.submit&apos;)[0].addEventListener(&quot;click&quot;, event =&gt; {
-    let payload = {
-      name: $(&apos;input.intitle&apos;)[0].value,
-      description: $(&apos;input.description&apos;)[0].value,
-      task_list: rslot_adder.getRequests(),
-      dates: [$(&apos;input.date&apos;)[0].value],
-      owner: $(&apos;input.name&apos;)[0].value,
-      times: slot_adder.getTimes()
-    }
+	$(&apos;.dates_button&apos;)[0].appendChild(new_day.createButton($(&apos;.dates&apos;)[0]))
 
-    fetch(&quot;/api/events/new/&quot;, {
-      headers: {&apos;Content-Type&apos;: &apos;application/json&apos;},
-      method: &quot;POST&quot;,
-      body: JSON.stringify(payload)
-    }).then(res =&gt; res.json()).then(res =&gt; {
-      if (res.status != &quot;ok&quot;) {
-        alert(&quot;Could not contact server, please try again&quot;)
-        return
-      }
-      window.location.href = &apos;/event/?id=&apos;+res.uid
-    })
-  })
+	$(&apos;button.submit&apos;)[0].addEventListener(&quot;click&quot;, event =&gt; {
+		let error = new Error()
+
+		// Process date and time information
+		let unprocessed_days = new_day.getDays()
+
+		for (let i in unprocessed_days) {
+			if (unprocessed_days[i][1].length == 0) {
+				unprocessed_days[i][1] = unprocessed_days[0][1]
+			}
+		}
+
+		unprocessed_days.sort(function (a, b) { return new Date(a[0]) - new Date(b[0]) });
+
+		let date_array = []
+		let time_array = []
+
+		for (let i in unprocessed_days) {
+			date_array.push(unprocessed_days[i][0])
+			time_array.push(unprocessed_days[i][1])
+
+		}
+
+		let processed_days = [date_array, time_array]
+
+		// Error handling
+		if ($(&apos;input.intitle&apos;)[0].value == &quot;&quot;) {
+			error.createErrorModal($(&apos;.error_container&apos;)[0], &quot;You must enter a name for the event!&quot;)
+			return
+		}
+
+		if ($(&apos;input.description&apos;)[0].value == &quot;&quot;) {
+			error.createErrorModal($(&apos;.error_container&apos;)[0], &quot;You must enter a description for the event!&quot;)
+			return
+		}
+
+		if ($(&apos;input.name&apos;)[0].value == &quot;&quot;) {
+			error.createErrorModal($(&apos;.error_container&apos;)[0], &quot;You must enter an owner name for the event!&quot;)
+			return
+		}
+
+		for (let i in date_array) {
+			if (date_array[i] == &quot;&quot;) {
+				error.createErrorModal($(&apos;.error_container&apos;)[0], &quot;You must select a date for Day &quot; + (parseInt(i) + 1) + &quot;!&quot;)
+				return
+			}
+		}
+
+		// Posting
+		let payload = {
+			name: $(&apos;input.intitle&apos;)[0].value,
+			description: $(&apos;input.description&apos;)[0].value,
+			task_list: rslot_adder.getRequests(),
+			dates: processed_days[0],
+			owner: $(&apos;input.name&apos;)[0].value,
+			times: processed_days[1]
+		}
+
+		fetch(&quot;/api/events/new/&quot;, {
+			headers: { &apos;Content-Type&apos;: &apos;application/json&apos; },
+			method: &quot;POST&quot;,
+			body: JSON.stringify(payload)
+		}).then(res =&gt; res.json()).then(res =&gt; {
+			if (res.status != &quot;ok&quot;) {
+				alert(&quot;Could not contact server, please try again&quot;)
+				return
+			}
+			window.location.href = &apos;/event/?id=&apos; + res.uid
+		})
+	})
 })
 </code></pre>
 

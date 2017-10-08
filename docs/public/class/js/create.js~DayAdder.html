@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <base data-ice="baseUrl" href="../../">
-  <title data-ice="title">RSlotAdder | Project-1</title>
+  <title data-ice="title">DayAdder | Project-1</title>
   <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
   <script src="script/prettify/prettify.js"></script>
@@ -45,17 +45,17 @@
 </nav>
 
 <div class="content" data-ice="content"><div class="header-notice">
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import {RSlotAdder} from &apos;<span><a href="file/js/create.js.html#lineNumber408">Project-1/js/create.js</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode">import {DayAdder} from &apos;<span><a href="file/js/create.js.html#lineNumber120">Project-1/js/create.js</a></span>&apos;</code></pre></div>
   <span data-ice="access">public</span>
   <span data-ice="kind">class</span>
   
   
   
-  <span data-ice="source">| <span><a href="file/js/create.js.html#lineNumber408">source</a></span></span>
+  <span data-ice="source">| <span><a href="file/js/create.js.html#lineNumber120">source</a></span></span>
 </div>
 
 <div class="self-detail detail">
-  <h1 data-ice="name">RSlotAdder</h1>
+  <h1 data-ice="name">DayAdder</h1>
 
   
 
@@ -71,8 +71,7 @@
 
   
   
-  <div class="description" data-ice="description"><p>Class for managing button that adds request slots
-and returning the strings of requests entered by the user</p>
+  <div class="description" data-ice="description"><p>Class for managing process of adding days</p>
 </div>
   
 
@@ -105,13 +104,14 @@ and returning the strings of requests entered by the user</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html#instance-constructor-constructor">constructor</a></span></span><span class="code" data-ice="signature">()</span>
+          <span class="code" data-ice="name"><span><a href="class/js/create.js~DayAdder.html#instance-constructor-constructor">constructor</a></span></span><span class="code" data-ice="signature">()</span>
         </p>
       </div>
       <div>
         
         
-        
+        <div data-ice="description"><p>Initialize the slot adder</p>
+</div>
       </div>
     </td>
     <td>
@@ -140,7 +140,7 @@ and returning the strings of requests entered by the user</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html#instance-member-identifier_number">identifier_number</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
+          <span class="code" data-ice="name"><span><a href="class/js/create.js~DayAdder.html#instance-member-day_count">day_count</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
         </p>
       </div>
       <div>
@@ -168,35 +168,7 @@ and returning the strings of requests entered by the user</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html#instance-member-identifier_prefix">identifier_prefix</a></span></span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></span>
-        </p>
-      </div>
-      <div>
-        
-        
-        
-      </div>
-    </td>
-    <td>
-      
-      
-    </td>
-  </tr>
-<tr data-ice="target">
-    <td>
-      <span class="access" data-ice="access">public</span>
-      
-      
-      
-      <span class="override" data-ice="override"></span>
-    </td>
-    <td>
-      <div>
-        <p>
-          
-          
-          
-          <span class="code" data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html#instance-member-slots">slots</a></span></span><span class="code" data-ice="signature">: <span><span>*</span><span>[]</span></span></span>
+          <span class="code" data-ice="name"><span><a href="class/js/create.js~DayAdder.html#instance-member-days">days</a></span></span><span class="code" data-ice="signature">: <span><span>*</span><span>[]</span></span></span>
         </p>
       </div>
       <div>
@@ -231,13 +203,13 @@ and returning the strings of requests entered by the user</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html#instance-method-createButton">createButton</a></span></span><span class="code" data-ice="signature">(): <span>Element</span></span>
+          <span class="code" data-ice="name"><span><a href="class/js/create.js~DayAdder.html#instance-method-createButton">createButton</a></span></span><span class="code" data-ice="signature">(div: <span>*</span>): <span>Element</span></span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>Creates the button that adds a request slot</p>
+        <div data-ice="description"><p>Creates the button that adds a group of time selectors</p>
 </div>
       </div>
     </td>
@@ -260,7 +232,7 @@ and returning the strings of requests entered by the user</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html#instance-method-deleteRequest">deleteRequest</a></span></span><span class="code" data-ice="signature">(request: <span>*</span>)</span>
+          <span class="code" data-ice="name"><span><a href="class/js/create.js~DayAdder.html#instance-method-createInitial">createInitial</a></span></span><span class="code" data-ice="signature">(): <span>*</span></span>
         </p>
       </div>
       <div>
@@ -288,14 +260,13 @@ and returning the strings of requests entered by the user</p>
           
           
           
-          <span class="code" data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html#instance-method-getRequests">getRequests</a></span></span><span class="code" data-ice="signature">(): <span>*</span></span>
+          <span class="code" data-ice="name"><span><a href="class/js/create.js~DayAdder.html#instance-method-getDays">getDays</a></span></span><span class="code" data-ice="signature">(): <span><span>int</span><span>[]</span></span></span>
         </p>
       </div>
       <div>
         
         
-        <div data-ice="description"><p>Creates array of all requests entered by the user
-@ret: {string[]} Array of all requests</p>
+        <div data-ice="description"><p>Creates array of all times slots that fall inside time slot ranges</p>
 </div>
       </div>
     </td>
@@ -326,14 +297,15 @@ and returning the strings of requests entered by the user</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber411">source</a></span></span>
+      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber124">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  
+  <div data-ice="description"><p>Initialize the slot adder</p>
+</div>
 
   
 
@@ -361,18 +333,18 @@ and returning the strings of requests entered by the user</p>
 <div data-ice="memberDetails"><h2 data-ice="title">Public Members</h2>
 
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-identifier_number">
+  <h3 data-ice="anchor" id="instance-member-day_count">
     <span class="access" data-ice="access">public</span>
     
     
     
     
     
-    <span class="code" data-ice="name">identifier_number</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
+    <span class="code" data-ice="name">day_count</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber415">source</a></span></span>
+      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber127">source</a></span></span>
     </span>
   </h3>
 
@@ -404,61 +376,18 @@ and returning the strings of requests entered by the user</p>
   
 </div>
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-identifier_prefix">
+  <h3 data-ice="anchor" id="instance-member-days">
     <span class="access" data-ice="access">public</span>
     
     
     
     
     
-    <span class="code" data-ice="name">identifier_prefix</span><span class="code" data-ice="signature">: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></span>
+    <span class="code" data-ice="name">days</span><span class="code" data-ice="signature">: <span><span>*</span><span>[]</span></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber414">source</a></span></span>
-    </span>
-  </h3>
-
-  
-  
-  
-  
-
-  
-
-  <div data-ice="properties">
-</div>
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-</div>
-<div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-member-slots">
-    <span class="access" data-ice="access">public</span>
-    
-    
-    
-    
-    
-    <span class="code" data-ice="name">slots</span><span class="code" data-ice="signature">: <span><span>*</span><span>[]</span></span></span>
-    <span class="right-info">
-      
-      
-      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber413">source</a></span></span>
+      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber126">source</a></span></span>
     </span>
   </h3>
 
@@ -500,23 +429,39 @@ and returning the strings of requests entered by the user</p>
     
     
     
-    <span class="code" data-ice="name">createButton</span><span class="code" data-ice="signature">(): <span>Element</span></span>
+    <span class="code" data-ice="name">createButton</span><span class="code" data-ice="signature">(div: <span>*</span>): <span>Element</span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber422">source</a></span></span>
+      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber136">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Creates the button that adds a request slot</p>
+  <div data-ice="description"><p>Creates the button that adds a group of time selectors</p>
 </div>
 
   
 
-  <div data-ice="properties">
+  <div data-ice="properties"><div data-ice="properties">
+  <h4 data-ice="title">Params:</h4>
+  <table class="params">
+    <thead>
+    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+    
+    <tr data-ice="property" data-depth="0">
+      <td data-ice="name" class="code" data-depth="0">div</td>
+      <td data-ice="type" class="code"><span>*</span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"></td>
+    </tr>
+</tbody>
+  </table>
+</div>
 </div>
 
   <div class="return-params" data-ice="returnParams">
@@ -525,7 +470,7 @@ and returning the strings of requests entered by the user</p>
       <tbody>
         <tr>
           <td class="return-type code" data-ice="returnType"><span>Element</span></td>
-          <td class="return-desc" data-ice="returnDescription"><p>button that adds a request slot</p>
+          <td class="return-desc" data-ice="returnDescription"><p>button that adds a group of time selectors</p>
 </td>
         </tr>
       </tbody>
@@ -550,18 +495,18 @@ and returning the strings of requests entered by the user</p>
   
 </div>
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-method-deleteRequest">
+  <h3 data-ice="anchor" id="instance-method-createInitial">
     <span class="access" data-ice="access">public</span>
     
     
     
     
     
-    <span class="code" data-ice="name">deleteRequest</span><span class="code" data-ice="signature">(request: <span>*</span>)</span>
+    <span class="code" data-ice="name">createInitial</span><span class="code" data-ice="signature">(): <span>*</span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber436">source</a></span></span>
+      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber151">source</a></span></span>
     </span>
   </h3>
 
@@ -572,26 +517,22 @@ and returning the strings of requests entered by the user</p>
 
   
 
-  <div data-ice="properties"><div data-ice="properties">
-  <h4 data-ice="title">Params:</h4>
-  <table class="params">
-    <thead>
-    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-    
-    <tr data-ice="property" data-depth="0">
-      <td data-ice="name" class="code" data-depth="0">request</td>
-      <td data-ice="type" class="code"><span>*</span></td>
-      <td data-ice="appendix"></td>
-      <td data-ice="description"></td>
-    </tr>
-</tbody>
-  </table>
-</div>
+  <div data-ice="properties">
 </div>
 
-  
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tbody>
+        <tr>
+          <td class="return-type code" data-ice="returnType"><span>*</span></td>
+          
+        </tr>
+      </tbody>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
 
   
 
@@ -609,26 +550,25 @@ and returning the strings of requests entered by the user</p>
   
 </div>
 <div class="detail" data-ice="detail">
-  <h3 data-ice="anchor" id="instance-method-getRequests">
+  <h3 data-ice="anchor" id="instance-method-getDays">
     <span class="access" data-ice="access">public</span>
     
     
     
     
     
-    <span class="code" data-ice="name">getRequests</span><span class="code" data-ice="signature">(): <span>*</span></span>
+    <span class="code" data-ice="name">getDays</span><span class="code" data-ice="signature">(): <span><span>int</span><span>[]</span></span></span>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber444">source</a></span></span>
+      <span data-ice="source"><span><a href="file/js/create.js.html#lineNumber162">source</a></span></span>
     </span>
   </h3>
 
   
   
   
-  <div data-ice="description"><p>Creates array of all requests entered by the user
-@ret: {string[]} Array of all requests</p>
+  <div data-ice="description"><p>Creates array of all times slots that fall inside time slot ranges</p>
 </div>
 
   
@@ -641,8 +581,9 @@ and returning the strings of requests entered by the user</p>
     <table>
       <tbody>
         <tr>
-          <td class="return-type code" data-ice="returnType"><span>*</span></td>
-          
+          <td class="return-type code" data-ice="returnType"><span><span>int</span><span>[]</span></span></td>
+          <td class="return-desc" data-ice="returnDescription"><p>Array of all times slots that fall inside time slot ranges</p>
+</td>
         </tr>
       </tbody>
     </table>

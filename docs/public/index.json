@@ -626,7 +626,7 @@
     "__docId__": 51,
     "kind": "file",
     "name": "js/create.js",
-    "content": "import $ from '/js/init.js'\nimport Calendar from '/js/calendar.js'\n\n/**\n * Class for creating time slots\n */\nexport class Slot {\n  /**\n   * @param {boolean} is24 - True: 24 hour time, False: 12 hour\n   */\n  constructor(is24) {\n    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */\n    this.is24 = is24\n\n    /** @member {object} selectors - Group of selectors */\n    this.selectors = {}\n\n    /** @member {Element} group - Element that stores selectors */\n    this.group = document.createElement('div')\n\n    /** @member {Element} start_span - span to contain start-time selector */\n    this.start_span = document.createElement('span')\n    this.start_span.className = \"select\"\n    this.start_span.appendChild(this.createStartSlot())\n    this.group.appendChild(this.start_span)\n\n    /** @member {Element} end_span - span to contain end-time selector */\n    this.end_span = document.createElement('span')\n    this.end_span.className = \"select\"\n    this.end_span.appendChild(this.createEndSlot(1))\n    this.group.appendChild(this.end_span)\n  }\n\n  /**\n   * Creates a selector for selecting a time slot\n   * @param {int} exclude - How many time slots to exclude from the selector\n   * @param {int} def - default value of selector\n   * @return {Element} Time slot selector\n   */\n  createSlotSelector(exclude = 0, def) {\n    let slots = Calendar.time_slots(this.is24)\n    let select = document.createElement('select')\n    for (let i in slots) {\n      if (i < exclude || (exclude == -1 && i == slots.length-1)) continue\n      let option = document.createElement('option')\n      option.value = i\n      option.innerHTML = slots[i]\n      select.appendChild(option)\n    }\n    if (def && def >= exclude) select.value = def\n    return select\n  }\n\n  /**\n   * Creates the selector for the start time\n   * @return {Element} Time slot selector\n   */\n  createStartSlot() {\n    let slotsel = this.createSlotSelector(-1)\n    slotsel.addEventListener('change', event => {\n      let prevTime = +this.selectors.end.value\n      this.selectors.end.remove()\n      this.end_span.appendChild(this.createEndSlot(+slotsel.value+1, Math.max(prevTime, +slotsel.value+1)))\n    })\n    this.selectors.start = slotsel\n    return slotsel\n  }\n\n  /**\n   * Creates the selector for the end time\n   * @param {int} exclude - How many time slots to exclude from the selector\n   * @param {int} def - default value of selector\n   * @return {Element} Time slot selector\n   */\n  createEndSlot(exclude = 0, def) {\n    let slotsel = this.createSlotSelector(exclude, def)\n    this.selectors.end = slotsel\n    return slotsel\n  }\n\n  /**\n   * Get element that stores selectors\n   * @return {Element} Element that stores selectors\n   */\n  getSlotGroup() {\n    return this.group\n  }\n\n  /**\n   * Get range of time slots\n   * @return {int[]} range of time slots\n   */\n  getRange() {\n    return [+this.selectors.start.value, +this.selectors.end.value]\n  }\n}\n\n/**\n * Class for managing button that adds time slots\n */\nexport class SlotAdder {\n  /**\n   * Initialize the slot adder\n   */\n  constructor() {\n    /** @member {Element[]} slots - Array of groups of time slot selectors */\n    this.slots = []\n\n    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */\n    this.is24 = false\n  }\n\n  /**\n   * Creates the button that adds a group of time selectors\n   * @return {Element} button that adds a group of time selectors\n   */\n  createButton() {\n    let button = document.createElement('button')\n    button.className = \"button\"\n    button.innerHTML = 'Add a Time'\n    button.addEventListener('click', event => {\n      let slot = new Slot(this.is24)\n      this.slots.push(slot)\n      $('.t_slots')[0].appendChild(slot.getSlotGroup())\n    })\n    return button\n  }\n\n  /**\n   * Creates array of all times slots that fall inside time slot ranges\n   * @return {int[]} Array of all times slots that fall inside time slot ranges\n   */\n  getTimes() {\n    // Here be dragons\n    return Array.from(new Set([].concat(...this.slots.map(x => Array.from({length: x.getRange()[1]-x.getRange()[0]}, (n,i)=>i+x.getRange()[0]))))).sort((a,b)=>a-b)\n  }\n}\n\n\n\n/**\n * Class for creating request slots\n */\nexport class RSlot {\n\n  constructor(id, parent) {\n    this.identifier = id\n\n    // generate html\n    this.request_div = document.createElement('div');\n    this.request_input = document.createElement('input');\n    this.request_input.className = \"request input \" + id;\n    this.request_button = document.createElement('button')\n    this.request_button.innerHTML = 'X'\n    this.request_button.className = 'button is-danger is-outlined'\n    this.request_button.addEventListener('click', event => {\n      parent.deleteRequest(this);\n      this.request_div.parentNode.removeChild(this.request_div);\n\t  })\n\n  \t//input and button each get their own div\n  \tthis.request_input_div = document.createElement('div');\n  \tthis.request_input_div.style.float = 'left'\n  \tthis.request_input_div.style.width = '88%'\n  \tthis.request_input_div.appendChild(this.request_input)\n  \tthis.request_button_div = document.createElement('div');\n  \tthis.request_button_div.style.float = 'right'\n  \tthis.request_button_div.appendChild(this.request_button)\n\n    this.request_div.appendChild(this.request_input_div)\n    this.request_div.appendChild(this.request_button_div)\n  }\n\n  /**\n   * Get element that stores the request\n   * @ret {Element} Element that stores requests\n   */\n  getSlotGroup() {\n    return this.request_div\n  }\n\n  getValue() {\n    alert(this.request_input.value);\n    return this.request_input.value;\n  }\n\n}\n\n/**\n * Class for managing button that adds request slots\n * and returning the strings of requests entered by the user\n */\nexport class RSlotAdder {\n\n   // Initialize the slot adder\n  constructor() {\n    // Array of requests elements\n    this.slots = []\n    this.identifier_prefix = \"req\"\n    this.identifier_number = 0;\n  }\n\n  /**\n   * Creates the button that adds a request slot\n   * @return {Element} button that adds a request slot\n   */\n  createButton() {\n    let button = document.createElement('button')\n\n    button.className = \"button\"\n    button.innerHTML = 'Add a Request'\n    button.addEventListener('click', event => {\n      let slot = new RSlot(this.identifier_prefix+this.identifier_number, this);\n      this.identifier_number++;\n      this.slots.push(slot)\n      $('.r_slots')[0].appendChild(slot.getSlotGroup())\n    })\n    return button\n  }\n\n  deleteRequest(request) {\n    this.slots.splice(this.slots.indexOf(request), 1);\n  }\n\n  /**\n   * Creates array of all requests entered by the user\n   * @ret: {string[]} Array of all requests\n   */\n  getRequests() {\n    let requests = []\n\n    for(let i = 0; i < this.slots.length; i++){\n      requests.push(this.slots[i].getValue());\n    }\n    return(requests)\n  }\n}\n\n$(() => {\n  let slot_adder = new SlotAdder()\n  let rslot_adder = new RSlotAdder()\n\n  $('.is24')[0].addEventListener('click', event => {\n    slot_adder.is24 = true\n    $('.is12')[0].className='button is12'\n    $('.is24')[0].className='button is24 is-info'\n    let times = Calendar.time_slots(true)\n    $('select').forEach(select => {\n      Array.from(select.children).forEach(option => {\n        option.innerHTML = times[option.value]\n      })\n    })\n  })\n\n  $('.is12')[0].addEventListener('click', event => {\n    slot_adder.is24 = false\n    $('.is12')[0].className='button is12 is-info'\n    $('.is24')[0].className='button is24'\n    let times = Calendar.time_slots(false)\n    $('select').forEach(select => {\n      Array.from(select.children).forEach(option => {\n        option.innerHTML = times[option.value]\n      })\n    })\n  })\n\n  $('.rslot_button_wrap')[0].appendChild(rslot_adder.createButton())\n  $('.slot_button_wrap')[0].appendChild(slot_adder.createButton())\n\n  let picker = new Pikaday({ field: $('input.date')[0], minDate: new Date(), trigger: $('button#date_picker')[0] })\n\n  $('button.submit')[0].addEventListener(\"click\", event => {\n    let payload = {\n      name: $('input.intitle')[0].value,\n      description: $('input.description')[0].value,\n      task_list: rslot_adder.getRequests(),\n      dates: [$('input.date')[0].value],\n      owner: $('input.name')[0].value,\n      times: slot_adder.getTimes()\n    }\n\n    fetch(\"/api/events/new/\", {\n      headers: {'Content-Type': 'application/json'},\n      method: \"POST\",\n      body: JSON.stringify(payload)\n    }).then(res => res.json()).then(res => {\n      if (res.status != \"ok\") {\n        alert(\"Could not contact server, please try again\")\n        return\n      }\n      window.location.href = '/event/?id='+res.uid\n    })\n  })\n})\n",
+    "content": "import $ from '/js/init.js'\nimport Calendar from '/js/calendar.js'\n\n/**\n * Class for creating days\n */\n\nexport class Day {\n\n\tconstructor() {\n\t\tthis.test = \"test\"\n\t\tthis.slot_adder = new SlotAdder()\n\t\tthis.date_input_field = undefined\n\t\tthis.id = 0\n\t\tthis.copy = false\n\t}\n\n\tcreate(day_id) {\n\t\tthis.id = day_id\n\n\t\tif (day_id > 1) {\n\t\t\tthis.copy = true\n\t\t}\n\n\t\t// Create the container for the day\n\t\tlet day_div = document.createElement('div')\n\t\tday_div.appendChild(document.createElement('br'))\n\n\t\tlet title = document.createElement('label')\n\t\ttitle.className = \"label\"\n\t\ttitle.innerText = \"Day \" + day_id\n\t\tday_div.appendChild(title)\n\n\t\tlet day_info = document.createElement('div')\n\t\tday_info.className = \"content_card box\"\n\n\t\t// Get the date field\n\t\tday_info.appendChild(this.date_div())\n\n\t\t// Get the time fields\n\t\tday_info.appendChild(this.time_div())\n\n\t\tday_div.appendChild(day_info)\n\t\treturn day_div\n\t}\n\n\tdate_div() {\n\t\tlet date_field = document.createElement('div')\n\t\tdate_field.className = \"field\"\n\n\t\t// Create the date label\n\t\tlet date_label = document.createElement('label')\n\t\tdate_label.className = \"label\"\n\t\tdate_label.innerText = \"Date\"\n\n\t\tdate_field.appendChild(date_label)\n\n\t\t// Create the date field\n\t\tlet date_input_field_div = document.createElement('div')\n\t\tdate_input_field_div.className = \"field has-addons\"\n\n\t\tlet date_control = document.createElement('div')\n\t\tdate_control.className = \"control\"\n\n\t\tthis.date_input_field = document.createElement('input')\n\t\tthis.date_input_field.className = \"date input\"\n\t\tthis.date_input_field.disabled = true\n\n\t\tdate_control.appendChild(this.date_input_field)\n\t\tdate_input_field_div.appendChild(date_control)\n\t\tdate_field.appendChild(date_input_field_div)\n\n\t\t// Create the date picker button\n\t\tlet button_control = document.createElement('div')\n\t\tbutton_control.className = \"control\"\n\n\t\tlet date_button = document.createElement('button')\n\t\tdate_button.className = \"button\"\n\t\tdate_button.setAttribute(\"id\", \"date_picker\")\n\t\tdate_button.innerText = \"Choose Date\"\n\n\t\tbutton_control.appendChild(date_button)\n\t\tdate_input_field_div.appendChild(button_control)\n\n\t\tlet picker = new Pikaday({ field: this.date_input_field, minDate: new Date(), trigger: date_button })\n\n\n\t\treturn (date_field)\n\t}\n\n\ttime_div() {\n\t\tlet time_field = document.createElement('div')\n\n\t\tlet slot_field = document.createElement('div')\n\t\ttime_field.appendChild(slot_field)\n\n\t\tif (!this.copy) {\n\t\t\ttime_field.appendChild(this.slot_adder.createInitial())\n\t\t}\n\t\ttime_field.appendChild(this.slot_adder.createButton(slot_field))\n\n\t\tif (this.copy) {\n\t\t\ttime_field.appendChild(this.slot_adder.createCopyButton(slot_field))\n\t\t}\n\n\t\treturn time_field\n\t}\n\n\tget_day_information() {\n\t\tlet date = this.date_input_field.value\n\t\tlet times = this.slot_adder.getTimes()\n\t\treturn [date, times]\n\t}\n\n}\n\n/**\n * Class for managing process of adding days\n */\nexport class DayAdder {\n    /**\n     * Initialize the slot adder\n     */\n\tconstructor() {\n\t\t/** @member {Element[]} slots - Array of groups of time slot selectors */\n\t\tthis.days = []\n\t\tthis.day_count = 0\n\n\n\t}\n\n    /**\n     * Creates the button that adds a group of time selectors\n     * @return {Element} button that adds a group of time selectors\n     */\n\tcreateButton(div) {\n\t\tlet button = document.createElement('button')\n\t\tbutton.className = \"button\"\n\t\tbutton.innerHTML = 'Add Another Day'\n\t\tbutton.style.marginTop = \"3%\"\n\t\tbutton.addEventListener('click', event => {\n\t\t\tlet day = new Day()\n\t\t\tthis.days.push(day)\n\t\t\tthis.day_count++\n\t\t\tdiv.appendChild(day.create(this.day_count))\n\n\t\t})\n\t\treturn button\n\t}\n\n\tcreateInitial() {\n\t\tlet day = new Day()\n\t\tthis.days.push(day)\n\t\tthis.day_count++\n\t\treturn (day.create(this.day_count))\n\t}\n\n    /**\n     * Creates array of all times slots that fall inside time slot ranges\n     * @return {int[]} Array of all times slots that fall inside time slot ranges\n     */\n\tgetDays() {\n\n\t\tlet day_info = []\n\n\t\tfor (let i in this.days) {\n\t\t\tday_info.push(this.days[i].get_day_information())\n\t\t}\n\n\t\treturn day_info\n\t}\n}\n\n/**\n * Class for creating time slots\n */\nexport class Slot {\n    /**\n     * @param {boolean} is24 - True: 24 hour time, False: 12 hour\n     */\n\tconstructor(is24) {\n\t\t/** @member {boolean} is24 - True: 24 hour time, False: 12 hour */\n\t\tthis.is24 = is24\n\n\t\t/** @member {object} selectors - Group of selectors */\n\t\tthis.selectors = {}\n\n\t\t/** @member {Element} group - Element that stores selectors */\n\t\tthis.group = document.createElement('div')\n\t\tthis.group.className = \"pair\"\n\n\t\t/** @member {Element} start_span - span to contain start-time selector */\n\t\tthis.start_span = document.createElement('span')\n\t\tthis.start_span.className = \"select\"\n\t\tthis.start_span.appendChild(this.createStartSlot())\n\t\tthis.group.appendChild(this.start_span)\n\n\t\t/** @member {Element} end_span - span to contain end-time selector */\n\t\tthis.end_span = document.createElement('span')\n\t\tthis.end_span.className = \"select\"\n\t\tthis.end_span.appendChild(this.createEndSlot(1))\n\t\tthis.group.appendChild(this.end_span)\n\t}\n\n    /**\n     * Creates a selector for selecting a time slot\n     * @param {int} exclude - How many time slots to exclude from the selector\n     * @param {int} def - default value of selector\n     * @return {Element} Time slot selector\n     */\n\tcreateSlotSelector(exclude = 0, def) {\n\t\tlet slots = Calendar.time_slots(this.is24)\n\t\tlet select = document.createElement('select')\n\t\tfor (let i in slots) {\n\t\t\tif (i < exclude || (exclude == -1 && i == slots.length - 1)) continue\n\t\t\tlet option = document.createElement('option')\n\t\t\toption.value = i\n\t\t\toption.innerHTML = slots[i]\n\t\t\tselect.appendChild(option)\n\t\t}\n\t\tif (def && def >= exclude) select.value = def\n\t\treturn select\n\t}\n\n    /**\n     * Creates the selector for the start time\n     * @return {Element} Time slot selector\n     */\n\tcreateStartSlot() {\n\t\tlet slotsel = this.createSlotSelector(-1)\n\t\tslotsel.addEventListener('change', event => {\n\t\t\tlet prevTime = +this.selectors.end.value\n\t\t\tthis.selectors.end.remove()\n\t\t\tthis.end_span.appendChild(this.createEndSlot(+slotsel.value + 1, Math.max(prevTime, +slotsel.value + 1)))\n\t\t})\n\t\tthis.selectors.start = slotsel\n\t\treturn slotsel\n\t}\n\n    /**\n     * Creates the selector for the end time\n     * @param {int} exclude - How many time slots to exclude from the selector\n     * @param {int} def - default value of selector\n     * @return {Element} Time slot selector\n     */\n\tcreateEndSlot(exclude = 0, def) {\n\t\tlet slotsel = this.createSlotSelector(exclude, def)\n\t\tthis.selectors.end = slotsel\n\t\treturn slotsel\n\t}\n\n    /**\n     * Get element that stores selectors\n     * @return {Element} Element that stores selectors\n     */\n\tgetSlotGroup() {\n\t\treturn this.group\n\t}\n\n    /**\n     * Get range of time slots\n     * @return {int[]} range of time slots\n     */\n\tgetRange() {\n\t\treturn [+this.selectors.start.value, +this.selectors.end.value]\n\t}\n}\n\n/**\n * Class for managing button that adds time slots\n */\nexport class SlotAdder {\n    /**\n     * Initialize the slot adder\n     */\n\tconstructor() {\n\t\t/** @member {Element[]} slots - Array of groups of time slot selectors */\n\t\tthis.slots = []\n\n\t\t/** @member {boolean} is24 - True: 24 hour time, False: 12 hour */\n\t\tthis.is24 = false\n\n\t\tthis.times_button = undefined\n\t\tthis.request_button = undefined\n\t}\n\n    /**\n     * Creates the button that adds a group of time selectors\n     * @return {Element} button that adds a group of time selectors\n     */\n\tcreateButton(div) {\n\t\tlet button = document.createElement('button')\n\t\tbutton.className = \"button\"\n\t\tbutton.innerHTML = 'Add a Time'\n\t\tbutton.style.marginRight = \"2%\"\n\t\tbutton.style.marginTop = \"2%\"\n\t\tbutton.addEventListener('click', event => {\n\t\t\tlet slot = new Slot(this.is24)\n\t\t\tthis.slots.push(slot)\n\t\t\tdiv.appendChild(slot.getSlotGroup())\n\t\t})\n\t\tthis.times_button = button\n\n\t\treturn button\n\t}\n\n\tcreateCopyButton(div) {\n\t\tlet button = document.createElement('button')\n\t\tbutton.className = \"button is-dark\"\n\t\tbutton.innerHTML = 'Use Same Times as First Day'\n\t\tbutton.style.marginTop = \"2%\"\n\t\tthis.times_button.disabled = true\n\t\tthis.toggleSlots(div)\n\t\tbutton.addEventListener('click', event => {\n\t\t\tif (button.className == \"button\") {\n\t\t\t\tbutton.className = \"button is-dark\"\n\t\t\t\tthis.times_button.disabled = true\n\t\t\t\tthis.toggleSlots(div)\n\t\t\t} else {\n\t\t\t\tbutton.className = \"button\"\n\t\t\t\tthis.times_button.disabled = false\n\t\t\t}\n\t\t})\n\t\treturn button\n\t}\n\n\ttoggleSlots(parentDiv) {\n\t\tthis.slots = []\n\t\twhile (parentDiv.hasChildNodes()) {\n\t\t\tparentDiv.removeChild(parentDiv.lastChild)\n\t\t}\n\t}\n\n\tcreateInitial(div) {\n\t\tlet slot = new Slot(this.is24)\n\t\tthis.slots.push(slot)\n\t\treturn (slot.getSlotGroup())\n\t}\n\n    /**\n     * Creates array of all times slots that fall inside time slot ranges\n     * @return {int[]} Array of all times slots that fall inside time slot ranges\n     */\n\tgetTimes() {\n\t\tif (this.copy) {\n\t\t\treturn []\n\t\t}\n\n\t\t// Here be dragons\n\t\treturn Array.from(new Set([].concat(...this.slots.map(x => Array.from({ length: x.getRange()[1] - x.getRange()[0] }, (n, i) => i + x.getRange()[0]))))).sort((a, b) => a - b)\n\t}\n}\n\n\n\n/**\n * Class for creating request slots\n */\nexport class RSlot {\n\n\tconstructor(id, parent) {\n\t\tthis.identifier = id\n\n\t\t// generate html\n\t\tthis.request_div = document.createElement('div');\n\t\tthis.request_input = document.createElement('input');\n\t\tthis.request_input.className = \"request input \" + id;\n\t\tthis.request_button = document.createElement('button')\n\t\tthis.request_button.innerHTML = 'X'\n\t\tthis.request_button.className = 'button'\n\t\tthis.request_button.addEventListener('click', event => {\n\t\t\tparent.deleteRequest(this);\n\t\t\tthis.request_div.parentNode.removeChild(this.request_div);\n\t\t})\n\n\t\t//input and button each get their own div\n\t\tthis.request_input_div = document.createElement('div');\n\t\tthis.request_input_div.style.marginBottom = \"1%\"\n\t\tthis.request_input_div.style.float = 'left'\n\t\tthis.request_input_div.style.width = '88%'\n\t\tthis.request_input_div.appendChild(this.request_input)\n\t\tthis.request_button_div = document.createElement('div');\n\t\tthis.request_button_div.style.float = 'right'\n\t\tthis.request_button_div.appendChild(this.request_button)\n\n\t\tthis.request_div.appendChild(this.request_input_div)\n\t\tthis.request_div.appendChild(this.request_button_div)\n\t}\n\n    /**\n     * Get element that stores the request\n     * @ret {Element} Element that stores requests\n     */\n\tgetSlotGroup() {\n\t\treturn this.request_div\n\t}\n\n\tgetValue() {\n\t\treturn this.request_input.value;\n\t}\n\n}\n\n/**\n * Class for managing button that adds request slots\n * and returning the strings of requests entered by the user\n */\nexport class RSlotAdder {\n\n\t// Initialize the slot adder\n\tconstructor() {\n\t\t// Array of requests elements\n\t\tthis.slots = []\n\t\tthis.identifier_prefix = \"req\"\n\t\tthis.identifier_number = 0;\n\t}\n\n    /**\n     * Creates the button that adds a request slot\n     * @return {Element} button that adds a request slot\n     */\n\tcreateButton() {\n\t\tlet button = document.createElement('button')\n\n\t\tbutton.className = \"button\"\n\t\tbutton.innerHTML = 'Add a Request'\n\t\tbutton.addEventListener('click', event => {\n\t\t\tlet slot = new RSlot(this.identifier_prefix + this.identifier_number, this);\n\t\t\tthis.identifier_number++;\n\t\t\tthis.slots.push(slot)\n\t\t\t$('.r_slots')[0].appendChild(slot.getSlotGroup())\n\t\t})\n\t\treturn button\n\t}\n\n\tdeleteRequest(request) {\n\t\tthis.slots.splice(this.slots.indexOf(request), 1);\n\t}\n\n    /**\n     * Creates array of all requests entered by the user\n     * @ret: {string[]} Array of all requests\n     */\n\tgetRequests() {\n\t\tlet requests = []\n\n\t\tfor (let i = 0; i < this.slots.length; i++) {\n\t\t\trequests.push(this.slots[i].getValue());\n\t\t}\n\t\treturn (requests)\n\t}\n}\n\nexport class Error {\n    /**\n     * Creates the modal with the table of registered guests\n     * @param {div} div an html div object that gives place to insert the modal\n     * @param {string} msg a string containing an error message to place in the modal\n     */\n\tcreateErrorModal(div, msg) {\n\t\tlet task_table = document.createElement('div');\n\t\tdiv.appendChild(task_table);\n\n\t\tlet info_tab = document.createElement('div');\n\t\tdiv.appendChild(info_tab)\n\n\t\tlet modal = document.createElement('div')\n\t\tmodal.className = \"modal\"\n\n\t\tlet modal_background = document.createElement('div')\n\t\tmodal_background.className = \"modal-background\"\n\n\t\tlet modal_content = document.createElement('div')\n\t\tmodal_content.className = \"modal-content\"\n\t\tmodal_content.style.backgroundColor = \"#fff\"\n\t\tmodal_content.style.borderRadius = \"5px\"\n\t\tmodal_content.style.padding = \"2%\"\n\n\t\tlet header = document.createElement('h1')\n\t\theader.className = \"title\"\n\t\theader.innerHTML = \"Error\"\n\t\tmodal_content.appendChild(header)\n\n\t\tlet subheader = document.createElement('h2')\n\t\tsubheader.className = \"subtitle\"\n\t\tsubheader.innerHTML = msg\n\t\tmodal_content.appendChild(subheader)\n\n\n\t\tlet modal_close = document.createElement('a')\n\t\tmodal_close.className = \"button is-warning\"\n\t\tmodal_close.innerHTML = \"Ok\"\n\n\t\tmodal_close.addEventListener(\"click\", event => {\n\t\t\tmodal.className = \"modal\"\n\t\t})\n\n\t\tmodal.appendChild(modal_background)\n\t\tmodal_content.appendChild(modal_close)\n\t\tmodal.appendChild(modal_content)\n\n\t\tmodal.className = \"modal is-active\"\n\t\ttask_table.appendChild(modal)\n\t}\n\n}\n\n$(() => {\n\t// let slot_adder = new SlotAdder()\n\tlet rslot_adder = new RSlotAdder()\n\n\t$('.is24')[0].addEventListener('click', event => {\n\t\t// slot_adder.is24 = true\n\t\t$('.is12')[0].className = 'button is12'\n\t\t$('.is24')[0].className = 'button is24 is-info'\n\t\tlet times = Calendar.time_slots(true)\n\t\t$('select').forEach(select => {\n\t\t\tArray.from(select.children).forEach(option => {\n\t\t\t\toption.innerHTML = times[option.value]\n\t\t\t})\n\t\t})\n\t})\n\n\t$('.is12')[0].addEventListener('click', event => {\n\t\t// slot_adder.is24 = false\n\t\t$('.is12')[0].className = 'button is12 is-info'\n\t\t$('.is24')[0].className = 'button is24'\n\t\tlet times = Calendar.time_slots(false)\n\t\t$('select').forEach(select => {\n\t\t\tArray.from(select.children).forEach(option => {\n\t\t\t\toption.innerHTML = times[option.value]\n\t\t\t})\n\t\t})\n\t})\n\n\t$('.rslot_button_wrap')[0].appendChild(rslot_adder.createButton())\n\n\tlet new_day = new DayAdder()\n\t$('.dates')[0].appendChild(new_day.createInitial())\n\n\t$('.dates_button')[0].appendChild(new_day.createButton($('.dates')[0]))\n\n\t$('button.submit')[0].addEventListener(\"click\", event => {\n\t\tlet error = new Error()\n\n\t\t// Process date and time information\n\t\tlet unprocessed_days = new_day.getDays()\n\n\t\tfor (let i in unprocessed_days) {\n\t\t\tif (unprocessed_days[i][1].length == 0) {\n\t\t\t\tunprocessed_days[i][1] = unprocessed_days[0][1]\n\t\t\t}\n\t\t}\n\n\t\tunprocessed_days.sort(function (a, b) { return new Date(a[0]) - new Date(b[0]) });\n\n\t\tlet date_array = []\n\t\tlet time_array = []\n\n\t\tfor (let i in unprocessed_days) {\n\t\t\tdate_array.push(unprocessed_days[i][0])\n\t\t\ttime_array.push(unprocessed_days[i][1])\n\n\t\t}\n\n\t\tlet processed_days = [date_array, time_array]\n\n\t\t// Error handling\n\t\tif ($('input.intitle')[0].value == \"\") {\n\t\t\terror.createErrorModal($('.error_container')[0], \"You must enter a name for the event!\")\n\t\t\treturn\n\t\t}\n\n\t\tif ($('input.description')[0].value == \"\") {\n\t\t\terror.createErrorModal($('.error_container')[0], \"You must enter a description for the event!\")\n\t\t\treturn\n\t\t}\n\n\t\tif ($('input.name')[0].value == \"\") {\n\t\t\terror.createErrorModal($('.error_container')[0], \"You must enter an owner name for the event!\")\n\t\t\treturn\n\t\t}\n\n\t\tfor (let i in date_array) {\n\t\t\tif (date_array[i] == \"\") {\n\t\t\t\terror.createErrorModal($('.error_container')[0], \"You must select a date for Day \" + (parseInt(i) + 1) + \"!\")\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\n\t\t// Posting\n\t\tlet payload = {\n\t\t\tname: $('input.intitle')[0].value,\n\t\t\tdescription: $('input.description')[0].value,\n\t\t\ttask_list: rslot_adder.getRequests(),\n\t\t\tdates: processed_days[0],\n\t\t\towner: $('input.name')[0].value,\n\t\t\ttimes: processed_days[1]\n\t\t}\n\n\t\tfetch(\"/api/events/new/\", {\n\t\t\theaders: { 'Content-Type': 'application/json' },\n\t\t\tmethod: \"POST\",\n\t\t\tbody: JSON.stringify(payload)\n\t\t}).then(res => res.json()).then(res => {\n\t\t\tif (res.status != \"ok\") {\n\t\t\t\talert(\"Could not contact server, please try again\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\twindow.location.href = '/event/?id=' + res.uid\n\t\t})\n\t})\n})\n",
     "static": true,
     "longname": "/home/alex/EECS448/Project-2/public/js/create.js",
     "access": "public",
@@ -635,6 +635,339 @@
   },
   {
     "__docId__": 52,
+    "kind": "class",
+    "name": "Day",
+    "memberof": "js/create.js",
+    "static": true,
+    "longname": "js/create.js~Day",
+    "access": "public",
+    "export": true,
+    "importPath": "Project-1/js/create.js",
+    "importStyle": "{Day}",
+    "description": "Class for creating days",
+    "lineNumber": 8,
+    "interface": false
+  },
+  {
+    "__docId__": 53,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "js/create.js~Day",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~Day#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true
+  },
+  {
+    "__docId__": 54,
+    "kind": "member",
+    "name": "test",
+    "memberof": "js/create.js~Day",
+    "static": false,
+    "longname": "js/create.js~Day#test",
+    "access": "public",
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "type": {
+      "types": [
+        "string"
+      ]
+    }
+  },
+  {
+    "__docId__": 55,
+    "kind": "member",
+    "name": "slot_adder",
+    "memberof": "js/create.js~Day",
+    "static": false,
+    "longname": "js/create.js~Day#slot_adder",
+    "access": "public",
+    "description": null,
+    "lineNumber": 12,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 56,
+    "kind": "member",
+    "name": "date_input_field",
+    "memberof": "js/create.js~Day",
+    "static": false,
+    "longname": "js/create.js~Day#date_input_field",
+    "access": "public",
+    "description": null,
+    "lineNumber": 13,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 57,
+    "kind": "member",
+    "name": "id",
+    "memberof": "js/create.js~Day",
+    "static": false,
+    "longname": "js/create.js~Day#id",
+    "access": "public",
+    "description": null,
+    "lineNumber": 14,
+    "undocument": true,
+    "type": {
+      "types": [
+        "number"
+      ]
+    }
+  },
+  {
+    "__docId__": 58,
+    "kind": "member",
+    "name": "copy",
+    "memberof": "js/create.js~Day",
+    "static": false,
+    "longname": "js/create.js~Day#copy",
+    "access": "public",
+    "description": null,
+    "lineNumber": 15,
+    "undocument": true,
+    "type": {
+      "types": [
+        "boolean"
+      ]
+    }
+  },
+  {
+    "__docId__": 59,
+    "kind": "method",
+    "name": "create",
+    "memberof": "js/create.js~Day",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~Day#create",
+    "access": "public",
+    "description": null,
+    "lineNumber": 18,
+    "undocument": true,
+    "params": [
+      {
+        "name": "day_id",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 62,
+    "kind": "method",
+    "name": "date_div",
+    "memberof": "js/create.js~Day",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~Day#date_div",
+    "access": "public",
+    "description": null,
+    "lineNumber": 47,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 64,
+    "kind": "method",
+    "name": "time_div",
+    "memberof": "js/create.js~Day",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~Day#time_div",
+    "access": "public",
+    "description": null,
+    "lineNumber": 91,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 65,
+    "kind": "method",
+    "name": "get_day_information",
+    "memberof": "js/create.js~Day",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~Day#get_day_information",
+    "access": "public",
+    "description": null,
+    "lineNumber": 109,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "undefined[]"
+      ]
+    }
+  },
+  {
+    "__docId__": 66,
+    "kind": "class",
+    "name": "DayAdder",
+    "memberof": "js/create.js",
+    "static": true,
+    "longname": "js/create.js~DayAdder",
+    "access": "public",
+    "export": true,
+    "importPath": "Project-1/js/create.js",
+    "importStyle": "{DayAdder}",
+    "description": "Class for managing process of adding days",
+    "lineNumber": 120,
+    "interface": false
+  },
+  {
+    "__docId__": 67,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "js/create.js~DayAdder",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~DayAdder#constructor",
+    "access": "public",
+    "description": "Initialize the slot adder",
+    "lineNumber": 124
+  },
+  {
+    "__docId__": 68,
+    "kind": "member",
+    "name": "days",
+    "memberof": "js/create.js~DayAdder",
+    "static": false,
+    "longname": "js/create.js~DayAdder#days",
+    "access": "public",
+    "description": null,
+    "lineNumber": 126,
+    "type": {
+      "types": [
+        "*[]"
+      ]
+    }
+  },
+  {
+    "__docId__": 69,
+    "kind": "member",
+    "name": "day_count",
+    "memberof": "js/create.js~DayAdder",
+    "static": false,
+    "longname": "js/create.js~DayAdder#day_count",
+    "access": "public",
+    "description": null,
+    "lineNumber": 127,
+    "undocument": true,
+    "type": {
+      "types": [
+        "number"
+      ]
+    }
+  },
+  {
+    "__docId__": 70,
+    "kind": "method",
+    "name": "createButton",
+    "memberof": "js/create.js~DayAdder",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~DayAdder#createButton",
+    "access": "public",
+    "description": "Creates the button that adds a group of time selectors",
+    "lineNumber": 136,
+    "return": {
+      "nullable": null,
+      "types": [
+        "Element"
+      ],
+      "spread": false,
+      "description": "button that adds a group of time selectors"
+    },
+    "params": [
+      {
+        "name": "div",
+        "types": [
+          "*"
+        ]
+      }
+    ]
+  },
+  {
+    "__docId__": 71,
+    "kind": "method",
+    "name": "createInitial",
+    "memberof": "js/create.js~DayAdder",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~DayAdder#createInitial",
+    "access": "public",
+    "description": null,
+    "lineNumber": 151,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 72,
+    "kind": "method",
+    "name": "getDays",
+    "memberof": "js/create.js~DayAdder",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~DayAdder#getDays",
+    "access": "public",
+    "description": "Creates array of all times slots that fall inside time slot ranges",
+    "lineNumber": 162,
+    "return": {
+      "nullable": null,
+      "types": [
+        "int[]"
+      ],
+      "spread": false,
+      "description": "Array of all times slots that fall inside time slot ranges"
+    },
+    "params": []
+  },
+  {
+    "__docId__": 73,
     "kind": "class",
     "name": "Slot",
     "memberof": "js/create.js",
@@ -645,11 +978,11 @@
     "importPath": "Project-1/js/create.js",
     "importStyle": "{Slot}",
     "description": "Class for creating time slots",
-    "lineNumber": 7,
+    "lineNumber": 177,
     "interface": false
   },
   {
-    "__docId__": 53,
+    "__docId__": 74,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "js/create.js~Slot",
@@ -659,7 +992,7 @@
     "longname": "js/create.js~Slot#constructor",
     "access": "public",
     "description": "",
-    "lineNumber": 11,
+    "lineNumber": 181,
     "params": [
       {
         "nullable": null,
@@ -674,7 +1007,7 @@
     ]
   },
   {
-    "__docId__": 54,
+    "__docId__": 75,
     "kind": "member",
     "name": "is24",
     "memberof": "js/create.js~Slot",
@@ -682,7 +1015,7 @@
     "longname": "js/create.js~Slot#is24",
     "access": "public",
     "description": null,
-    "lineNumber": 13,
+    "lineNumber": 183,
     "type": {
       "types": [
         "*"
@@ -690,7 +1023,7 @@
     }
   },
   {
-    "__docId__": 55,
+    "__docId__": 76,
     "kind": "member",
     "name": "selectors",
     "memberof": "js/create.js~Slot",
@@ -698,7 +1031,7 @@
     "longname": "js/create.js~Slot#selectors",
     "access": "public",
     "description": null,
-    "lineNumber": 16,
+    "lineNumber": 186,
     "type": {
       "types": [
         "{}"
@@ -706,7 +1039,7 @@
     }
   },
   {
-    "__docId__": 56,
+    "__docId__": 77,
     "kind": "member",
     "name": "group",
     "memberof": "js/create.js~Slot",
@@ -714,7 +1047,7 @@
     "longname": "js/create.js~Slot#group",
     "access": "public",
     "description": null,
-    "lineNumber": 19,
+    "lineNumber": 189,
     "type": {
       "types": [
         "*"
@@ -722,7 +1055,7 @@
     }
   },
   {
-    "__docId__": 57,
+    "__docId__": 78,
     "kind": "member",
     "name": "start_span",
     "memberof": "js/create.js~Slot",
@@ -730,7 +1063,7 @@
     "longname": "js/create.js~Slot#start_span",
     "access": "public",
     "description": null,
-    "lineNumber": 22,
+    "lineNumber": 193,
     "type": {
       "types": [
         "*"
@@ -738,7 +1071,7 @@
     }
   },
   {
-    "__docId__": 58,
+    "__docId__": 79,
     "kind": "member",
     "name": "end_span",
     "memberof": "js/create.js~Slot",
@@ -746,7 +1079,7 @@
     "longname": "js/create.js~Slot#end_span",
     "access": "public",
     "description": null,
-    "lineNumber": 28,
+    "lineNumber": 199,
     "type": {
       "types": [
         "*"
@@ -754,7 +1087,7 @@
     }
   },
   {
-    "__docId__": 59,
+    "__docId__": 80,
     "kind": "method",
     "name": "createSlotSelector",
     "memberof": "js/create.js~Slot",
@@ -764,7 +1097,7 @@
     "longname": "js/create.js~Slot#createSlotSelector",
     "access": "public",
     "description": "Creates a selector for selecting a time slot",
-    "lineNumber": 40,
+    "lineNumber": 211,
     "params": [
       {
         "nullable": null,
@@ -797,7 +1130,7 @@
     }
   },
   {
-    "__docId__": 60,
+    "__docId__": 81,
     "kind": "method",
     "name": "createStartSlot",
     "memberof": "js/create.js~Slot",
@@ -807,7 +1140,7 @@
     "longname": "js/create.js~Slot#createStartSlot",
     "access": "public",
     "description": "Creates the selector for the start time",
-    "lineNumber": 58,
+    "lineNumber": 229,
     "return": {
       "nullable": null,
       "types": [
@@ -819,7 +1152,7 @@
     "params": []
   },
   {
-    "__docId__": 61,
+    "__docId__": 82,
     "kind": "method",
     "name": "createEndSlot",
     "memberof": "js/create.js~Slot",
@@ -829,7 +1162,7 @@
     "longname": "js/create.js~Slot#createEndSlot",
     "access": "public",
     "description": "Creates the selector for the end time",
-    "lineNumber": 75,
+    "lineNumber": 246,
     "params": [
       {
         "nullable": null,
@@ -862,7 +1195,7 @@
     }
   },
   {
-    "__docId__": 62,
+    "__docId__": 83,
     "kind": "method",
     "name": "getSlotGroup",
     "memberof": "js/create.js~Slot",
@@ -872,7 +1205,7 @@
     "longname": "js/create.js~Slot#getSlotGroup",
     "access": "public",
     "description": "Get element that stores selectors",
-    "lineNumber": 85,
+    "lineNumber": 256,
     "return": {
       "nullable": null,
       "types": [
@@ -884,7 +1217,7 @@
     "params": []
   },
   {
-    "__docId__": 63,
+    "__docId__": 84,
     "kind": "method",
     "name": "getRange",
     "memberof": "js/create.js~Slot",
@@ -894,7 +1227,7 @@
     "longname": "js/create.js~Slot#getRange",
     "access": "public",
     "description": "Get range of time slots",
-    "lineNumber": 93,
+    "lineNumber": 264,
     "return": {
       "nullable": null,
       "types": [
@@ -906,7 +1239,7 @@
     "params": []
   },
   {
-    "__docId__": 64,
+    "__docId__": 85,
     "kind": "class",
     "name": "SlotAdder",
     "memberof": "js/create.js",
@@ -917,11 +1250,11 @@
     "importPath": "Project-1/js/create.js",
     "importStyle": "{SlotAdder}",
     "description": "Class for managing button that adds time slots",
-    "lineNumber": 101,
+    "lineNumber": 272,
     "interface": false
   },
   {
-    "__docId__": 65,
+    "__docId__": 86,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "js/create.js~SlotAdder",
@@ -931,10 +1264,10 @@
     "longname": "js/create.js~SlotAdder#constructor",
     "access": "public",
     "description": "Initialize the slot adder",
-    "lineNumber": 105
+    "lineNumber": 276
   },
   {
-    "__docId__": 66,
+    "__docId__": 87,
     "kind": "member",
     "name": "slots",
     "memberof": "js/create.js~SlotAdder",
@@ -942,7 +1275,7 @@
     "longname": "js/create.js~SlotAdder#slots",
     "access": "public",
     "description": null,
-    "lineNumber": 107,
+    "lineNumber": 278,
     "type": {
       "types": [
         "*[]"
@@ -950,7 +1283,7 @@
     }
   },
   {
-    "__docId__": 67,
+    "__docId__": 88,
     "kind": "member",
     "name": "is24",
     "memberof": "js/create.js~SlotAdder",
@@ -958,7 +1291,7 @@
     "longname": "js/create.js~SlotAdder#is24",
     "access": "public",
     "description": null,
-    "lineNumber": 110,
+    "lineNumber": 281,
     "type": {
       "types": [
         "boolean"
@@ -966,7 +1299,41 @@
     }
   },
   {
-    "__docId__": 68,
+    "__docId__": 89,
+    "kind": "member",
+    "name": "times_button",
+    "memberof": "js/create.js~SlotAdder",
+    "static": false,
+    "longname": "js/create.js~SlotAdder#times_button",
+    "access": "public",
+    "description": null,
+    "lineNumber": 283,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 90,
+    "kind": "member",
+    "name": "request_button",
+    "memberof": "js/create.js~SlotAdder",
+    "static": false,
+    "longname": "js/create.js~SlotAdder#request_button",
+    "access": "public",
+    "description": null,
+    "lineNumber": 284,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 91,
     "kind": "method",
     "name": "createButton",
     "memberof": "js/create.js~SlotAdder",
@@ -976,7 +1343,7 @@
     "longname": "js/create.js~SlotAdder#createButton",
     "access": "public",
     "description": "Creates the button that adds a group of time selectors",
-    "lineNumber": 117,
+    "lineNumber": 291,
     "return": {
       "nullable": null,
       "types": [
@@ -985,10 +1352,94 @@
       "spread": false,
       "description": "button that adds a group of time selectors"
     },
-    "params": []
+    "params": [
+      {
+        "name": "div",
+        "types": [
+          "*"
+        ]
+      }
+    ]
   },
   {
-    "__docId__": 69,
+    "__docId__": 93,
+    "kind": "method",
+    "name": "createCopyButton",
+    "memberof": "js/create.js~SlotAdder",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~SlotAdder#createCopyButton",
+    "access": "public",
+    "description": null,
+    "lineNumber": 307,
+    "undocument": true,
+    "params": [
+      {
+        "name": "div",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 94,
+    "kind": "method",
+    "name": "toggleSlots",
+    "memberof": "js/create.js~SlotAdder",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~SlotAdder#toggleSlots",
+    "access": "public",
+    "description": null,
+    "lineNumber": 327,
+    "undocument": true,
+    "params": [
+      {
+        "name": "parentDiv",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 96,
+    "kind": "method",
+    "name": "createInitial",
+    "memberof": "js/create.js~SlotAdder",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~SlotAdder#createInitial",
+    "access": "public",
+    "description": null,
+    "lineNumber": 334,
+    "undocument": true,
+    "params": [
+      {
+        "name": "div",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 97,
     "kind": "method",
     "name": "getTimes",
     "memberof": "js/create.js~SlotAdder",
@@ -998,7 +1449,7 @@
     "longname": "js/create.js~SlotAdder#getTimes",
     "access": "public",
     "description": "Creates array of all times slots that fall inside time slot ranges",
-    "lineNumber": 133,
+    "lineNumber": 344,
     "return": {
       "nullable": null,
       "types": [
@@ -1010,7 +1461,7 @@
     "params": []
   },
   {
-    "__docId__": 70,
+    "__docId__": 98,
     "kind": "class",
     "name": "RSlot",
     "memberof": "js/create.js",
@@ -1021,11 +1472,11 @@
     "importPath": "Project-1/js/create.js",
     "importStyle": "{RSlot}",
     "description": "Class for creating request slots",
-    "lineNumber": 144,
+    "lineNumber": 359,
     "interface": false
   },
   {
-    "__docId__": 71,
+    "__docId__": 99,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "js/create.js~RSlot",
@@ -1035,11 +1486,11 @@
     "longname": "js/create.js~RSlot#constructor",
     "access": "public",
     "description": null,
-    "lineNumber": 146,
+    "lineNumber": 361,
     "undocument": true
   },
   {
-    "__docId__": 72,
+    "__docId__": 100,
     "kind": "member",
     "name": "identifier",
     "memberof": "js/create.js~RSlot",
@@ -1047,7 +1498,7 @@
     "longname": "js/create.js~RSlot#identifier",
     "access": "public",
     "description": null,
-    "lineNumber": 147,
+    "lineNumber": 362,
     "undocument": true,
     "type": {
       "types": [
@@ -1056,7 +1507,7 @@
     }
   },
   {
-    "__docId__": 73,
+    "__docId__": 101,
     "kind": "member",
     "name": "request_div",
     "memberof": "js/create.js~RSlot",
@@ -1064,7 +1515,7 @@
     "longname": "js/create.js~RSlot#request_div",
     "access": "public",
     "description": null,
-    "lineNumber": 150,
+    "lineNumber": 365,
     "undocument": true,
     "type": {
       "types": [
@@ -1073,7 +1524,7 @@
     }
   },
   {
-    "__docId__": 74,
+    "__docId__": 102,
     "kind": "member",
     "name": "request_input",
     "memberof": "js/create.js~RSlot",
@@ -1081,7 +1532,7 @@
     "longname": "js/create.js~RSlot#request_input",
     "access": "public",
     "description": null,
-    "lineNumber": 151,
+    "lineNumber": 366,
     "undocument": true,
     "type": {
       "types": [
@@ -1090,7 +1541,7 @@
     }
   },
   {
-    "__docId__": 75,
+    "__docId__": 103,
     "kind": "member",
     "name": "request_button",
     "memberof": "js/create.js~RSlot",
@@ -1098,7 +1549,7 @@
     "longname": "js/create.js~RSlot#request_button",
     "access": "public",
     "description": null,
-    "lineNumber": 153,
+    "lineNumber": 368,
     "undocument": true,
     "type": {
       "types": [
@@ -1107,7 +1558,7 @@
     }
   },
   {
-    "__docId__": 76,
+    "__docId__": 104,
     "kind": "member",
     "name": "request_input_div",
     "memberof": "js/create.js~RSlot",
@@ -1115,7 +1566,7 @@
     "longname": "js/create.js~RSlot#request_input_div",
     "access": "public",
     "description": null,
-    "lineNumber": 162,
+    "lineNumber": 377,
     "undocument": true,
     "type": {
       "types": [
@@ -1124,7 +1575,7 @@
     }
   },
   {
-    "__docId__": 77,
+    "__docId__": 105,
     "kind": "member",
     "name": "request_button_div",
     "memberof": "js/create.js~RSlot",
@@ -1132,7 +1583,7 @@
     "longname": "js/create.js~RSlot#request_button_div",
     "access": "public",
     "description": null,
-    "lineNumber": 166,
+    "lineNumber": 382,
     "undocument": true,
     "type": {
       "types": [
@@ -1141,7 +1592,7 @@
     }
   },
   {
-    "__docId__": 78,
+    "__docId__": 106,
     "kind": "method",
     "name": "getSlotGroup",
     "memberof": "js/create.js~RSlot",
@@ -1151,7 +1602,7 @@
     "longname": "js/create.js~RSlot#getSlotGroup",
     "access": "public",
     "description": "Get element that stores the request",
-    "lineNumber": 178,
+    "lineNumber": 394,
     "unknown": [
       {
         "tagName": "@ret",
@@ -1166,7 +1617,7 @@
     }
   },
   {
-    "__docId__": 79,
+    "__docId__": 107,
     "kind": "method",
     "name": "getValue",
     "memberof": "js/create.js~RSlot",
@@ -1176,7 +1627,7 @@
     "longname": "js/create.js~RSlot#getValue",
     "access": "public",
     "description": null,
-    "lineNumber": 182,
+    "lineNumber": 398,
     "undocument": true,
     "params": [],
     "return": {
@@ -1186,7 +1637,7 @@
     }
   },
   {
-    "__docId__": 80,
+    "__docId__": 108,
     "kind": "class",
     "name": "RSlotAdder",
     "memberof": "js/create.js",
@@ -1197,11 +1648,11 @@
     "importPath": "Project-1/js/create.js",
     "importStyle": "{RSlotAdder}",
     "description": "Class for managing button that adds request slots\nand returning the strings of requests entered by the user",
-    "lineNumber": 193,
+    "lineNumber": 408,
     "interface": false
   },
   {
-    "__docId__": 81,
+    "__docId__": 109,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "js/create.js~RSlotAdder",
@@ -1211,11 +1662,11 @@
     "longname": "js/create.js~RSlotAdder#constructor",
     "access": "public",
     "description": null,
-    "lineNumber": 196,
+    "lineNumber": 411,
     "undocument": true
   },
   {
-    "__docId__": 82,
+    "__docId__": 110,
     "kind": "member",
     "name": "slots",
     "memberof": "js/create.js~RSlotAdder",
@@ -1223,7 +1674,7 @@
     "longname": "js/create.js~RSlotAdder#slots",
     "access": "public",
     "description": null,
-    "lineNumber": 198,
+    "lineNumber": 413,
     "undocument": true,
     "type": {
       "types": [
@@ -1232,7 +1683,7 @@
     }
   },
   {
-    "__docId__": 83,
+    "__docId__": 111,
     "kind": "member",
     "name": "identifier_prefix",
     "memberof": "js/create.js~RSlotAdder",
@@ -1240,7 +1691,7 @@
     "longname": "js/create.js~RSlotAdder#identifier_prefix",
     "access": "public",
     "description": null,
-    "lineNumber": 199,
+    "lineNumber": 414,
     "undocument": true,
     "type": {
       "types": [
@@ -1249,7 +1700,7 @@
     }
   },
   {
-    "__docId__": 84,
+    "__docId__": 112,
     "kind": "member",
     "name": "identifier_number",
     "memberof": "js/create.js~RSlotAdder",
@@ -1257,7 +1708,7 @@
     "longname": "js/create.js~RSlotAdder#identifier_number",
     "access": "public",
     "description": null,
-    "lineNumber": 200,
+    "lineNumber": 415,
     "undocument": true,
     "type": {
       "types": [
@@ -1266,7 +1717,7 @@
     }
   },
   {
-    "__docId__": 85,
+    "__docId__": 113,
     "kind": "method",
     "name": "createButton",
     "memberof": "js/create.js~RSlotAdder",
@@ -1276,7 +1727,7 @@
     "longname": "js/create.js~RSlotAdder#createButton",
     "access": "public",
     "description": "Creates the button that adds a request slot",
-    "lineNumber": 207,
+    "lineNumber": 422,
     "return": {
       "nullable": null,
       "types": [
@@ -1288,7 +1739,7 @@
     "params": []
   },
   {
-    "__docId__": 86,
+    "__docId__": 114,
     "kind": "method",
     "name": "deleteRequest",
     "memberof": "js/create.js~RSlotAdder",
@@ -1298,7 +1749,7 @@
     "longname": "js/create.js~RSlotAdder#deleteRequest",
     "access": "public",
     "description": null,
-    "lineNumber": 221,
+    "lineNumber": 436,
     "undocument": true,
     "params": [
       {
@@ -1311,7 +1762,7 @@
     "return": null
   },
   {
-    "__docId__": 87,
+    "__docId__": 115,
     "kind": "method",
     "name": "getRequests",
     "memberof": "js/create.js~RSlotAdder",
@@ -1321,7 +1772,7 @@
     "longname": "js/create.js~RSlotAdder#getRequests",
     "access": "public",
     "description": "Creates array of all requests entered by the user\n@ret: {string[]} Array of all requests",
-    "lineNumber": 229,
+    "lineNumber": 444,
     "params": [],
     "return": {
       "types": [
@@ -1330,209 +1781,33 @@
     }
   },
   {
-    "__docId__": 88,
-    "kind": "file",
-    "name": "js/event.js",
-    "content": "import $ from '/js/init.js'\nimport Calendar from '/js/calendar.js'\n\n/**\n * Class for Event Page methods\n */\nexport class EventPage {\n\t/**\n\t * @param {object} event - Contains event information\n\t */\n\tconstructor(event) {\n\t\t/** @member {object} event - Event information */\n\t\tthis.event = event;\n\t\tthis.event.attendees = JSON.parse(this.event.attendees);\n\t\tthis.event.dates = JSON.parse(this.event.dates);\n\t\tthis.event.times = JSON.parse(this.event.times);\n\t\tthis.event.task_list = this.event.task_list.split(',');\n\t\tthis.attendee_task_list = [];\n\t\tlet eventInfo = null\n\t}\n\n\t/**\n\t * Creates the Attendee table\n\t * @return {Element} div containing the Attendee Table\n\t */\n\tcreateAttendeeTable() {\n\t\tlet slots = Calendar.time_slots(false)\n\t\tlet t_cont = document.createElement('div')\n\t\tt_cont.className = \"table_container\"\n\t\tlet table = document.createElement('table')\n\t\tlet tbody = document.createElement('tbody')\n\t\tlet thead = document.createElement('thead')\n\n\t\tlet date_row = document.createElement('tr')\n\t\tlet date_cell = document.createElement('th')\n\t\tdate_row.appendChild(date_cell);\n\n\t\tlet tr = document.createElement('tr')\n\t\tlet th = document.createElement('th')\n\t\ttr.appendChild(th)\n\n\t\t// CREATE TABLE HEADER INFORMATION\n\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\t\t\t\tif (k == 0 && i == 0 || k == 1 && i != 0) {\n\t\t\t\t\tlet date_cell = document.createElement('th')\n\t\t\t\t\tdate_cell.setAttribute(\"colspan\", this.event.times[i].length)\n\t\t\t\t\tdate_cell.innerHTML = (this.event.dates[i])\n\t\t\t\t\tdate_cell.style.textAlign = 'left';\n\t\t\t\t\tdate_cell.style.fontWeight = 'bold'\n\t\t\t\t\tdate_row.appendChild(date_cell)\n\t\t\t\t} else if (k == 0) {\n\t\t\t\t\tlet date_cell = document.createElement('th')\n\t\t\t\t\tdate_cell.style.width = '10px';\n\t\t\t\t\tdate_row.appendChild(date_cell)\n\t\t\t\t}\n\n\t\t\t\tlet th = document.createElement('th')\n\t\t\t\tth.innerHTML = slots[this.event.times[i][k]]\n\t\t\t\ttr.appendChild(th)\n\t\t\t}\n\t\t\tif (i < this.event.times.length - 1) {\n\t\t\t\tlet spacer = document.createElement('th')\n\t\t\t\tspacer.className = 'spacer'\n\t\t\t\ttr.appendChild(spacer)\n\t\t\t}\n\t\t}\n\n\t\tthead.appendChild(date_row);\n\t\tthead.appendChild(tr)\n\t\ttable.appendChild(thead)\n\t\ttable.appendChild(tbody)\n\n\t\t// CREATE EACH ATTENDEE ROW WITH ATTENDANCE INFORMATION\n\t\tfor (let j = 0; j < this.event.attendees.length; j++) {\n\n\t\t\tlet tr = document.createElement('tr')\n\t\t\tlet name = document.createElement('td')\n\n\t\t\tif (this.event.attendees[j].name == this.event.attendees[0].name) {\n\t\t\t\tname.className = \"owner\"\n\t\t\t}\n\n\t\t\tname.appendChild(document.createTextNode(this.event.attendees[j].name))\n\t\t\ttr.appendChild(name)\n\n\t\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\t\t\t\t\tlet td = document.createElement('td')\n\n\t\t\t\t\tif (k == 0 && i != 0) {\n\t\t\t\t\t\tlet spacer = document.createElement('td')\n\t\t\t\t\t\tspacer.className = 'spacer'\n\t\t\t\t\t\ttr.appendChild(spacer)\n\t\t\t\t\t}\n\n\t\t\t\t\tlet checkbox = document.createElement('input')\n\t\t\t\t\tcheckbox.type = 'checkbox'\n\n\t\t\t\t\tif (this.event.attendees[j].times[i].includes(this.event.times[i][k])) {\n\t\t\t\t\t\tcheckbox.checked = \"checked\"\n\t\t\t\t\t}\n\t\t\t\t\tcheckbox.disabled = true\n\t\t\t\t\ttd.appendChild(checkbox)\n\t\t\t\t\ttr.appendChild(td)\n\t\t\t\t}\n\t\t\t}\n\t\t\ttbody.appendChild(tr)\n\t\t}\n\n\t\t// NOT ENTIRELY SURE THAT THE PARTICIPANTS ROW IS NECCESSARY\n\t\t// KNOWN BUG: The participants map in the commented code below does not work\n\n\n\t\t/*\n\t\tlet ttr = document.createElement('tr')\n\t\tlet ttd = document.createElement('td')\n\t\tttd.innerHTML = 'Participants'\n\t\tttd.className = 'check_count'\n\t\tttr.appendChild(ttd)\n\n\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\t\t\t\tif (k == 0 && i != 0) {\n\t\t\t\t\tlet spacer = document.createElement('td')\n\t\t\t\t\tspacer.className = 'spacer'\n\t\t\t\t\tttr.appendChild(spacer)\n\t\t\t\t}\n\t\t\t\tlet td = document.createElement('td')\n\t\t\t\ttd.className = 'check_count'\n\t\t\t\ttd.innerHTML = [].concat(...this.event.attendees[i].times.map(a => a.times)).filter(a => a == this.event.times[i][k]).length\n\t\t\t\tttr.appendChild(td)\n\t\t\t}\n\t\t}\n\n\t\ttbody.appendChild(ttr)\n\t\t*/\n\n\t\t// CREATE SPACER ROW\n\t\tlet str = document.createElement('tr');\n\t\tlet std = document.createElement('td');\n\n\t\tstd.appendChild(document.createElement('br'));\n\t\tstd.appendChild(document.createTextNode(\"Sign Up\"));\n\t\tstd.className = \"owner\"\n\t\tstr.appendChild(std);\n\t\ttbody.appendChild(str)\n\n\t\t// SET UP REGISTRATION DATA\n\t\tlet utr = document.createElement('tr')\n\t\tutr.className = 'user-tr'\n\t\tlet utd = document.createElement('td')\n\t\tlet uinput = document.createElement('input')\n\t\tuinput.className = \"input is-small\"\n\t\tuinput.placeholder = \"Your name\"\n\t\t/** @member {object} name - Text field for user registeration */\n\t\tthis.name = uinput\n\t\tutd.appendChild(uinput)\n\t\tutr.appendChild(utd)\n\n\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\n\t\t\t\tif (k == 0 && i != 0) {\n\t\t\t\t\tlet spacer = document.createElement('td')\n\t\t\t\t\tspacer.className = 'spacer'\n\t\t\t\t\tutr.appendChild(spacer)\n\t\t\t\t}\n\n\t\t\t\tlet td = document.createElement('td')\n\t\t\t\tlet checkbox = document.createElement('input')\n\t\t\t\tcheckbox.type = 'checkbox'\n\t\t\t\tcheckbox.value = i + \",\" + this.event.times[i][k]\n\t\t\t\tcheckbox.setAttribute(\"Day\", i)\n\t\t\t\ttd.appendChild(checkbox)\n\t\t\t\tutr.appendChild(td)\n\n\t\t\t}\n\t\t}\n\t\ttbody.appendChild(utr)\n\n\t\tt_cont.appendChild(table)\n\t\treturn t_cont\n\t}\n\n\t/**\n\t * Creates the Register button\n\t * @return {Element} button for registering a new attendee\n\t */\n\tcreateSignupButton() {\n\t\tlet button = document.createElement('button')\n\t\tbutton.innerHTML = 'Register'\n\t\tbutton.className = 'submit button is-dark'\n\n\t\tbutton.addEventListener('click', event => {\n\n\t\t\tlet unprocessed_times = Array.from($('input[type=\"checkbox\"][value]:checked')).map(el => el.value)\n\t\t\tlet time = []\n\n\t\t\tfor (let i in this.event.dates) {\n\t\t\t\ttime[i] = []\n\t\t\t}\n\n\t\t\tfor (let i in unprocessed_times) {\n\t\t\t\tunprocessed_times[i] = unprocessed_times[i].split(',')\n\t\t\t\ttime[unprocessed_times[i][0]].push(parseInt(unprocessed_times[i][1]))\n\t\t\t}\n\n\n\t\t\tlet payload = {}\n\t\t\tpayload.event_uid = this.event.uid\n\t\t\tpayload.all_attendees = this.event.attendees;\n\n\t\t\tpayload.name = this.name.value\n\t\t\tpayload.times = time\n\t\t\tpayload.attendee_task_list = this.attendee_task_list;\n\t\t\tpayload.new_event_task_list = this.event.task_list.filter(x => this.attendee_task_list.indexOf(x) == -1);\n\t\t\tif (!payload.name) {\n\t\t\t\tthis.createErrorModal(this.eventInfo, \"You must enter a name.\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\tif (payload.times.every((day_array) => {\n\t\t\t\tif (day_array.length == 0) { return (true) }\n\t\t\t})) {\n\t\t\t\tthis.createErrorModal(this.eventInfo, \"You must choose at least one time.\")\n\t\t\t\treturn\n\t\t\t}\n\n\t\t\tconsole.log(payload);\n\t\t\tfetch('/api/events/register/', {\n\t\t\t\theaders: { 'Content-Type': 'application/json' },\n\t\t\t\tmethod: \"POST\",\n\t\t\t\tbody: JSON.stringify(payload)\n\t\t\t}).then(res => res.json()).then(res => {\n\t\t\t\tif (res.status != \"ok\") {\n\t\t\t\t\talert(\"Could not contact server, please try again\")\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\twindow.location.reload()\n\t\t\t})\n\t\t})\n\t\treturn button\n\t}\n\n\t/**\n\t * Creates the task list button\n\t * @return {Element} button for registering for a task\n\t */\n\tcreateTaskButton() {\n\t\tlet button = document.createElement('button')\n\t\tbutton.innerHTML = 'Help Out'\n\t\tbutton.className = 'submit button is-small'\n\t\treturn button\n\t}\n\n\t/**\n\t * Creates the modal with the table of registered guests\n\t * @param {div} div an html div object that gives place to insert the modal\n\t */\n\tcreateModal(div) {\n\t\tlet task_table = document.createElement('div');\n\t\tdiv.appendChild(task_table);\n\n\t\tif (this.event.task_list_master.length) {\n\n\t\t\tlet info_tab = document.createElement('div');\n\t\t\tinfo_tab.innerHTML = \"<a class='has-text-grey-light'>Clear here to see what people are already bringing</a>\";\n\t\t\tdiv.appendChild(info_tab)\n\n\n\n\t\t\tinfo_tab.addEventListener(\"click\", event => {\n\t\t\t\tlet modal = document.createElement('div')\n\t\t\t\tmodal.className = \"modal\"\n\n\t\t\t\tlet modal_background = document.createElement('div')\n\t\t\t\tmodal_background.className = \"modal-background\"\n\n\t\t\t\tlet modal_content = document.createElement('div')\n\t\t\t\tmodal_content.className = \"modal-content\"\n\t\t\t\tmodal_content.style.backgroundColor = \"#fff\"\n\t\t\t\tmodal_content.style.borderRadius = \"5px\"\n\t\t\t\tmodal_content.style.padding = \"2%\"\n\n\t\t\t\tlet header = document.createElement('h1')\n\t\t\t\theader.className = \"title\"\n\t\t\t\theader.textContent = this.event.name + \" Guests\"\n\t\t\t\tmodal_content.appendChild(header)\n\n\t\t\t\tlet subheader = document.createElement('h2')\n\t\t\t\tsubheader.className = \"subtitle\"\n\t\t\t\tsubheader.innerHTML = \"Who is bringing what?\"\n\t\t\t\tmodal_content.appendChild(subheader)\n\n\t\t\t\tlet task_list_table = document.createElement('table')\n\t\t\t\ttask_list_table.style.width = \"100%\"\n\t\t\t\tlet tr = document.createElement('tr')\n\t\t\t\tlet td_attendee = document.createElement('td')\n\t\t\t\ttd_attendee.innerHTML = \"Attendee\"\n\t\t\t\ttd_attendee.style.fontWeight = \"bold\"\n\n\t\t\t\ttd_attendee.setAttribute(\"colspan\", 2)\n\t\t\t\ttr.appendChild(td_attendee)\n\t\t\t\ttask_list_table.appendChild(tr)\n\n\t\t\t\tfor (let i in this.event.attendees) {\n\n\t\t\t\t\tlet atr = document.createElement('tr')\n\t\t\t\t\tlet atd = document.createElement('td')\n\t\t\t\t\tatd.textContent = this.event.attendees[i].name\n\t\t\t\t\tatd.style.width = \"30%\"\n\n\t\t\t\t\tlet ttd = document.createElement('td')\n\n\t\t\t\t\tif (this.event.attendees[i].task_list == undefined || this.event.attendees[i].task_list == \"\") {\n\t\t\t\t\t\tttd.innerHTML = \"&nbsp;-\"\n\t\t\t\t\t} else {\n\t\t\t\t\t\tttd.textContent = this.event.attendees[i].task_list\n\t\t\t\t\t}\n\t\t\t\t\tttd.style.width = \"70%\"\n\t\t\t\t\ttask_list_table.appendChild(atr)\n\n\t\t\t\t\t// style the table\n\t\t\t\t\tif (i % 2 == 0) {\n\t\t\t\t\t\tatd.style.backgroundColor = \"#f0f0f0\"\n\t\t\t\t\t\tatr.style.backgroundColor = \"#f0f0f0\"\n\t\t\t\t\t}\n\n\t\t\t\t\tatd.style.borderWidth = \"1px\";\n\t\t\t\t\tatd.style.borderColor = \"#fff\";\n\t\t\t\t\tatd.style.borderStyle = \"solid\";\n\t\t\t\t\tttd.style.borderWidth = \"1px\";\n\t\t\t\t\tttd.style.borderColor = \"#fff\";\n\t\t\t\t\tttd.style.borderStyle = \"solid\";\n\n\t\t\t\t\tatr.appendChild(atd)\n\t\t\t\t\tatr.appendChild(ttd)\n\t\t\t\t}\n\n\t\t\t\tlet modal_close = document.createElement('button')\n\t\t\t\tmodal_close.className = \"modal-close is-large\"\n\t\t\t\tmodal_close.setAttribute(\"aria-label\", \"close\")\n\n\t\t\t\tmodal_close.addEventListener(\"click\", event => {\n\t\t\t\t\tmodal.className = \"modal\"\n\t\t\t\t})\n\n\t\t\t\tmodal.appendChild(modal_background)\n\t\t\t\tmodal_content.appendChild(task_list_table)\n\t\t\t\tmodal_content.appendChild(modal_close)\n\t\t\t\tmodal.appendChild(modal_content)\n\n\t\t\t\tmodal.className = \"modal is-active\"\n\t\t\t\ttask_table.appendChild(modal)\n\t\t\t})\n\t\t}\n\t}\n\n\t/**\n\t * Creates the modal with the table of registered guests\n\t * @param {div} div an html div object that gives place to insert the modal\n\t * @param {string} msg a string containing an error message to place in the modal\n\t */\n\tcreateErrorModal(div, msg) {\n\t\tlet task_table = document.createElement('div');\n\t\tdiv.appendChild(task_table);\n\n\t\tlet info_tab = document.createElement('div');\n\t\tdiv.appendChild(info_tab)\n\n\t\tlet modal = document.createElement('div')\n\t\tmodal.className = \"modal\"\n\n\t\tlet modal_background = document.createElement('div')\n\t\tmodal_background.className = \"modal-background\"\n\n\t\tlet modal_content = document.createElement('div')\n\t\tmodal_content.className = \"modal-content\"\n\t\tmodal_content.style.backgroundColor = \"#fff\"\n\t\tmodal_content.style.borderRadius = \"5px\"\n\t\tmodal_content.style.padding = \"2%\"\n\n\t\tlet header = document.createElement('h1')\n\t\theader.className = \"title\"\n\t\theader.innerHTML = \"Error\"\n\t\tmodal_content.appendChild(header)\n\n\t\tlet subheader = document.createElement('h2')\n\t\tsubheader.className = \"subtitle\"\n\t\tsubheader.innerHTML = msg\n\t\tmodal_content.appendChild(subheader)\n\n\n\t\tlet modal_close = document.createElement('a')\n\t\tmodal_close.className = \"button is-warning\"\n\t\tmodal_close.innerHTML = \"Ok\"\n\n\t\tmodal_close.addEventListener(\"click\", event => {\n\t\t\tmodal.className = \"modal\"\n\t\t})\n\n\t\tmodal.appendChild(modal_background)\n\t\tmodal_content.appendChild(modal_close)\n\t\tmodal.appendChild(modal_content)\n\n\t\tmodal.className = \"modal is-active\"\n\t\ttask_table.appendChild(modal)\n\t}\n\n\n\t/**\n\t * Create task requests\n\t * @param {div} parentDiv an html div object to place the help out button\n\t */\n\tcreateTaskAdder(parentDiv) {\n\t\tlet task_list = document.createElement('div');\n\t\tparentDiv.appendChild(task_list);\n\n\t\tlet task_button = document.createElement('div');\n\t\tlet task_list_button = this.createTaskButton()\n\t\ttask_button.appendChild(task_list_button)\n\n\t\tparentDiv.appendChild(task_button);\n\n\t\ttask_list_button.addEventListener('click', event => {\n\t\t\tparentDiv.removeChild(task_button);\n\t\t\tlet header = document.createElement('div')\n\t\t\theader.innerHTML = \"Select tasks\"\n\t\t\ttask_list.appendChild(header);\n\n\t\t\tlet task_button_container = document.createElement('div');\n\t\t\ttask_button_container.className = \"field is-grouped is-grouped-multiline\";\n\t\t\tlet tasks = [];\n\n\t\t\tfor (let i in this.event.task_list) {\n\t\t\t\tlet task = document.createElement('p')\n\t\t\t\ttask.className = \"control button is-small\";\n\t\t\t\ttask.textContent = this.event.task_list[i];\n\t\t\t\ttask_button_container.appendChild(task);\n\t\t\t\ttasks.push(task);\n\t\t\t}\n\n\t\t\tfor (let i in tasks) {\n\t\t\t\ttasks[i].addEventListener('click', event => {\n\t\t\t\t\tif (!this.attendee_task_list.includes(tasks[i].innerHTML)) {\n\t\t\t\t\t\ttasks[i].className = \"control button is-dark is-small\";\n\t\t\t\t\t\tthis.attendee_task_list.push(tasks[i].innerHTML)\n\t\t\t\t\t} else {\n\t\t\t\t\t\ttasks[i].className = \"control button is-small task\";\n\t\t\t\t\t\tlet loc = this.attendee_task_list.indexOf(tasks[i].innerHTML);\n\t\t\t\t\t\tthis.attendee_task_list.splice(loc, 1)\n\t\t\t\t\t}\n\t\t\t\t})\n\t\t\t}\n\t\t\ttask_list.appendChild(task_button_container);\n\t\t})\n\t}\n\n\t/**\n\t * Creates a div that contains the Attendee table, Register Button, and Task List information\n\t * @return {Element} div containing page contents\n\t */\n\tcreateEventInfo() {\n\t\tthis.eventInfo = document.createElement('div')\n\t\tthis.eventInfo.appendChild(this.createAttendeeTable())\n\n\t\t// If there are requests still needing assigned, create the button and list \n\t\t// else print that all requests have been met\n\t\tif (this.event.task_list.length > 0 && this.event.task_list[0].length > 1) {\n\t\t\tthis.createTaskAdder(this.eventInfo);\n\t\t} else {\n\t\t\tthis.eventInfo.appendChild(document.createTextNode(\"All requests have been met.\"))\n\t\t}\n\n\t\t// Registration Button\n\t\tlet submit_button = document.createElement('div');\n\t\tsubmit_button.className = \"submit_container\";\n\t\tsubmit_button.appendChild(this.createSignupButton())\n\t\tthis.eventInfo.appendChild(submit_button);\n\n\t\t// Handle modal that holds which requests have been met by attendees\n\t\tthis.createModal(this.eventInfo)\n\n\t\treturn this.eventInfo\n\t}\n}\n\n$(() => {\n\tlet event_id = (new URLSearchParams(window.location.search)).get('id')\n\tfetch('/api/events/?uid=' + event_id).then(res => res.json()).then(event => {\n\t\tif (!event) {\n\t\t\t$('.content_card')[0].innerHTML = \"This event does not exist\"\n\t\t\treturn\n\t\t}\n\t\tlet event_page = new EventPage(event)\n\t\t$('h1.titleext')[0].appendChild(document.createTextNode(event.name))\n\t\t$('h2.event_date')[0].appendChild(document.createTextNode(\"Starting \" + event.dates[0]))\n\t\t$('h2.subtitleext')[0].appendChild(document.createTextNode(event.description))\n\t\t$('.content_card')[0].appendChild(event_page.createEventInfo(event))\n\t})\n})",
-    "static": true,
-    "longname": "/home/alex/EECS448/Project-2/public/js/event.js",
-    "access": "public",
-    "description": null,
-    "lineNumber": 1
-  },
-  {
-    "__docId__": 89,
+    "__docId__": 116,
     "kind": "class",
-    "name": "EventPage",
-    "memberof": "js/event.js",
+    "name": "Error",
+    "memberof": "js/create.js",
     "static": true,
-    "longname": "js/event.js~EventPage",
+    "longname": "js/create.js~Error",
     "access": "public",
     "export": true,
-    "importPath": "Project-1/js/event.js",
-    "importStyle": "{EventPage}",
-    "description": "Class for Event Page methods",
-    "lineNumber": 7,
+    "importPath": "Project-1/js/create.js",
+    "importStyle": "{Error}",
+    "description": null,
+    "lineNumber": 454,
+    "undocument": true,
     "interface": false
   },
   {
-    "__docId__": 90,
-    "kind": "constructor",
-    "name": "constructor",
-    "memberof": "js/event.js~EventPage",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "js/event.js~EventPage#constructor",
-    "access": "public",
-    "description": "",
-    "lineNumber": 11,
-    "params": [
-      {
-        "nullable": null,
-        "types": [
-          "object"
-        ],
-        "spread": false,
-        "optional": false,
-        "name": "event",
-        "description": "Contains event information"
-      }
-    ]
-  },
-  {
-    "__docId__": 91,
-    "kind": "member",
-    "name": "event",
-    "memberof": "js/event.js~EventPage",
-    "static": false,
-    "longname": "js/event.js~EventPage#event",
-    "access": "public",
-    "description": null,
-    "lineNumber": 13,
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 92,
-    "kind": "member",
-    "name": "attendee_task_list",
-    "memberof": "js/event.js~EventPage",
-    "static": false,
-    "longname": "js/event.js~EventPage#attendee_task_list",
-    "access": "public",
-    "description": null,
-    "lineNumber": 18,
-    "undocument": true,
-    "type": {
-      "types": [
-        "*[]"
-      ]
-    }
-  },
-  {
-    "__docId__": 93,
-    "kind": "method",
-    "name": "createAttendeeTable",
-    "memberof": "js/event.js~EventPage",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "js/event.js~EventPage#createAttendeeTable",
-    "access": "public",
-    "description": "Creates the Attendee table",
-    "lineNumber": 26,
-    "return": {
-      "nullable": null,
-      "types": [
-        "Element"
-      ],
-      "spread": false,
-      "description": "div containing the Attendee Table"
-    },
-    "params": []
-  },
-  {
-    "__docId__": 94,
-    "kind": "member",
-    "name": "name",
-    "memberof": "js/event.js~EventPage",
-    "static": false,
-    "longname": "js/event.js~EventPage#name",
-    "access": "public",
-    "description": null,
-    "lineNumber": 157,
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 95,
-    "kind": "method",
-    "name": "createSignupButton",
-    "memberof": "js/event.js~EventPage",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "js/event.js~EventPage#createSignupButton",
-    "access": "public",
-    "description": "Creates the Register button",
-    "lineNumber": 190,
-    "return": {
-      "nullable": null,
-      "types": [
-        "Element"
-      ],
-      "spread": false,
-      "description": "button for registering a new attendee"
-    },
-    "params": []
-  },
-  {
-    "__docId__": 96,
-    "kind": "method",
-    "name": "createTaskButton",
-    "memberof": "js/event.js~EventPage",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "js/event.js~EventPage#createTaskButton",
-    "access": "public",
-    "description": "Creates the task list button",
-    "lineNumber": 249,
-    "return": {
-      "nullable": null,
-      "types": [
-        "Element"
-      ],
-      "spread": false,
-      "description": "button for registering for a task"
-    },
-    "params": []
-  },
-  {
-    "__docId__": 97,
-    "kind": "method",
-    "name": "createModal",
-    "memberof": "js/event.js~EventPage",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "js/event.js~EventPage#createModal",
-    "access": "public",
-    "description": "Creates the modal with the table of registered guests",
-    "lineNumber": 260,
-    "params": [
-      {
-        "nullable": null,
-        "types": [
-          "div"
-        ],
-        "spread": false,
-        "optional": false,
-        "name": "div",
-        "description": "an html div object that gives place to insert the modal"
-      }
-    ],
-    "return": null
-  },
-  {
-    "__docId__": 98,
+    "__docId__": 117,
     "kind": "method",
     "name": "createErrorModal",
-    "memberof": "js/event.js~EventPage",
+    "memberof": "js/create.js~Error",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "js/event.js~EventPage#createErrorModal",
+    "longname": "js/create.js~Error#createErrorModal",
     "access": "public",
     "description": "Creates the modal with the table of registered guests",
-    "lineNumber": 364,
+    "lineNumber": 460,
     "params": [
       {
         "nullable": null,
@@ -1558,7 +1833,235 @@
     "return": null
   },
   {
-    "__docId__": 99,
+    "__docId__": 118,
+    "kind": "file",
+    "name": "js/event.js",
+    "content": "import $ from '/js/init.js'\nimport Calendar from '/js/calendar.js'\n\n/**\n * Class for Event Page methods\n */\nexport class EventPage {\n\t/**\n\t * @param {object} event - Contains event information\n\t */\n\tconstructor(event) {\n\t\t/** @member {object} event - Event information */\n\t\tthis.event = event;\n\t\tthis.event.attendees = JSON.parse(this.event.attendees);\n\t\tthis.event.dates = JSON.parse(this.event.dates);\n\t\tthis.event.times = JSON.parse(this.event.times);\n\t\tthis.event.task_list = this.event.task_list.split(',');\n\t\tthis.attendee_task_list = [];\n\t\tlet eventInfo = null\n\t}\n\n\t/**\n\t * Creates the Attendee table\n\t * @return {Element} div containing the Attendee Table\n\t */\n\tcreateAttendeeTable() {\n\t\tlet slots = Calendar.time_slots(false)\n\t\tlet t_cont = document.createElement('div')\n\t\tt_cont.className = \"table_container\"\n\t\tlet table = document.createElement('table')\n\t\tlet tbody = document.createElement('tbody')\n\t\tlet thead = document.createElement('thead')\n\n\t\tlet date_row = document.createElement('tr')\n\t\tlet date_cell = document.createElement('th')\n\t\tdate_row.appendChild(date_cell);\n\n\t\tlet tr = document.createElement('tr')\n\t\tlet th = document.createElement('th')\n\t\ttr.appendChild(th)\n\n\t\t// CREATE TABLE HEADER INFORMATION\n\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\t\t\t\tif(k == 0) {\n\t\t\t\t\tlet date_cell = document.createElement('th')\n\t\t\t\t\tdate_cell.setAttribute(\"colspan\", this.event.times[i].length+1)\n\t\t\t\t\tdate_cell.style.minWidth = \"120px\"\n\t\t\t\t\tdate_cell.innerHTML = (this.event.dates[i])\n\t\t\t\t\tdate_cell.style.textAlign = 'left';\n\t\t\t\t\tdate_cell.style.fontWeight = 'bold'\n\t\t\t\t\tdate_row.appendChild(date_cell)\n\t\t\t\t} \n\n\t\t\t\tlet th = document.createElement('th')\n\t\t\t\tth.innerHTML = slots[this.event.times[i][k]]\n\t\t\t\ttr.appendChild(th)\n\t\t\t}\n\t\t\tif (i < this.event.times.length - 1) {\n\t\t\t\tlet spacer = document.createElement('th')\n\t\t\t\tspacer.className = 'spacer'\n\t\t\t\ttr.appendChild(spacer)\n\t\t\t}\n\t\t}\n\n\t\tthead.appendChild(date_row);\n\t\tthead.appendChild(tr)\n\t\ttable.appendChild(thead)\n\t\ttable.appendChild(tbody)\n\n\t\t// CREATE EACH ATTENDEE ROW WITH ATTENDANCE INFORMATION\n\t\tfor (let j = 0; j < this.event.attendees.length; j++) {\n\n\t\t\tlet tr = document.createElement('tr')\n\t\t\tlet name = document.createElement('td')\n\n\t\t\tif (this.event.attendees[j].name == this.event.attendees[0].name) {\n\t\t\t\tname.className = \"owner\"\n\t\t\t}\n\n\t\t\tname.appendChild(document.createTextNode(this.event.attendees[j].name))\n\t\t\ttr.appendChild(name)\n\n\t\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\t\t\t\t\tlet td = document.createElement('td')\n\n\t\t\t\t\tif (k == 0 && i != 0) {\n\t\t\t\t\t\tlet spacer = document.createElement('td')\n\t\t\t\t\t\tspacer.className = 'spacer'\n\t\t\t\t\t\ttr.appendChild(spacer)\n\t\t\t\t\t}\n\n\t\t\t\t\tlet checkbox = document.createElement('input')\n\t\t\t\t\tcheckbox.type = 'checkbox'\n\n\t\t\t\t\tif (this.event.attendees[j].times[i].includes(this.event.times[i][k])) {\n\t\t\t\t\t\tcheckbox.checked = \"checked\"\n\t\t\t\t\t}\n\t\t\t\t\tcheckbox.disabled = true\n\t\t\t\t\ttd.appendChild(checkbox)\n\t\t\t\t\ttr.appendChild(td)\n\t\t\t\t}\n\t\t\t}\n\t\t\ttbody.appendChild(tr)\n\t\t}\n\n\t\t// NOT ENTIRELY SURE THAT THE PARTICIPANTS ROW IS NECCESSARY\n\t\t// KNOWN BUG: The participants map in the commented code below does not work\n\n\t\t/*\n\t\tlet ttr = document.createElement('tr')\n\t\tlet ttd = document.createElement('td')\n\t\tttd.innerHTML = 'Participants'\n\t\tttd.className = 'check_count'\n\t\tttr.appendChild(ttd)\n\n\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\t\t\t\tif (k == 0 && i != 0) {\n\t\t\t\t\tlet spacer = document.createElement('td')\n\t\t\t\t\tspacer.className = 'spacer'\n\t\t\t\t\tttr.appendChild(spacer)\n\t\t\t\t}\n\t\t\t\tlet td = document.createElement('td')\n\t\t\t\ttd.className = 'check_count'\n\t\t\t\ttd.innerHTML = [].concat(...this.event.attendees[i].times.map(a => a.times)).filter(a => a == this.event.times[i][k]).length\n\t\t\t\tttr.appendChild(td)\n\t\t\t}\n\t\t}\n\n\t\ttbody.appendChild(ttr)\n\t\t*/\n\n\t\t// CREATE SPACER ROW\n\t\tlet str = document.createElement('tr');\n\t\tlet std = document.createElement('td');\n\n\t\tstd.appendChild(document.createElement('br'));\n\t\tstd.appendChild(document.createTextNode(\"Sign Up\"));\n\t\tstd.className = \"owner\"\n\t\tstr.appendChild(std);\n\t\ttbody.appendChild(str)\n\n\t\t// SET UP REGISTRATION DATA\n\t\tlet utr = document.createElement('tr')\n\t\tutr.className = 'user-tr'\n\t\tlet utd = document.createElement('td')\n\t\tlet uinput = document.createElement('input')\n\t\tuinput.className = \"input is-small\"\n\t\tuinput.placeholder = \"Your name\"\n\t\t/** @member {object} name - Text field for user registeration */\n\t\tthis.name = uinput\n\t\tutd.appendChild(uinput)\n\t\tutr.appendChild(utd)\n\n\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\n\t\t\t\tif (k == 0 && i != 0) {\n\t\t\t\t\tlet spacer = document.createElement('td')\n\t\t\t\t\tspacer.className = 'spacer'\n\t\t\t\t\tutr.appendChild(spacer)\n\t\t\t\t}\n\n\t\t\t\tlet td = document.createElement('td')\n\t\t\t\tlet checkbox = document.createElement('input')\n\t\t\t\tcheckbox.type = 'checkbox'\n\t\t\t\tcheckbox.value = i + \",\" + this.event.times[i][k]\n\t\t\t\tcheckbox.setAttribute(\"Day\", i)\n\t\t\t\ttd.appendChild(checkbox)\n\t\t\t\tutr.appendChild(td)\n\n\t\t\t}\n\t\t}\n\t\ttbody.appendChild(utr)\n\n\t\tt_cont.appendChild(table)\n\t\treturn t_cont\n\t}\n\n\t/**\n\t * Creates the Register button\n\t * @return {Element} button for registering a new attendee\n\t */\n\tcreateSignupButton() {\n\t\tlet button = document.createElement('button')\n\t\tbutton.innerHTML = 'Register'\n\t\tbutton.className = 'submit button is-dark'\n\n\t\tbutton.addEventListener('click', event => {\n\n\t\t\tlet unprocessed_times = Array.from($('input[type=\"checkbox\"][value]:checked')).map(el => el.value)\n\t\t\tlet time = []\n\n\t\t\tfor (let i in this.event.dates) {\n\t\t\t\ttime[i] = []\n\t\t\t}\n\n\t\t\tfor (let i in unprocessed_times) {\n\t\t\t\tunprocessed_times[i] = unprocessed_times[i].split(',')\n\t\t\t\ttime[unprocessed_times[i][0]].push(parseInt(unprocessed_times[i][1]))\n\t\t\t}\n\n\n\t\t\tlet payload = {}\n\t\t\tpayload.event_uid = this.event.uid\n\t\t\tpayload.all_attendees = this.event.attendees;\n\n\t\t\tpayload.name = this.name.value\n\t\t\tpayload.times = time\n\t\t\tpayload.attendee_task_list = this.attendee_task_list;\n\t\t\tpayload.new_event_task_list = this.event.task_list.filter(x => this.attendee_task_list.indexOf(x) == -1);\n\t\t\tif (!payload.name) {\n\t\t\t\tthis.createErrorModal(this.eventInfo, \"You must enter a name.\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\tif (payload.times.every((day_array) => {\n\t\t\t\tif (day_array.length == 0) { return (true) }\n\t\t\t})) {\n\t\t\t\tthis.createErrorModal(this.eventInfo, \"You must choose at least one time.\")\n\t\t\t\treturn\n\t\t\t}\n\n\t\t\tconsole.log(payload);\n\t\t\tfetch('/api/events/register/', {\n\t\t\t\theaders: { 'Content-Type': 'application/json' },\n\t\t\t\tmethod: \"POST\",\n\t\t\t\tbody: JSON.stringify(payload)\n\t\t\t}).then(res => res.json()).then(res => {\n\t\t\t\tif (res.status != \"ok\") {\n\t\t\t\t\talert(\"Could not contact server, please try again\")\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\twindow.location.reload()\n\t\t\t})\n\t\t})\n\t\treturn button\n\t}\n\n\t/**\n\t * Creates the task list button\n\t * @return {Element} button for registering for a task\n\t */\n\tcreateTaskButton() {\n\t\tlet button = document.createElement('button')\n\t\tbutton.innerHTML = 'Help Out'\n\t\tbutton.className = 'submit button is-small'\n\t\treturn button\n\t}\n\n\t/**\n\t * Creates the modal with the table of registered guests\n\t * @param {div} div an html div object that gives place to insert the modal\n\t */\n\tcreateModal(div) {\n\t\tlet task_table = document.createElement('div');\n\t\tdiv.appendChild(task_table);\n\n\t\tif (this.event.task_list_master.length) {\n\n\t\t\tlet info_tab = document.createElement('div');\n\t\t\tinfo_tab.innerHTML = \"<a class='has-text-grey-light'>Clear here to see what people are already bringing</a>\";\n\t\t\tdiv.appendChild(info_tab)\n\n\n\n\t\t\tinfo_tab.addEventListener(\"click\", event => {\n\t\t\t\tlet modal = document.createElement('div')\n\t\t\t\tmodal.className = \"modal\"\n\n\t\t\t\tlet modal_background = document.createElement('div')\n\t\t\t\tmodal_background.className = \"modal-background\"\n\n\t\t\t\tlet modal_content = document.createElement('div')\n\t\t\t\tmodal_content.className = \"modal-content\"\n\t\t\t\tmodal_content.style.backgroundColor = \"#fff\"\n\t\t\t\tmodal_content.style.borderRadius = \"5px\"\n\t\t\t\tmodal_content.style.padding = \"2%\"\n\n\t\t\t\tlet header = document.createElement('h1')\n\t\t\t\theader.className = \"title\"\n\t\t\t\theader.textContent = this.event.name + \" Guests\"\n\t\t\t\tmodal_content.appendChild(header)\n\n\t\t\t\tlet subheader = document.createElement('h2')\n\t\t\t\tsubheader.className = \"subtitle\"\n\t\t\t\tsubheader.innerHTML = \"Who is bringing what?\"\n\t\t\t\tmodal_content.appendChild(subheader)\n\n\t\t\t\tlet task_list_table = document.createElement('table')\n\t\t\t\ttask_list_table.style.width = \"100%\"\n\t\t\t\tlet tr = document.createElement('tr')\n\t\t\t\tlet td_attendee = document.createElement('td')\n\t\t\t\ttd_attendee.innerHTML = \"Attendee\"\n\t\t\t\ttd_attendee.style.fontWeight = \"bold\"\n\n\t\t\t\ttd_attendee.setAttribute(\"colspan\", 2)\n\t\t\t\ttr.appendChild(td_attendee)\n\t\t\t\ttask_list_table.appendChild(tr)\n\n\t\t\t\tfor (let i in this.event.attendees) {\n\n\t\t\t\t\tlet atr = document.createElement('tr')\n\t\t\t\t\tlet atd = document.createElement('td')\n\t\t\t\t\tatd.textContent = this.event.attendees[i].name\n\t\t\t\t\tatd.style.width = \"30%\"\n\n\t\t\t\t\tlet ttd = document.createElement('td')\n\n\t\t\t\t\tif (this.event.attendees[i].task_list == undefined || this.event.attendees[i].task_list == \"\") {\n\t\t\t\t\t\tttd.innerHTML = \"&nbsp;-\"\n\t\t\t\t\t} else {\n\t\t\t\t\t\tttd.textContent = this.event.attendees[i].task_list\n\t\t\t\t\t}\n\t\t\t\t\tttd.style.width = \"70%\"\n\t\t\t\t\ttask_list_table.appendChild(atr)\n\n\t\t\t\t\t// style the table\n\t\t\t\t\tif (i % 2 == 0) {\n\t\t\t\t\t\tatd.style.backgroundColor = \"#f0f0f0\"\n\t\t\t\t\t\tatr.style.backgroundColor = \"#f0f0f0\"\n\t\t\t\t\t}\n\n\t\t\t\t\tatd.style.borderWidth = \"1px\";\n\t\t\t\t\tatd.style.borderColor = \"#fff\";\n\t\t\t\t\tatd.style.borderStyle = \"solid\";\n\t\t\t\t\tttd.style.borderWidth = \"1px\";\n\t\t\t\t\tttd.style.borderColor = \"#fff\";\n\t\t\t\t\tttd.style.borderStyle = \"solid\";\n\n\t\t\t\t\tatr.appendChild(atd)\n\t\t\t\t\tatr.appendChild(ttd)\n\t\t\t\t}\n\n\t\t\t\tlet modal_close = document.createElement('button')\n\t\t\t\tmodal_close.className = \"modal-close is-large\"\n\t\t\t\tmodal_close.setAttribute(\"aria-label\", \"close\")\n\n\t\t\t\tmodal_close.addEventListener(\"click\", event => {\n\t\t\t\t\tmodal.className = \"modal\"\n\t\t\t\t})\n\n\t\t\t\tmodal.appendChild(modal_background)\n\t\t\t\tmodal_content.appendChild(task_list_table)\n\t\t\t\tmodal_content.appendChild(modal_close)\n\t\t\t\tmodal.appendChild(modal_content)\n\n\t\t\t\tmodal.className = \"modal is-active\"\n\t\t\t\ttask_table.appendChild(modal)\n\t\t\t})\n\t\t}\n\t}\n\n\t/**\n\t * Creates the modal with the table of registered guests\n\t * @param {div} div an html div object that gives place to insert the modal\n\t * @param {string} msg a string containing an error message to place in the modal\n\t */\n\tcreateErrorModal(div, msg) {\n\t\tlet task_table = document.createElement('div');\n\t\tdiv.appendChild(task_table);\n\n\t\tlet info_tab = document.createElement('div');\n\t\tdiv.appendChild(info_tab)\n\n\t\tlet modal = document.createElement('div')\n\t\tmodal.className = \"modal\"\n\n\t\tlet modal_background = document.createElement('div')\n\t\tmodal_background.className = \"modal-background\"\n\n\t\tlet modal_content = document.createElement('div')\n\t\tmodal_content.className = \"modal-content\"\n\t\tmodal_content.style.backgroundColor = \"#fff\"\n\t\tmodal_content.style.borderRadius = \"5px\"\n\t\tmodal_content.style.padding = \"2%\"\n\n\t\tlet header = document.createElement('h1')\n\t\theader.className = \"title\"\n\t\theader.innerHTML = \"Error\"\n\t\tmodal_content.appendChild(header)\n\n\t\tlet subheader = document.createElement('h2')\n\t\tsubheader.className = \"subtitle\"\n\t\tsubheader.innerHTML = msg\n\t\tmodal_content.appendChild(subheader)\n\n\n\t\tlet modal_close = document.createElement('a')\n\t\tmodal_close.className = \"button is-warning\"\n\t\tmodal_close.innerHTML = \"Ok\"\n\n\t\tmodal_close.addEventListener(\"click\", event => {\n\t\t\tmodal.className = \"modal\"\n\t\t})\n\n\t\tmodal.appendChild(modal_background)\n\t\tmodal_content.appendChild(modal_close)\n\t\tmodal.appendChild(modal_content)\n\n\t\tmodal.className = \"modal is-active\"\n\t\ttask_table.appendChild(modal)\n\t}\n\n\n\t/**\n\t * Create task requests\n\t * @param {div} parentDiv an html div object to place the help out button\n\t */\n\tcreateTaskAdder(parentDiv) {\n\t\tlet task_list = document.createElement('div');\n\t\tparentDiv.appendChild(task_list);\n\n\t\tlet task_button = document.createElement('div');\n\t\tlet task_list_button = this.createTaskButton()\n\t\ttask_button.appendChild(task_list_button)\n\n\t\tparentDiv.appendChild(task_button);\n\n\t\ttask_list_button.addEventListener('click', event => {\n\t\t\tparentDiv.removeChild(task_button);\n\t\t\tlet header = document.createElement('div')\n\t\t\theader.innerHTML = \"Select tasks\"\n\t\t\ttask_list.appendChild(header);\n\n\t\t\tlet task_button_container = document.createElement('div');\n\t\t\ttask_button_container.className = \"field is-grouped is-grouped-multiline\";\n\t\t\tlet tasks = [];\n\n\t\t\tfor (let i in this.event.task_list) {\n\t\t\t\tlet task = document.createElement('p')\n\t\t\t\ttask.className = \"control button is-small\";\n\t\t\t\ttask.textContent = this.event.task_list[i];\n\t\t\t\ttask_button_container.appendChild(task);\n\t\t\t\ttasks.push(task);\n\t\t\t}\n\n\t\t\tfor (let i in tasks) {\n\t\t\t\ttasks[i].addEventListener('click', event => {\n\t\t\t\t\tif (!this.attendee_task_list.includes(tasks[i].innerHTML)) {\n\t\t\t\t\t\ttasks[i].className = \"control button is-dark is-small\";\n\t\t\t\t\t\tthis.attendee_task_list.push(tasks[i].innerHTML)\n\t\t\t\t\t} else {\n\t\t\t\t\t\ttasks[i].className = \"control button is-small task\";\n\t\t\t\t\t\tlet loc = this.attendee_task_list.indexOf(tasks[i].innerHTML);\n\t\t\t\t\t\tthis.attendee_task_list.splice(loc, 1)\n\t\t\t\t\t}\n\t\t\t\t})\n\t\t\t}\n\t\t\ttask_list.appendChild(task_button_container);\n\t\t})\n\t}\n\n\t/**\n\t * Creates a div that contains the Attendee table, Register Button, and Task List information\n\t * @return {Element} div containing page contents\n\t */\n\tcreateEventInfo() {\n\t\tthis.eventInfo = document.createElement('div')\n\t\tthis.eventInfo.appendChild(this.createAttendeeTable())\n\n\t\t// If there are requests still needing assigned, create the button and list \n\t\t// else print that all requests have been met\n\t\tif (this.event.task_list.length > 0 && this.event.task_list[0].length > 1) {\n\t\t\tthis.createTaskAdder(this.eventInfo);\n\t\t} else {\n\t\t\tif(this.event.task_list_master.length == 0) {\n\t\t\t\tthis.eventInfo.appendChild(document.createTextNode(\"There are no requests from the event creator.\"))\n\t\t\t} else {\n\t\t\t\tthis.eventInfo.appendChild(document.createTextNode(\"All requests have been met.\"))\n\t\t\t}\n\t\t}\n\n\t\t// Registration Button\n\t\tlet submit_button = document.createElement('div');\n\t\tsubmit_button.className = \"submit_container\";\n\t\tsubmit_button.appendChild(this.createSignupButton())\n\t\tthis.eventInfo.appendChild(submit_button);\n\n\t\t// Handle modal that holds which requests have been met by attendees\n\t\tthis.createModal(this.eventInfo)\n\n\t\treturn this.eventInfo\n\t}\n}\n\n$(() => {\n\tlet event_id = (new URLSearchParams(window.location.search)).get('id')\n\tfetch('/api/events/?uid=' + event_id).then(res => res.json()).then(event => {\n\t\tif (!event) {\n\t\t\t$('.content_card')[0].innerHTML = \"This event does not exist\"\n\t\t\treturn\n\t\t}\n\t\tlet event_page = new EventPage(event)\n\t\t$('h1.titleext')[0].appendChild(document.createTextNode(event.name))\n\t\t$('h2.event_date')[0].appendChild(document.createTextNode(\"Starting \" + event.dates[0]))\n\t\t$('h2.subtitleext')[0].appendChild(document.createTextNode(event.description))\n\t\t$('.content_card')[0].appendChild(event_page.createEventInfo(event))\n\t})\n})",
+    "static": true,
+    "longname": "/home/alex/EECS448/Project-2/public/js/event.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 119,
+    "kind": "class",
+    "name": "EventPage",
+    "memberof": "js/event.js",
+    "static": true,
+    "longname": "js/event.js~EventPage",
+    "access": "public",
+    "export": true,
+    "importPath": "Project-1/js/event.js",
+    "importStyle": "{EventPage}",
+    "description": "Class for Event Page methods",
+    "lineNumber": 7,
+    "interface": false
+  },
+  {
+    "__docId__": 120,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "js/event.js~EventPage",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/event.js~EventPage#constructor",
+    "access": "public",
+    "description": "",
+    "lineNumber": 11,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "event",
+        "description": "Contains event information"
+      }
+    ]
+  },
+  {
+    "__docId__": 121,
+    "kind": "member",
+    "name": "event",
+    "memberof": "js/event.js~EventPage",
+    "static": false,
+    "longname": "js/event.js~EventPage#event",
+    "access": "public",
+    "description": null,
+    "lineNumber": 13,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 122,
+    "kind": "member",
+    "name": "attendee_task_list",
+    "memberof": "js/event.js~EventPage",
+    "static": false,
+    "longname": "js/event.js~EventPage#attendee_task_list",
+    "access": "public",
+    "description": null,
+    "lineNumber": 18,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*[]"
+      ]
+    }
+  },
+  {
+    "__docId__": 123,
+    "kind": "method",
+    "name": "createAttendeeTable",
+    "memberof": "js/event.js~EventPage",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/event.js~EventPage#createAttendeeTable",
+    "access": "public",
+    "description": "Creates the Attendee table",
+    "lineNumber": 26,
+    "return": {
+      "nullable": null,
+      "types": [
+        "Element"
+      ],
+      "spread": false,
+      "description": "div containing the Attendee Table"
+    },
+    "params": []
+  },
+  {
+    "__docId__": 124,
+    "kind": "member",
+    "name": "name",
+    "memberof": "js/event.js~EventPage",
+    "static": false,
+    "longname": "js/event.js~EventPage#name",
+    "access": "public",
+    "description": null,
+    "lineNumber": 153,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 125,
+    "kind": "method",
+    "name": "createSignupButton",
+    "memberof": "js/event.js~EventPage",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/event.js~EventPage#createSignupButton",
+    "access": "public",
+    "description": "Creates the Register button",
+    "lineNumber": 186,
+    "return": {
+      "nullable": null,
+      "types": [
+        "Element"
+      ],
+      "spread": false,
+      "description": "button for registering a new attendee"
+    },
+    "params": []
+  },
+  {
+    "__docId__": 126,
+    "kind": "method",
+    "name": "createTaskButton",
+    "memberof": "js/event.js~EventPage",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/event.js~EventPage#createTaskButton",
+    "access": "public",
+    "description": "Creates the task list button",
+    "lineNumber": 245,
+    "return": {
+      "nullable": null,
+      "types": [
+        "Element"
+      ],
+      "spread": false,
+      "description": "button for registering for a task"
+    },
+    "params": []
+  },
+  {
+    "__docId__": 127,
+    "kind": "method",
+    "name": "createModal",
+    "memberof": "js/event.js~EventPage",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/event.js~EventPage#createModal",
+    "access": "public",
+    "description": "Creates the modal with the table of registered guests",
+    "lineNumber": 256,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "div"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "div",
+        "description": "an html div object that gives place to insert the modal"
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 128,
+    "kind": "method",
+    "name": "createErrorModal",
+    "memberof": "js/event.js~EventPage",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/event.js~EventPage#createErrorModal",
+    "access": "public",
+    "description": "Creates the modal with the table of registered guests",
+    "lineNumber": 360,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "div"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "div",
+        "description": "an html div object that gives place to insert the modal"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "msg",
+        "description": "a string containing an error message to place in the modal"
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 129,
     "kind": "method",
     "name": "createTaskAdder",
     "memberof": "js/event.js~EventPage",
@@ -1568,7 +2071,7 @@
     "longname": "js/event.js~EventPage#createTaskAdder",
     "access": "public",
     "description": "Create task requests",
-    "lineNumber": 415,
+    "lineNumber": 411,
     "params": [
       {
         "nullable": null,
@@ -1584,7 +2087,7 @@
     "return": null
   },
   {
-    "__docId__": 100,
+    "__docId__": 130,
     "kind": "method",
     "name": "createEventInfo",
     "memberof": "js/event.js~EventPage",
@@ -1594,7 +2097,7 @@
     "longname": "js/event.js~EventPage#createEventInfo",
     "access": "public",
     "description": "Creates a div that contains the Attendee table, Register Button, and Task List information",
-    "lineNumber": 463,
+    "lineNumber": 459,
     "return": {
       "nullable": null,
       "types": [
@@ -1606,7 +2109,7 @@
     "params": []
   },
   {
-    "__docId__": 101,
+    "__docId__": 131,
     "kind": "member",
     "name": "eventInfo",
     "memberof": "js/event.js~EventPage",
@@ -1614,7 +2117,7 @@
     "longname": "js/event.js~EventPage#eventInfo",
     "access": "public",
     "description": null,
-    "lineNumber": 464,
+    "lineNumber": 460,
     "undocument": true,
     "type": {
       "types": [
@@ -1623,7 +2126,7 @@
     }
   },
   {
-    "__docId__": 102,
+    "__docId__": 132,
     "kind": "file",
     "name": "js/events.js",
     "content": "import $ from '/js/init.js'\n\n/**\n * Class for Events Page methods\n */\nexport class EventsPage {\n\t/**\n\t * @param {object[]} event_list - Array of objects containing event information.\n\t */\n\tconstructor(event_list) {\n\t\t/** @member {object[]} events - List of event objects sorted by date */\n\t\tthis.events = event_list;\n\t\tfor (let i in this.events) {\n\t\t\tthis.events[i].dates = JSON.parse(this.events[i].dates);\n\t\t}\n\t\tthis.events = this.events.sort((e1, e2) => (new Date(e1.dates[0])).getTime() - (new Date(e2.dates[0])).getTime())\n\t}\n\n\t/**\n\t * Creates the Event List\n\t * @return {Element} div containing page contents\n\t */\n\tcreateEventList() {\n\t\tlet divGroup = document.createElement('div')\n\t\tif (this.events && this.events.length) {\n\t\t\tfor (let i in this.events) {\n\t\t\t\tlet divRow = document.createElement('div')\n\t\t\t\tdivRow.className = \"row\"\n\n\t\t\t\tlet dateText = document.createElement('span')\n\t\t\t\t// this.events[i].dates = JSON.parse(this.events[i].dates);\n\n\t\t\t\tfor (let k in this.events[i].dates) {\n\t\t\t\t\tdateText.appendChild(document.createTextNode(this.events[i].dates[k]));\n\t\t\t\t\tif (!(k == this.events[i].dates.length - 1)) {\n\t\t\t\t\t\tdateText.appendChild(document.createTextNode(\",\"))\n\t\t\t\t\t\tdateText.appendChild(document.createElement(\"br\"));\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\tlet nameText = document.createElement('a')\n\t\t\t\tnameText.appendChild(document.createTextNode(this.events[i].name))\n\t\t\t\tnameText.className = 'has-text-grey-light'\n\t\t\t\tnameText.href = '/event?id=' + this.events[i].uid\n\n\t\t\t\tlet deleteButton = document.createElement('button')\n\t\t\t\tdeleteButton.innerHTML = 'X'\n\t\t\t\tdeleteButton.className = 'button is-danger is-small is-outlined'\n\t\t\t\tdeleteButton.addEventListener('click', event => {\n\t\t\t\t\tif (!confirm(\"Are you sure you want to delete \\'\" + this.events[i].name + \"\\'?\")) return\n\t\t\t\t\tfetch(\"/api/events/delete\", {\n\t\t\t\t\t\theaders: { 'Content-Type': 'application/json' },\n\t\t\t\t\t\tmethod: \"POST\",\n\t\t\t\t\t\tbody: JSON.stringify({ uid: this.events[i].uid })\n\t\t\t\t\t}).then(res => res.json()).then(res => {\n\t\t\t\t\t\tif (res.status != \"ok\") {\n\t\t\t\t\t\t\talert(\"Could not contact server, please try again\")\n\t\t\t\t\t\t\treturn\n\t\t\t\t\t\t}\n\t\t\t\t\t\twindow.location.reload()\n\t\t\t\t\t})\n\t\t\t\t})\n\n\t\t\t\tdivRow.appendChild(dateText)\n\t\t\t\tdivRow.appendChild(nameText)\n\t\t\t\tdivRow.appendChild(deleteButton)\n\t\t\t\tdivGroup.appendChild(divRow)\n\t\t\t}\n\t\t} else {\n\t\t\tlet err = document.createElement('a')\n\t\t\terr.innerHTML = 'No Events'\n\t\t\tdivGroup.appendChild(err)\n\t\t}\n\t\treturn divGroup\n\t}\n}\n\n$(() => {\n\tfetch('/api/events/').then(res => res.json()).then(event_list => {\n\t\tlet events_page = new EventsPage(event_list)\n\t\t$('.content_card')[0].appendChild(events_page.createEventList())\n\t})\n})\n",
@@ -1634,7 +2137,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 103,
+    "__docId__": 133,
     "kind": "class",
     "name": "EventsPage",
     "memberof": "js/events.js",
@@ -1649,7 +2152,7 @@
     "interface": false
   },
   {
-    "__docId__": 104,
+    "__docId__": 134,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "js/events.js~EventsPage",
@@ -1674,7 +2177,7 @@
     ]
   },
   {
-    "__docId__": 105,
+    "__docId__": 135,
     "kind": "member",
     "name": "events",
     "memberof": "js/events.js~EventsPage",
@@ -1690,7 +2193,7 @@
     }
   },
   {
-    "__docId__": 107,
+    "__docId__": 137,
     "kind": "method",
     "name": "createEventList",
     "memberof": "js/events.js~EventsPage",
@@ -1712,7 +2215,7 @@
     "params": []
   },
   {
-    "__docId__": 108,
+    "__docId__": 138,
     "kind": "file",
     "name": "js/init.js",
     "content": "/**\n * A lightweight JQuery-like shim\n * @param {(string|function)} input - String: An element query selector, Function: a function to be run on page load\n * @return {NodeList} A list of matching nodes if input was query selector\n */\nexport\ndefault function $(input) {\n  if (typeof(input) === 'string') return document.querySelectorAll(input)\n  if (typeof(input) === 'function') document.addEventListener('DOMContentLoaded', input)\n}\n",
@@ -1723,7 +2226,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 109,
+    "__docId__": 139,
     "kind": "function",
     "name": "$",
     "memberof": "js/init.js",
@@ -1761,7 +2264,7 @@
   },
   {
     "kind": "index",
-    "content": "# Event Planner\n\nThis repository contains the project 1 submission of Team A' for KU's EECS 448 Fall 2017 course.\n\nIt is capable of running a website that allows for the creation of persistent events that can be signed up for by attendees.\n\n## Documentation\n\nDocumentation can be found in the [docs](docs) directory in the project in a raw format, or viewed on the [live website](https://448.benhaney.com/docs/).\n\nDocumentation coverage can be viewed [here](https://448.benhaney.com/docs/source.html)\n\nDocumentation for the backend API can be viewed [here](https://448.benhaney.com/docs/manual/api.html)\n\n## Works Cited\n\nThis project uses the following externally included resources:\n* [Bulma](http://bulma.io/) CSS Framework [MIT]\n* [Pikaday](https://dbushell.com/Pikaday/) calendar widget [MIT]\n* [body-parser](https://www.npmjs.com/package/body-parser) body-parser nodejs plugin [MIT]\n* [esdoc](https://esdoc.org/) Documentation generator [MIT]\n* [express](https://expressjs.com/) Express web server [CC BY-SA 3.0 US]\n* [node-sqlite3](https://github.com/mapbox/node-sqlite3) SQLite bindings for nodejs [BSD]\n\nAnd the following internally included resources:\n* [Github-logo.png](public/img/gh.png)\n",
+    "content": "# Event Planner\n\nThis repository contains the project 1 submission of Team A' for KU's EECS 448 Fall 2017 course.\n**Update for Project 2 by Git Swifty**\n\nIt is capable of running a website that allows for the creation of persistent events that can be signed up for by attendees.\n\n## Documentation\n\n### Git Schwifty\n\n#### To Run (Chrome and Javascript must be at current version)\n* Download repository\n* Open terminal and change to directory\n* \"npm install\"\n* \"npm start\"\n* The project will be availiable in http://localhost:8080\n\n### Documentation\n\nDocumentation can be found in the [docs](docs) directory in the project. \n\n\n### A' Info (No longer current)\n\n~~Documentation can be found in the [docs](docs) directory in the project in a raw format, or viewed on the [live website](https://448.benhaney.com/docs/).~~\n\n~~Documentation coverage can be viewed [here](https://448.benhaney.com/docs/source.html)~~\n\n~~Documentation for the backend API can be viewed [here](https://448.benhaney.com/docs/manual/api.html)~~\n\n## Works Cited\n\nThis project uses the following externally included resources:\n* [Bulma](http://bulma.io/) CSS Framework [MIT]\n* [Pikaday](https://dbushell.com/Pikaday/) calendar widget [MIT]\n* [body-parser](https://www.npmjs.com/package/body-parser) body-parser nodejs plugin [MIT]\n* [esdoc](https://esdoc.org/) Documentation generator [MIT]\n* [express](https://expressjs.com/) Express web server [CC BY-SA 3.0 US]\n* [node-sqlite3](https://github.com/mapbox/node-sqlite3) SQLite bindings for nodejs [BSD]\n* [Checking an array for duplicates](https://stackoverflow.com/questions/7376598/in-javascript-how-do-i-check-if-an-array-has-duplicate-values)\n\nAnd the following internally included resources:\n* [Github-logo.png](public/img/gh.png)\n",
     "longname": "/home/alex/EECS448/Project-2/README.md",
     "name": "./README.md",
     "static": true,
