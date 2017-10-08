@@ -152,7 +152,7 @@ export class RSlot {
     this.request_input.className = "request input " + id;
     this.request_button = document.createElement('button')
     this.request_button.innerHTML = 'X'
-    this.request_button.className = 'button'
+    this.request_button.className = 'button is-danger is-outlined'
     this.request_button.addEventListener('click', event => {
       parent.deleteRequest(this);
       this.request_div.parentNode.removeChild(this.request_div);
