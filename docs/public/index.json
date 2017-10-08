@@ -567,9 +567,9 @@
     "__docId__": 48,
     "kind": "file",
     "name": "js/calendar.js",
-    "content": "/**\r\n * Class for containing time related convenienve methods\r\n */\r\nexport\r\ndefault class Calendar {\r\n  /**\r\n   * Generates times of the day in increments of 30 minutes\r\n   * @param {boolean} is24 - Whether to return 24 hour times or 12 hour.\r\n   * @return {string[]} an array of 30 minute interval time slots\r\n   */\r\n  static time_slots(is24) {\r\n    return Array.from({length: 49}, (_, i) => {\r\n      let hour = Math.floor(i/2)\r\n      let min = ('0'+(30*(i%2))).slice(-2)\r\n      return (is24) ? (hour%24)+':'+min : ((hour%12)||12)+':'+min+(hour<12||hour==24?' AM':' PM')\r\n    })\r\n  }\r\n}\r\n",
+    "content": "/**\n * Class for containing time related convenienve methods\n */\nexport\ndefault class Calendar {\n  /**\n   * Generates times of the day in increments of 30 minutes\n   * @param {boolean} is24 - Whether to return 24 hour times or 12 hour.\n   * @return {string[]} an array of 30 minute interval time slots\n   */\n  static time_slots(is24) {\n    return Array.from({length: 49}, (_, i) => {\n      let hour = Math.floor(i/2)\n      let min = ('0'+(30*(i%2))).slice(-2)\n      return (is24) ? (hour%24)+':'+min : ((hour%12)||12)+':'+min+(hour<12||hour==24?' AM':' PM')\n    })\n  }\n}\n",
     "static": true,
-    "longname": "C:/Users/jacob/Desktop/Project-1/public/js/calendar.js",
+    "longname": "/home/alex/EECS448/Project-2/public/js/calendar.js",
     "access": "public",
     "description": null,
     "lineNumber": 1
@@ -626,9 +626,9 @@
     "__docId__": 51,
     "kind": "file",
     "name": "js/create.js",
-    "content": "import $ from '/js/init.js'\r\nimport Calendar from '/js/calendar.js'\r\n\r\n/**\r\n * Class for creating time slots\r\n */\r\nexport class Slot {\r\n  /**\r\n   * @param {boolean} is24 - True: 24 hour time, False: 12 hour\r\n   */\r\n  constructor(is24) {\r\n    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */\r\n    this.is24 = is24\r\n\r\n    /** @member {object} selectors - Group of selectors */\r\n    this.selectors = {}\r\n\r\n    /** @member {Element} group - Element that stores selectors */\r\n    this.group = document.createElement('div')\r\n\r\n    /** @member {Element} start_span - span to contain start-time selector */\r\n    this.start_span = document.createElement('span')\r\n    this.start_span.className = \"select\"\r\n    this.start_span.appendChild(this.createStartSlot())\r\n    this.group.appendChild(this.start_span)\r\n\r\n    /** @member {Element} end_span - span to contain end-time selector */\r\n    this.end_span = document.createElement('span')\r\n    this.end_span.className = \"select\"\r\n    this.end_span.appendChild(this.createEndSlot(1))\r\n    this.group.appendChild(this.end_span)\r\n  }\r\n\r\n  /**\r\n   * Creates a selector for selecting a time slot\r\n   * @param {int} exclude - How many time slots to exclude from the selector\r\n   * @param {int} def - default value of selector\r\n   * @return {Element} Time slot selector\r\n   */\r\n  createSlotSelector(exclude = 0, def) {\r\n    let slots = Calendar.time_slots(this.is24)\r\n    let select = document.createElement('select')\r\n    for (let i in slots) {\r\n      if (i < exclude || (exclude == -1 && i == slots.length-1)) continue\r\n      let option = document.createElement('option')\r\n      option.value = i\r\n      option.innerHTML = slots[i]\r\n      select.appendChild(option)\r\n    }\r\n    if (def && def >= exclude) select.value = def\r\n    return select\r\n  }\r\n\r\n  /**\r\n   * Creates the selector for the start time\r\n   * @return {Element} Time slot selector\r\n   */\r\n  createStartSlot() {\r\n    let slotsel = this.createSlotSelector(-1)\r\n    slotsel.addEventListener('change', event => {\r\n      let prevTime = +this.selectors.end.value\r\n      this.selectors.end.remove()\r\n      this.end_span.appendChild(this.createEndSlot(+slotsel.value+1, Math.max(prevTime, +slotsel.value+1)))\r\n    })\r\n    this.selectors.start = slotsel\r\n    return slotsel\r\n  }\r\n\r\n  /**\r\n   * Creates the selector for the end time\r\n   * @param {int} exclude - How many time slots to exclude from the selector\r\n   * @param {int} def - default value of selector\r\n   * @return {Element} Time slot selector\r\n   */\r\n  createEndSlot(exclude = 0, def) {\r\n    let slotsel = this.createSlotSelector(exclude, def)\r\n    this.selectors.end = slotsel\r\n    return slotsel\r\n  }\r\n\r\n  /**\r\n   * Get element that stores selectors\r\n   * @return {Element} Element that stores selectors\r\n   */\r\n  getSlotGroup() {\r\n    return this.group\r\n  }\r\n\r\n  /**\r\n   * Get range of time slots\r\n   * @return {int[]} range of time slots\r\n   */\r\n  getRange() {\r\n    return [+this.selectors.start.value, +this.selectors.end.value]\r\n  }\r\n}\r\n\r\n/**\r\n * Class for managing button that adds time slots\r\n */\r\nexport class SlotAdder {\r\n  /**\r\n   * Initialize the slot adder\r\n   */\r\n  constructor() {\r\n    /** @member {Element[]} slots - Array of groups of time slot selectors */\r\n    this.slots = []\r\n\r\n    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */\r\n    this.is24 = false\r\n  }\r\n\r\n  /**\r\n   * Creates the button that adds a group of time selectors\r\n   * @return {Element} button that adds a group of time selectors\r\n   */\r\n  createButton() {\r\n    let button = document.createElement('button')\r\n    button.className = \"button\"\r\n    button.innerHTML = 'Add a Time'\r\n    button.addEventListener('click', event => {\r\n      let slot = new Slot(this.is24)\r\n      this.slots.push(slot)\r\n      $('.t_slots')[0].appendChild(slot.getSlotGroup())\r\n    })\r\n    return button\r\n  }\r\n\r\n  /**\r\n   * Creates array of all times slots that fall inside time slot ranges\r\n   * @return {int[]} Array of all times slots that fall inside time slot ranges\r\n   */\r\n  getTimes() {\r\n    // Here be dragons\r\n    return Array.from(new Set([].concat(...this.slots.map(x => Array.from({length: x.getRange()[1]-x.getRange()[0]}, (n,i)=>i+x.getRange()[0]))))).sort((a,b)=>a-b)\r\n  }\r\n}\r\n\r\n$(() => {\r\n  let slot_adder = new SlotAdder()\r\n\r\n  $('.is24')[0].addEventListener('click', event => {\r\n    slot_adder.is24 = true\r\n    $('.is12')[0].className='button is12'\r\n    $('.is24')[0].className='button is24 is-info'\r\n    let times = Calendar.time_slots(true)\r\n    $('select').forEach(select => {\r\n      Array.from(select.children).forEach(option => {\r\n        option.innerHTML = times[option.value]\r\n      })\r\n    })\r\n  })\r\n\r\n  $('.is12')[0].addEventListener('click', event => {\r\n    slot_adder.is24 = false\r\n    $('.is12')[0].className='button is12 is-info'\r\n    $('.is24')[0].className='button is24'\r\n    let times = Calendar.time_slots(false)\r\n    $('select').forEach(select => {\r\n      Array.from(select.children).forEach(option => {\r\n        option.innerHTML = times[option.value]\r\n      })\r\n    })\r\n  })\r\n\r\n  $('.slot_button_wrap')[0].appendChild(slot_adder.createButton())\r\n\r\n  let picker = new Pikaday({ field: $('input.date')[0], minDate: new Date(), trigger: $('button#date_picker')[0] })\r\n\r\n  $('button.submit')[0].addEventListener(\"click\", event => {\r\n    let payload = {\r\n      name: $('input.intitle')[0].value,\r\n      description: $('input.description')[0].value,\r\n      date: $('input.date')[0].value,\r\n      owner: $('input.name')[0].value,\r\n      times: slot_adder.getTimes()\r\n    }\r\n\r\n    for (let i of ['title', 'name', 'date']) {\r\n      if (!payload[i.replace('name','owner').replace('title','name')]) {\r\n        alert(\"You need to enter a \"+i+\"!\")\r\n        return\r\n      }\r\n    }\r\n    if (!payload.times.length) {\r\n      payload.times = Array.from({length: 48}).map((_,i)=>i)\r\n    }\r\n\r\n    fetch(\"/api/events/new/\", {\r\n      headers: {'Content-Type': 'application/json'},\r\n      method: \"POST\",\r\n      body: JSON.stringify(payload)\r\n    }).then(res => res.json()).then(res => {\r\n      if (res.status != \"ok\") {\r\n        alert(\"Could not contact server, please try again\")\r\n        return\r\n      }\r\n      window.location.href = '/event/?id='+res.uid\r\n    })\r\n  })\r\n})\r\n",
+    "content": "import $ from '/js/init.js'\nimport Calendar from '/js/calendar.js'\n\n/**\n * Class for creating time slots\n */\nexport class Slot {\n  /**\n   * @param {boolean} is24 - True: 24 hour time, False: 12 hour\n   */\n  constructor(is24) {\n    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */\n    this.is24 = is24\n\n    /** @member {object} selectors - Group of selectors */\n    this.selectors = {}\n\n    /** @member {Element} group - Element that stores selectors */\n    this.group = document.createElement('div')\n\n    /** @member {Element} start_span - span to contain start-time selector */\n    this.start_span = document.createElement('span')\n    this.start_span.className = \"select\"\n    this.start_span.appendChild(this.createStartSlot())\n    this.group.appendChild(this.start_span)\n\n    /** @member {Element} end_span - span to contain end-time selector */\n    this.end_span = document.createElement('span')\n    this.end_span.className = \"select\"\n    this.end_span.appendChild(this.createEndSlot(1))\n    this.group.appendChild(this.end_span)\n  }\n\n  /**\n   * Creates a selector for selecting a time slot\n   * @param {int} exclude - How many time slots to exclude from the selector\n   * @param {int} def - default value of selector\n   * @return {Element} Time slot selector\n   */\n  createSlotSelector(exclude = 0, def) {\n    let slots = Calendar.time_slots(this.is24)\n    let select = document.createElement('select')\n    for (let i in slots) {\n      if (i < exclude || (exclude == -1 && i == slots.length-1)) continue\n      let option = document.createElement('option')\n      option.value = i\n      option.innerHTML = slots[i]\n      select.appendChild(option)\n    }\n    if (def && def >= exclude) select.value = def\n    return select\n  }\n\n  /**\n   * Creates the selector for the start time\n   * @return {Element} Time slot selector\n   */\n  createStartSlot() {\n    let slotsel = this.createSlotSelector(-1)\n    slotsel.addEventListener('change', event => {\n      let prevTime = +this.selectors.end.value\n      this.selectors.end.remove()\n      this.end_span.appendChild(this.createEndSlot(+slotsel.value+1, Math.max(prevTime, +slotsel.value+1)))\n    })\n    this.selectors.start = slotsel\n    return slotsel\n  }\n\n  /**\n   * Creates the selector for the end time\n   * @param {int} exclude - How many time slots to exclude from the selector\n   * @param {int} def - default value of selector\n   * @return {Element} Time slot selector\n   */\n  createEndSlot(exclude = 0, def) {\n    let slotsel = this.createSlotSelector(exclude, def)\n    this.selectors.end = slotsel\n    return slotsel\n  }\n\n  /**\n   * Get element that stores selectors\n   * @return {Element} Element that stores selectors\n   */\n  getSlotGroup() {\n    return this.group\n  }\n\n  /**\n   * Get range of time slots\n   * @return {int[]} range of time slots\n   */\n  getRange() {\n    return [+this.selectors.start.value, +this.selectors.end.value]\n  }\n}\n\n/**\n * Class for managing button that adds time slots\n */\nexport class SlotAdder {\n  /**\n   * Initialize the slot adder\n   */\n  constructor() {\n    /** @member {Element[]} slots - Array of groups of time slot selectors */\n    this.slots = []\n\n    /** @member {boolean} is24 - True: 24 hour time, False: 12 hour */\n    this.is24 = false\n  }\n\n  /**\n   * Creates the button that adds a group of time selectors\n   * @return {Element} button that adds a group of time selectors\n   */\n  createButton() {\n    let button = document.createElement('button')\n    button.className = \"button\"\n    button.innerHTML = 'Add a Time'\n    button.addEventListener('click', event => {\n      let slot = new Slot(this.is24)\n      this.slots.push(slot)\n      $('.t_slots')[0].appendChild(slot.getSlotGroup())\n    })\n    return button\n  }\n\n  /**\n   * Creates array of all times slots that fall inside time slot ranges\n   * @return {int[]} Array of all times slots that fall inside time slot ranges\n   */\n  getTimes() {\n    // Here be dragons\n    return Array.from(new Set([].concat(...this.slots.map(x => Array.from({length: x.getRange()[1]-x.getRange()[0]}, (n,i)=>i+x.getRange()[0]))))).sort((a,b)=>a-b)\n  }\n}\n\n\n\n/**\n * Class for creating request slots\n */\nexport class RSlot {\n\n  constructor(id, parent) {\n    this.identifier = id\n\n    // generate html\n    this.request_div = document.createElement('div');\n    this.request_input = document.createElement('input');\n    this.request_input.className = \"request input \" + id;\n    this.request_button = document.createElement('button')\n    this.request_button.innerHTML = 'X'\n    this.request_button.className = 'button is-danger is-outlined'\n    this.request_button.addEventListener('click', event => {\n      parent.deleteRequest(this);\n      this.request_div.parentNode.removeChild(this.request_div);\n\t  })\n\n  \t//input and button each get their own div\n  \tthis.request_input_div = document.createElement('div');\n  \tthis.request_input_div.style.float = 'left'\n  \tthis.request_input_div.style.width = '88%'\n  \tthis.request_input_div.appendChild(this.request_input)\n  \tthis.request_button_div = document.createElement('div');\n  \tthis.request_button_div.style.float = 'right'\n  \tthis.request_button_div.appendChild(this.request_button)\n\n    this.request_div.appendChild(this.request_input_div)\n    this.request_div.appendChild(this.request_button_div)\n  }\n\n  /**\n   * Get element that stores the request\n   * @ret {Element} Element that stores requests\n   */\n  getSlotGroup() {\n    return this.request_div\n  }\n\n  getValue() {\n    alert(this.request_input.value);\n    return this.request_input.value;\n  }\n\n}\n\n/**\n * Class for managing button that adds request slots\n * and returning the strings of requests entered by the user\n */\nexport class RSlotAdder {\n\n   // Initialize the slot adder\n  constructor() {\n    // Array of requests elements\n    this.slots = []\n    this.identifier_prefix = \"req\"\n    this.identifier_number = 0;\n  }\n\n  /**\n   * Creates the button that adds a request slot\n   * @return {Element} button that adds a request slot\n   */\n  createButton() {\n    let button = document.createElement('button')\n\n    button.className = \"button\"\n    button.innerHTML = 'Add a Request'\n    button.addEventListener('click', event => {\n      let slot = new RSlot(this.identifier_prefix+this.identifier_number, this);\n      this.identifier_number++;\n      this.slots.push(slot)\n      $('.r_slots')[0].appendChild(slot.getSlotGroup())\n    })\n    return button\n  }\n\n  deleteRequest(request) {\n    this.slots.splice(this.slots.indexOf(request), 1);\n  }\n\n  /**\n   * Creates array of all requests entered by the user\n   * @ret: {string[]} Array of all requests\n   */\n  getRequests() {\n    let requests = []\n\n    for(let i = 0; i < this.slots.length; i++){\n      requests.push(this.slots[i].getValue());\n    }\n    return(requests)\n  }\n}\n\n$(() => {\n  let slot_adder = new SlotAdder()\n  let rslot_adder = new RSlotAdder()\n\n  $('.is24')[0].addEventListener('click', event => {\n    slot_adder.is24 = true\n    $('.is12')[0].className='button is12'\n    $('.is24')[0].className='button is24 is-info'\n    let times = Calendar.time_slots(true)\n    $('select').forEach(select => {\n      Array.from(select.children).forEach(option => {\n        option.innerHTML = times[option.value]\n      })\n    })\n  })\n\n  $('.is12')[0].addEventListener('click', event => {\n    slot_adder.is24 = false\n    $('.is12')[0].className='button is12 is-info'\n    $('.is24')[0].className='button is24'\n    let times = Calendar.time_slots(false)\n    $('select').forEach(select => {\n      Array.from(select.children).forEach(option => {\n        option.innerHTML = times[option.value]\n      })\n    })\n  })\n\n  $('.rslot_button_wrap')[0].appendChild(rslot_adder.createButton())\n  $('.slot_button_wrap')[0].appendChild(slot_adder.createButton())\n\n  let picker = new Pikaday({ field: $('input.date')[0], minDate: new Date(), trigger: $('button#date_picker')[0] })\n\n  $('button.submit')[0].addEventListener(\"click\", event => {\n    let payload = {\n      name: $('input.intitle')[0].value,\n      description: $('input.description')[0].value,\n      task_list: rslot_adder.getRequests(),\n      dates: [$('input.date')[0].value],\n      owner: $('input.name')[0].value,\n      times: slot_adder.getTimes()\n    }\n\n    fetch(\"/api/events/new/\", {\n      headers: {'Content-Type': 'application/json'},\n      method: \"POST\",\n      body: JSON.stringify(payload)\n    }).then(res => res.json()).then(res => {\n      if (res.status != \"ok\") {\n        alert(\"Could not contact server, please try again\")\n        return\n      }\n      window.location.href = '/event/?id='+res.uid\n    })\n  })\n})\n",
     "static": true,
-    "longname": "C:/Users/jacob/Desktop/Project-1/public/js/create.js",
+    "longname": "/home/alex/EECS448/Project-2/public/js/create.js",
     "access": "public",
     "description": null,
     "lineNumber": 1
@@ -1011,17 +1011,337 @@
   },
   {
     "__docId__": 70,
+    "kind": "class",
+    "name": "RSlot",
+    "memberof": "js/create.js",
+    "static": true,
+    "longname": "js/create.js~RSlot",
+    "access": "public",
+    "export": true,
+    "importPath": "Project-1/js/create.js",
+    "importStyle": "{RSlot}",
+    "description": "Class for creating request slots",
+    "lineNumber": 144,
+    "interface": false
+  },
+  {
+    "__docId__": 71,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "js/create.js~RSlot",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~RSlot#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 146,
+    "undocument": true
+  },
+  {
+    "__docId__": 72,
+    "kind": "member",
+    "name": "identifier",
+    "memberof": "js/create.js~RSlot",
+    "static": false,
+    "longname": "js/create.js~RSlot#identifier",
+    "access": "public",
+    "description": null,
+    "lineNumber": 147,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 73,
+    "kind": "member",
+    "name": "request_div",
+    "memberof": "js/create.js~RSlot",
+    "static": false,
+    "longname": "js/create.js~RSlot#request_div",
+    "access": "public",
+    "description": null,
+    "lineNumber": 150,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 74,
+    "kind": "member",
+    "name": "request_input",
+    "memberof": "js/create.js~RSlot",
+    "static": false,
+    "longname": "js/create.js~RSlot#request_input",
+    "access": "public",
+    "description": null,
+    "lineNumber": 151,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 75,
+    "kind": "member",
+    "name": "request_button",
+    "memberof": "js/create.js~RSlot",
+    "static": false,
+    "longname": "js/create.js~RSlot#request_button",
+    "access": "public",
+    "description": null,
+    "lineNumber": 153,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 76,
+    "kind": "member",
+    "name": "request_input_div",
+    "memberof": "js/create.js~RSlot",
+    "static": false,
+    "longname": "js/create.js~RSlot#request_input_div",
+    "access": "public",
+    "description": null,
+    "lineNumber": 162,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 77,
+    "kind": "member",
+    "name": "request_button_div",
+    "memberof": "js/create.js~RSlot",
+    "static": false,
+    "longname": "js/create.js~RSlot#request_button_div",
+    "access": "public",
+    "description": null,
+    "lineNumber": 166,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 78,
+    "kind": "method",
+    "name": "getSlotGroup",
+    "memberof": "js/create.js~RSlot",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~RSlot#getSlotGroup",
+    "access": "public",
+    "description": "Get element that stores the request",
+    "lineNumber": 178,
+    "unknown": [
+      {
+        "tagName": "@ret",
+        "tagValue": "{Element} Element that stores requests"
+      }
+    ],
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 79,
+    "kind": "method",
+    "name": "getValue",
+    "memberof": "js/create.js~RSlot",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~RSlot#getValue",
+    "access": "public",
+    "description": null,
+    "lineNumber": 182,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 80,
+    "kind": "class",
+    "name": "RSlotAdder",
+    "memberof": "js/create.js",
+    "static": true,
+    "longname": "js/create.js~RSlotAdder",
+    "access": "public",
+    "export": true,
+    "importPath": "Project-1/js/create.js",
+    "importStyle": "{RSlotAdder}",
+    "description": "Class for managing button that adds request slots\nand returning the strings of requests entered by the user",
+    "lineNumber": 193,
+    "interface": false
+  },
+  {
+    "__docId__": 81,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "js/create.js~RSlotAdder",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~RSlotAdder#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 196,
+    "undocument": true
+  },
+  {
+    "__docId__": 82,
+    "kind": "member",
+    "name": "slots",
+    "memberof": "js/create.js~RSlotAdder",
+    "static": false,
+    "longname": "js/create.js~RSlotAdder#slots",
+    "access": "public",
+    "description": null,
+    "lineNumber": 198,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*[]"
+      ]
+    }
+  },
+  {
+    "__docId__": 83,
+    "kind": "member",
+    "name": "identifier_prefix",
+    "memberof": "js/create.js~RSlotAdder",
+    "static": false,
+    "longname": "js/create.js~RSlotAdder#identifier_prefix",
+    "access": "public",
+    "description": null,
+    "lineNumber": 199,
+    "undocument": true,
+    "type": {
+      "types": [
+        "string"
+      ]
+    }
+  },
+  {
+    "__docId__": 84,
+    "kind": "member",
+    "name": "identifier_number",
+    "memberof": "js/create.js~RSlotAdder",
+    "static": false,
+    "longname": "js/create.js~RSlotAdder#identifier_number",
+    "access": "public",
+    "description": null,
+    "lineNumber": 200,
+    "undocument": true,
+    "type": {
+      "types": [
+        "number"
+      ]
+    }
+  },
+  {
+    "__docId__": 85,
+    "kind": "method",
+    "name": "createButton",
+    "memberof": "js/create.js~RSlotAdder",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~RSlotAdder#createButton",
+    "access": "public",
+    "description": "Creates the button that adds a request slot",
+    "lineNumber": 207,
+    "return": {
+      "nullable": null,
+      "types": [
+        "Element"
+      ],
+      "spread": false,
+      "description": "button that adds a request slot"
+    },
+    "params": []
+  },
+  {
+    "__docId__": 86,
+    "kind": "method",
+    "name": "deleteRequest",
+    "memberof": "js/create.js~RSlotAdder",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~RSlotAdder#deleteRequest",
+    "access": "public",
+    "description": null,
+    "lineNumber": 221,
+    "undocument": true,
+    "params": [
+      {
+        "name": "request",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 87,
+    "kind": "method",
+    "name": "getRequests",
+    "memberof": "js/create.js~RSlotAdder",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/create.js~RSlotAdder#getRequests",
+    "access": "public",
+    "description": "Creates array of all requests entered by the user\n@ret: {string[]} Array of all requests",
+    "lineNumber": 229,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 88,
     "kind": "file",
     "name": "js/event.js",
-    "content": "import $ from '/js/init.js'\r\nimport Calendar from '/js/calendar.js'\r\n/**\r\n * Class for Event Page methods\r\n */\r\nexport class EventPage {\r\n  /**\r\n   * @param {object} event - Contains event information\r\n   */\r\n  constructor(event) {\r\n    /** @member {object} event - Event information */\r\n    this.event = event\r\n  }\r\n\r\n  /**\r\n   * Creates the Attendee table\r\n   * @return {Element} div containing the Attendee Table\r\n   */\r\n  createAttendeeTable() {\r\n    let slots = Calendar.time_slots(false)\r\n    let t_cont = document.createElement('div')\r\n    t_cont.className = \"table_container\"\r\n    let table = document.createElement('table')\r\n    let tbody = document.createElement('tbody')\r\n    let thead = document.createElement('thead')\r\n    let tr = document.createElement('tr')\r\n    let th = document.createElement('th')\r\n    tr.appendChild(th)\r\n    for (let i in this.event.times) {\r\n      if (i && this.event.times[i]-this.event.times[i-1] > 1) {\r\n        let spacer = document.createElement('th')\r\n        spacer.className = 'spacer'\r\n        tr.appendChild(spacer)\r\n      }\r\n      let th = document.createElement('th')\r\n      th.innerHTML = slots[this.event.times[i]]\r\n      tr.appendChild(th)\r\n    }\r\n    thead.appendChild(tr)\r\n    table.appendChild(thead)\r\n    table.appendChild(tbody)\r\n    for (let attendee of this.event.attendees) {\r\n      let tr = document.createElement('tr')\r\n      let name = document.createElement('td')\r\n      if (attendee.name == this.event.owner) {\r\n        name.className = \"owner\"\r\n      }\r\n      name.appendChild(document.createTextNode(attendee.name))\r\n      tr.appendChild(name)\r\n      for (let i in this.event.times) {\r\n        let td = document.createElement('td')\r\n        if (i && this.event.times[i]-this.event.times[i-1] > 1) {\r\n          let spacer = document.createElement('td')\r\n          spacer.className = 'spacer'\r\n          tr.appendChild(spacer)\r\n        }\r\n        let checkbox = document.createElement('input')\r\n        checkbox.type = 'checkbox'\r\n        if (attendee.times.includes(this.event.times[i])) {\r\n          checkbox.checked = \"checked\"\r\n        }\r\n        checkbox.disabled = true\r\n        td.appendChild(checkbox)\r\n        tr.appendChild(td)\r\n      }\r\n      tbody.appendChild(tr)\r\n    }\r\n    let utr = document.createElement('tr')\r\n    utr.className = 'user-tr'\r\n    let utd = document.createElement('td')\r\n    let uinput = document.createElement('input')\r\n    uinput.className = \"input is-small\"\r\n    uinput.placeholder = \"Your name\"\r\n    /** @member {object} name - Text field for user registeration */\r\n    this.name = uinput\r\n    utd.appendChild(uinput)\r\n    utr.appendChild(utd)\r\n    for (let i in this.event.times) {\r\n      if (i && this.event.times[i]-this.event.times[i-1] > 1) {\r\n        let spacer = document.createElement('td')\r\n        spacer.className = 'spacer'\r\n        utr.appendChild(spacer)\r\n      }\r\n      let td = document.createElement('td')\r\n      let checkbox = document.createElement('input')\r\n      checkbox.type = 'checkbox'\r\n      checkbox.value = this.event.times[i]\r\n      td.appendChild(checkbox)\r\n      utr.appendChild(td)\r\n    }\r\n    tbody.appendChild(utr)\r\n    let ttr = document.createElement('tr')\r\n    let ttd = document.createElement('td')\r\n    ttd.innerHTML = 'Participants'\r\n    ttd.className = 'check_count'\r\n    ttr.appendChild(ttd)\r\n    for (let i in this.event.times) {\r\n      if (i && this.event.times[i]-this.event.times[i-1] > 1) {\r\n        let spacer = document.createElement('td')\r\n        spacer.className = 'spacer'\r\n        ttr.appendChild(spacer)\r\n      }\r\n      let td = document.createElement('td')\r\n      td.className = 'check_count'\r\n      td.innerHTML = [].concat(...this.event.attendees.map(a=>a.times)).filter(a=>a==this.event.times[i]).length\r\n      ttr.appendChild(td)\r\n    }\r\n    tbody.appendChild(ttr)\r\n    t_cont.appendChild(table)\r\n    return t_cont\r\n  }\r\n\r\n  /**\r\n   * Creates the Register button\r\n   * @return {Element} button for registering a new attendee\r\n   */\r\n  createSignupButton() {\r\n    let button = document.createElement('button')\r\n    button.innerHTML = 'Register'\r\n    button.className = 'button is-primary'\r\n    button.addEventListener('click', event => {\r\n      let payload = {}\r\n      payload.uid = this.event.uid\r\n      payload.name = this.name.value\r\n      payload.times = Array.from($('input[type=\"checkbox\"][value]:checked')).map(el => +el.value)\r\n      if (!payload.name) {\r\n        alert(\"You must enter your name!\")\r\n        return\r\n      }\r\n      fetch('/api/events/register/', {\r\n        headers: {'Content-Type': 'application/json'},\r\n        method: \"POST\",\r\n        body: JSON.stringify(payload)\r\n      }).then(res => res.json()).then(res => {\r\n        if (res.status != \"ok\") {\r\n          alert(\"Could not contact server, please try again\")\r\n          return\r\n        }\r\n        window.location.reload()\r\n      })\r\n    })\r\n    return button\r\n  }\r\n\r\n  /**\r\n   * Creates a div that contains the Attendee table and Register Button\r\n   * @return {Element} div containing page contents\r\n   */\r\n  createEventInfo() {\r\n    let eventInfo = document.createElement('div')\r\n\r\n    eventInfo.appendChild(this.createAttendeeTable())\r\n    eventInfo.appendChild(this.createSignupButton())\r\n\r\n    return eventInfo\r\n  }\r\n}\r\n\r\n$(() => {\r\n  let event_id = (new URLSearchParams(window.location.search)).get('id')\r\n  fetch('/api/events/?uid='+event_id).then(res => res.json()).then(event => {\r\n    if (!event) {\r\n      $('.content_card')[0].innerHTML = \"This event does not exist\"\r\n      return\r\n    }\r\n    event.attendees = [].concat({name: event.owner, times: event.times}, event.attendees)\r\n    let event_page = new EventPage(event)\r\n    $('h1.title')[0].appendChild(document.createTextNode(event.name))\r\n    $('h2.event_date')[0].appendChild(document.createTextNode(event.date))\r\n    $('h2.subtitle')[0].appendChild(document.createTextNode(event.description))\r\n    $('.content_card')[0].appendChild(event_page.createEventInfo(event))\r\n  })\r\n})\r\n",
+    "content": "import $ from '/js/init.js'\nimport Calendar from '/js/calendar.js'\n\n/**\n * Class for Event Page methods\n */\nexport class EventPage {\n\t/**\n\t * @param {object} event - Contains event information\n\t */\n\tconstructor(event) {\n\t\t/** @member {object} event - Event information */\n\t\tthis.event = event;\n\t\tthis.event.attendees = JSON.parse(this.event.attendees);\n\t\tthis.event.dates = JSON.parse(this.event.dates);\n\t\tthis.event.times = JSON.parse(this.event.times);\n\t\tthis.event.task_list = this.event.task_list.split(',');\n\t\tthis.attendee_task_list = [];\n\t\tlet eventInfo = null\n\t}\n\n\t/**\n\t * Creates the Attendee table\n\t * @return {Element} div containing the Attendee Table\n\t */\n\tcreateAttendeeTable() {\n\t\tlet slots = Calendar.time_slots(false)\n\t\tlet t_cont = document.createElement('div')\n\t\tt_cont.className = \"table_container\"\n\t\tlet table = document.createElement('table')\n\t\tlet tbody = document.createElement('tbody')\n\t\tlet thead = document.createElement('thead')\n\n\t\tlet date_row = document.createElement('tr')\n\t\tlet date_cell = document.createElement('th')\n\t\tdate_row.appendChild(date_cell);\n\n\t\tlet tr = document.createElement('tr')\n\t\tlet th = document.createElement('th')\n\t\ttr.appendChild(th)\n\n\t\t// CREATE TABLE HEADER INFORMATION\n\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\t\t\t\tif (k == 0 && i == 0 || k == 1 && i != 0) {\n\t\t\t\t\tlet date_cell = document.createElement('th')\n\t\t\t\t\tdate_cell.setAttribute(\"colspan\", this.event.times[i].length)\n\t\t\t\t\tdate_cell.innerHTML = (this.event.dates[i])\n\t\t\t\t\tdate_cell.style.textAlign = 'left';\n\t\t\t\t\tdate_cell.style.fontWeight = 'bold'\n\t\t\t\t\tdate_row.appendChild(date_cell)\n\t\t\t\t} else if (k == 0) {\n\t\t\t\t\tlet date_cell = document.createElement('th')\n\t\t\t\t\tdate_cell.style.width = '10px';\n\t\t\t\t\tdate_row.appendChild(date_cell)\n\t\t\t\t}\n\n\t\t\t\tlet th = document.createElement('th')\n\t\t\t\tth.innerHTML = slots[this.event.times[i][k]]\n\t\t\t\ttr.appendChild(th)\n\t\t\t}\n\t\t\tif (i < this.event.times.length - 1) {\n\t\t\t\tlet spacer = document.createElement('th')\n\t\t\t\tspacer.className = 'spacer'\n\t\t\t\ttr.appendChild(spacer)\n\t\t\t}\n\t\t}\n\n\t\tthead.appendChild(date_row);\n\t\tthead.appendChild(tr)\n\t\ttable.appendChild(thead)\n\t\ttable.appendChild(tbody)\n\n\t\t// CREATE EACH ATTENDEE ROW WITH ATTENDANCE INFORMATION\n\t\tfor (let j = 0; j < this.event.attendees.length; j++) {\n\n\t\t\tlet tr = document.createElement('tr')\n\t\t\tlet name = document.createElement('td')\n\n\t\t\tif (this.event.attendees[j].name == this.event.attendees[0].name) {\n\t\t\t\tname.className = \"owner\"\n\t\t\t}\n\n\t\t\tname.appendChild(document.createTextNode(this.event.attendees[j].name))\n\t\t\ttr.appendChild(name)\n\n\t\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\t\t\t\t\tlet td = document.createElement('td')\n\n\t\t\t\t\tif (k == 0 && i != 0) {\n\t\t\t\t\t\tlet spacer = document.createElement('td')\n\t\t\t\t\t\tspacer.className = 'spacer'\n\t\t\t\t\t\ttr.appendChild(spacer)\n\t\t\t\t\t}\n\n\t\t\t\t\tlet checkbox = document.createElement('input')\n\t\t\t\t\tcheckbox.type = 'checkbox'\n\n\t\t\t\t\tif (this.event.attendees[j].times[i].includes(this.event.times[i][k])) {\n\t\t\t\t\t\tcheckbox.checked = \"checked\"\n\t\t\t\t\t}\n\t\t\t\t\tcheckbox.disabled = true\n\t\t\t\t\ttd.appendChild(checkbox)\n\t\t\t\t\ttr.appendChild(td)\n\t\t\t\t}\n\t\t\t}\n\t\t\ttbody.appendChild(tr)\n\t\t}\n\n\t\t// NOT ENTIRELY SURE THAT THE PARTICIPANTS ROW IS NECCESSARY\n\t\t// KNOWN BUG: The participants map in the commented code below does not work\n\n\n\t\t/*\n\t\tlet ttr = document.createElement('tr')\n\t\tlet ttd = document.createElement('td')\n\t\tttd.innerHTML = 'Participants'\n\t\tttd.className = 'check_count'\n\t\tttr.appendChild(ttd)\n\n\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\t\t\t\tif (k == 0 && i != 0) {\n\t\t\t\t\tlet spacer = document.createElement('td')\n\t\t\t\t\tspacer.className = 'spacer'\n\t\t\t\t\tttr.appendChild(spacer)\n\t\t\t\t}\n\t\t\t\tlet td = document.createElement('td')\n\t\t\t\ttd.className = 'check_count'\n\t\t\t\ttd.innerHTML = [].concat(...this.event.attendees[i].times.map(a => a.times)).filter(a => a == this.event.times[i][k]).length\n\t\t\t\tttr.appendChild(td)\n\t\t\t}\n\t\t}\n\n\t\ttbody.appendChild(ttr)\n\t\t*/\n\n\t\t// CREATE SPACER ROW\n\t\tlet str = document.createElement('tr');\n\t\tlet std = document.createElement('td');\n\n\t\tstd.appendChild(document.createElement('br'));\n\t\tstd.appendChild(document.createTextNode(\"Sign Up\"));\n\t\tstd.className = \"owner\"\n\t\tstr.appendChild(std);\n\t\ttbody.appendChild(str)\n\n\t\t// SET UP REGISTRATION DATA\n\t\tlet utr = document.createElement('tr')\n\t\tutr.className = 'user-tr'\n\t\tlet utd = document.createElement('td')\n\t\tlet uinput = document.createElement('input')\n\t\tuinput.className = \"input is-small\"\n\t\tuinput.placeholder = \"Your name\"\n\t\t/** @member {object} name - Text field for user registeration */\n\t\tthis.name = uinput\n\t\tutd.appendChild(uinput)\n\t\tutr.appendChild(utd)\n\n\t\tfor (let i = 0; i < this.event.times.length; i++) {\n\t\t\tfor (let k = 0; k < this.event.times[i].length; k++) {\n\n\t\t\t\tif (k == 0 && i != 0) {\n\t\t\t\t\tlet spacer = document.createElement('td')\n\t\t\t\t\tspacer.className = 'spacer'\n\t\t\t\t\tutr.appendChild(spacer)\n\t\t\t\t}\n\n\t\t\t\tlet td = document.createElement('td')\n\t\t\t\tlet checkbox = document.createElement('input')\n\t\t\t\tcheckbox.type = 'checkbox'\n\t\t\t\tcheckbox.value = i + \",\" + this.event.times[i][k]\n\t\t\t\tcheckbox.setAttribute(\"Day\", i)\n\t\t\t\ttd.appendChild(checkbox)\n\t\t\t\tutr.appendChild(td)\n\n\t\t\t}\n\t\t}\n\t\ttbody.appendChild(utr)\n\n\t\tt_cont.appendChild(table)\n\t\treturn t_cont\n\t}\n\n\t/**\n\t * Creates the Register button\n\t * @return {Element} button for registering a new attendee\n\t */\n\tcreateSignupButton() {\n\t\tlet button = document.createElement('button')\n\t\tbutton.innerHTML = 'Register'\n\t\tbutton.className = 'submit button is-dark'\n\n\t\tbutton.addEventListener('click', event => {\n\n\t\t\tlet unprocessed_times = Array.from($('input[type=\"checkbox\"][value]:checked')).map(el => el.value)\n\t\t\tlet time = []\n\n\t\t\tfor (let i in this.event.dates) {\n\t\t\t\ttime[i] = []\n\t\t\t}\n\n\t\t\tfor (let i in unprocessed_times) {\n\t\t\t\tunprocessed_times[i] = unprocessed_times[i].split(',')\n\t\t\t\ttime[unprocessed_times[i][0]].push(parseInt(unprocessed_times[i][1]))\n\t\t\t}\n\n\n\t\t\tlet payload = {}\n\t\t\tpayload.event_uid = this.event.uid\n\t\t\tpayload.all_attendees = this.event.attendees;\n\n\t\t\tpayload.name = this.name.value\n\t\t\tpayload.times = time\n\t\t\tpayload.attendee_task_list = this.attendee_task_list;\n\t\t\tpayload.new_event_task_list = this.event.task_list.filter(x => this.attendee_task_list.indexOf(x) == -1);\n\t\t\tif (!payload.name) {\n\t\t\t\tthis.createErrorModal(this.eventInfo, \"You must enter a name.\")\n\t\t\t\treturn\n\t\t\t}\n\t\t\tif (payload.times.every((day_array) => {\n\t\t\t\tif (day_array.length == 0) { return (true) }\n\t\t\t})) {\n\t\t\t\tthis.createErrorModal(this.eventInfo, \"You must choose at least one time.\")\n\t\t\t\treturn\n\t\t\t}\n\n\t\t\tconsole.log(payload);\n\t\t\tfetch('/api/events/register/', {\n\t\t\t\theaders: { 'Content-Type': 'application/json' },\n\t\t\t\tmethod: \"POST\",\n\t\t\t\tbody: JSON.stringify(payload)\n\t\t\t}).then(res => res.json()).then(res => {\n\t\t\t\tif (res.status != \"ok\") {\n\t\t\t\t\talert(\"Could not contact server, please try again\")\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\twindow.location.reload()\n\t\t\t})\n\t\t})\n\t\treturn button\n\t}\n\n\t/**\n\t * Creates the task list button\n\t * @return {Element} button for registering for a task\n\t */\n\tcreateTaskButton() {\n\t\tlet button = document.createElement('button')\n\t\tbutton.innerHTML = 'Help Out'\n\t\tbutton.className = 'submit button is-small'\n\t\treturn button\n\t}\n\n\t/**\n\t * Creates the modal with the table of registered guests\n\t * @param {div} div an html div object that gives place to insert the modal\n\t */\n\tcreateModal(div) {\n\t\tlet task_table = document.createElement('div');\n\t\tdiv.appendChild(task_table);\n\n\t\tif (this.event.task_list_master.length) {\n\n\t\t\tlet info_tab = document.createElement('div');\n\t\t\tinfo_tab.innerHTML = \"<a class='has-text-grey-light'>Clear here to see what people are already bringing</a>\";\n\t\t\tdiv.appendChild(info_tab)\n\n\n\n\t\t\tinfo_tab.addEventListener(\"click\", event => {\n\t\t\t\tlet modal = document.createElement('div')\n\t\t\t\tmodal.className = \"modal\"\n\n\t\t\t\tlet modal_background = document.createElement('div')\n\t\t\t\tmodal_background.className = \"modal-background\"\n\n\t\t\t\tlet modal_content = document.createElement('div')\n\t\t\t\tmodal_content.className = \"modal-content\"\n\t\t\t\tmodal_content.style.backgroundColor = \"#fff\"\n\t\t\t\tmodal_content.style.borderRadius = \"5px\"\n\t\t\t\tmodal_content.style.padding = \"2%\"\n\n\t\t\t\tlet header = document.createElement('h1')\n\t\t\t\theader.className = \"title\"\n\t\t\t\theader.textContent = this.event.name + \" Guests\"\n\t\t\t\tmodal_content.appendChild(header)\n\n\t\t\t\tlet subheader = document.createElement('h2')\n\t\t\t\tsubheader.className = \"subtitle\"\n\t\t\t\tsubheader.innerHTML = \"Who is bringing what?\"\n\t\t\t\tmodal_content.appendChild(subheader)\n\n\t\t\t\tlet task_list_table = document.createElement('table')\n\t\t\t\ttask_list_table.style.width = \"100%\"\n\t\t\t\tlet tr = document.createElement('tr')\n\t\t\t\tlet td_attendee = document.createElement('td')\n\t\t\t\ttd_attendee.innerHTML = \"Attendee\"\n\t\t\t\ttd_attendee.style.fontWeight = \"bold\"\n\n\t\t\t\ttd_attendee.setAttribute(\"colspan\", 2)\n\t\t\t\ttr.appendChild(td_attendee)\n\t\t\t\ttask_list_table.appendChild(tr)\n\n\t\t\t\tfor (let i in this.event.attendees) {\n\n\t\t\t\t\tlet atr = document.createElement('tr')\n\t\t\t\t\tlet atd = document.createElement('td')\n\t\t\t\t\tatd.textContent = this.event.attendees[i].name\n\t\t\t\t\tatd.style.width = \"30%\"\n\n\t\t\t\t\tlet ttd = document.createElement('td')\n\n\t\t\t\t\tif (this.event.attendees[i].task_list == undefined || this.event.attendees[i].task_list == \"\") {\n\t\t\t\t\t\tttd.innerHTML = \"&nbsp;-\"\n\t\t\t\t\t} else {\n\t\t\t\t\t\tttd.textContent = this.event.attendees[i].task_list\n\t\t\t\t\t}\n\t\t\t\t\tttd.style.width = \"70%\"\n\t\t\t\t\ttask_list_table.appendChild(atr)\n\n\t\t\t\t\t// style the table\n\t\t\t\t\tif (i % 2 == 0) {\n\t\t\t\t\t\tatd.style.backgroundColor = \"#f0f0f0\"\n\t\t\t\t\t\tatr.style.backgroundColor = \"#f0f0f0\"\n\t\t\t\t\t}\n\n\t\t\t\t\tatd.style.borderWidth = \"1px\";\n\t\t\t\t\tatd.style.borderColor = \"#fff\";\n\t\t\t\t\tatd.style.borderStyle = \"solid\";\n\t\t\t\t\tttd.style.borderWidth = \"1px\";\n\t\t\t\t\tttd.style.borderColor = \"#fff\";\n\t\t\t\t\tttd.style.borderStyle = \"solid\";\n\n\t\t\t\t\tatr.appendChild(atd)\n\t\t\t\t\tatr.appendChild(ttd)\n\t\t\t\t}\n\n\t\t\t\tlet modal_close = document.createElement('button')\n\t\t\t\tmodal_close.className = \"modal-close is-large\"\n\t\t\t\tmodal_close.setAttribute(\"aria-label\", \"close\")\n\n\t\t\t\tmodal_close.addEventListener(\"click\", event => {\n\t\t\t\t\tmodal.className = \"modal\"\n\t\t\t\t})\n\n\t\t\t\tmodal.appendChild(modal_background)\n\t\t\t\tmodal_content.appendChild(task_list_table)\n\t\t\t\tmodal_content.appendChild(modal_close)\n\t\t\t\tmodal.appendChild(modal_content)\n\n\t\t\t\tmodal.className = \"modal is-active\"\n\t\t\t\ttask_table.appendChild(modal)\n\t\t\t})\n\t\t}\n\t}\n\n\t/**\n\t * Creates the modal with the table of registered guests\n\t * @param {div} div an html div object that gives place to insert the modal\n\t * @param {string} msg a string containing an error message to place in the modal\n\t */\n\tcreateErrorModal(div, msg) {\n\t\tlet task_table = document.createElement('div');\n\t\tdiv.appendChild(task_table);\n\n\t\tlet info_tab = document.createElement('div');\n\t\tdiv.appendChild(info_tab)\n\n\t\tlet modal = document.createElement('div')\n\t\tmodal.className = \"modal\"\n\n\t\tlet modal_background = document.createElement('div')\n\t\tmodal_background.className = \"modal-background\"\n\n\t\tlet modal_content = document.createElement('div')\n\t\tmodal_content.className = \"modal-content\"\n\t\tmodal_content.style.backgroundColor = \"#fff\"\n\t\tmodal_content.style.borderRadius = \"5px\"\n\t\tmodal_content.style.padding = \"2%\"\n\n\t\tlet header = document.createElement('h1')\n\t\theader.className = \"title\"\n\t\theader.innerHTML = \"Error\"\n\t\tmodal_content.appendChild(header)\n\n\t\tlet subheader = document.createElement('h2')\n\t\tsubheader.className = \"subtitle\"\n\t\tsubheader.innerHTML = msg\n\t\tmodal_content.appendChild(subheader)\n\n\n\t\tlet modal_close = document.createElement('a')\n\t\tmodal_close.className = \"button is-warning\"\n\t\tmodal_close.innerHTML = \"Ok\"\n\n\t\tmodal_close.addEventListener(\"click\", event => {\n\t\t\tmodal.className = \"modal\"\n\t\t})\n\n\t\tmodal.appendChild(modal_background)\n\t\tmodal_content.appendChild(modal_close)\n\t\tmodal.appendChild(modal_content)\n\n\t\tmodal.className = \"modal is-active\"\n\t\ttask_table.appendChild(modal)\n\t}\n\n\n\t/**\n\t * Create task requests\n\t * @param {div} parentDiv an html div object to place the help out button\n\t */\n\tcreateTaskAdder(parentDiv) {\n\t\tlet task_list = document.createElement('div');\n\t\tparentDiv.appendChild(task_list);\n\n\t\tlet task_button = document.createElement('div');\n\t\tlet task_list_button = this.createTaskButton()\n\t\ttask_button.appendChild(task_list_button)\n\n\t\tparentDiv.appendChild(task_button);\n\n\t\ttask_list_button.addEventListener('click', event => {\n\t\t\tparentDiv.removeChild(task_button);\n\t\t\tlet header = document.createElement('div')\n\t\t\theader.innerHTML = \"Select tasks\"\n\t\t\ttask_list.appendChild(header);\n\n\t\t\tlet task_button_container = document.createElement('div');\n\t\t\ttask_button_container.className = \"field is-grouped is-grouped-multiline\";\n\t\t\tlet tasks = [];\n\n\t\t\tfor (let i in this.event.task_list) {\n\t\t\t\tlet task = document.createElement('p')\n\t\t\t\ttask.className = \"control button is-small\";\n\t\t\t\ttask.textContent = this.event.task_list[i];\n\t\t\t\ttask_button_container.appendChild(task);\n\t\t\t\ttasks.push(task);\n\t\t\t}\n\n\t\t\tfor (let i in tasks) {\n\t\t\t\ttasks[i].addEventListener('click', event => {\n\t\t\t\t\tif (!this.attendee_task_list.includes(tasks[i].innerHTML)) {\n\t\t\t\t\t\ttasks[i].className = \"control button is-dark is-small\";\n\t\t\t\t\t\tthis.attendee_task_list.push(tasks[i].innerHTML)\n\t\t\t\t\t} else {\n\t\t\t\t\t\ttasks[i].className = \"control button is-small task\";\n\t\t\t\t\t\tlet loc = this.attendee_task_list.indexOf(tasks[i].innerHTML);\n\t\t\t\t\t\tthis.attendee_task_list.splice(loc, 1)\n\t\t\t\t\t}\n\t\t\t\t})\n\t\t\t}\n\t\t\ttask_list.appendChild(task_button_container);\n\t\t})\n\t}\n\n\t/**\n\t * Creates a div that contains the Attendee table, Register Button, and Task List information\n\t * @return {Element} div containing page contents\n\t */\n\tcreateEventInfo() {\n\t\tthis.eventInfo = document.createElement('div')\n\t\tthis.eventInfo.appendChild(this.createAttendeeTable())\n\n\t\t// If there are requests still needing assigned, create the button and list \n\t\t// else print that all requests have been met\n\t\tif (this.event.task_list.length > 0 && this.event.task_list[0].length > 1) {\n\t\t\tthis.createTaskAdder(this.eventInfo);\n\t\t} else {\n\t\t\tthis.eventInfo.appendChild(document.createTextNode(\"All requests have been met.\"))\n\t\t}\n\n\t\t// Registration Button\n\t\tlet submit_button = document.createElement('div');\n\t\tsubmit_button.className = \"submit_container\";\n\t\tsubmit_button.appendChild(this.createSignupButton())\n\t\tthis.eventInfo.appendChild(submit_button);\n\n\t\t// Handle modal that holds which requests have been met by attendees\n\t\tthis.createModal(this.eventInfo)\n\n\t\treturn this.eventInfo\n\t}\n}\n\n$(() => {\n\tlet event_id = (new URLSearchParams(window.location.search)).get('id')\n\tfetch('/api/events/?uid=' + event_id).then(res => res.json()).then(event => {\n\t\tif (!event) {\n\t\t\t$('.content_card')[0].innerHTML = \"This event does not exist\"\n\t\t\treturn\n\t\t}\n\t\tlet event_page = new EventPage(event)\n\t\t$('h1.titleext')[0].appendChild(document.createTextNode(event.name))\n\t\t$('h2.event_date')[0].appendChild(document.createTextNode(\"Starting \" + event.dates[0]))\n\t\t$('h2.subtitleext')[0].appendChild(document.createTextNode(event.description))\n\t\t$('.content_card')[0].appendChild(event_page.createEventInfo(event))\n\t})\n})",
     "static": true,
-    "longname": "C:/Users/jacob/Desktop/Project-1/public/js/event.js",
+    "longname": "/home/alex/EECS448/Project-2/public/js/event.js",
     "access": "public",
     "description": null,
     "lineNumber": 1
   },
   {
-    "__docId__": 71,
+    "__docId__": 89,
     "kind": "class",
     "name": "EventPage",
     "memberof": "js/event.js",
@@ -1032,11 +1352,11 @@
     "importPath": "Project-1/js/event.js",
     "importStyle": "{EventPage}",
     "description": "Class for Event Page methods",
-    "lineNumber": 6,
+    "lineNumber": 7,
     "interface": false
   },
   {
-    "__docId__": 72,
+    "__docId__": 90,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "js/event.js~EventPage",
@@ -1046,7 +1366,7 @@
     "longname": "js/event.js~EventPage#constructor",
     "access": "public",
     "description": "",
-    "lineNumber": 10,
+    "lineNumber": 11,
     "params": [
       {
         "nullable": null,
@@ -1061,7 +1381,7 @@
     ]
   },
   {
-    "__docId__": 73,
+    "__docId__": 91,
     "kind": "member",
     "name": "event",
     "memberof": "js/event.js~EventPage",
@@ -1069,7 +1389,7 @@
     "longname": "js/event.js~EventPage#event",
     "access": "public",
     "description": null,
-    "lineNumber": 12,
+    "lineNumber": 13,
     "type": {
       "types": [
         "*"
@@ -1077,7 +1397,24 @@
     }
   },
   {
-    "__docId__": 74,
+    "__docId__": 92,
+    "kind": "member",
+    "name": "attendee_task_list",
+    "memberof": "js/event.js~EventPage",
+    "static": false,
+    "longname": "js/event.js~EventPage#attendee_task_list",
+    "access": "public",
+    "description": null,
+    "lineNumber": 18,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*[]"
+      ]
+    }
+  },
+  {
+    "__docId__": 93,
     "kind": "method",
     "name": "createAttendeeTable",
     "memberof": "js/event.js~EventPage",
@@ -1087,7 +1424,7 @@
     "longname": "js/event.js~EventPage#createAttendeeTable",
     "access": "public",
     "description": "Creates the Attendee table",
-    "lineNumber": 19,
+    "lineNumber": 26,
     "return": {
       "nullable": null,
       "types": [
@@ -1099,7 +1436,7 @@
     "params": []
   },
   {
-    "__docId__": 75,
+    "__docId__": 94,
     "kind": "member",
     "name": "name",
     "memberof": "js/event.js~EventPage",
@@ -1107,7 +1444,7 @@
     "longname": "js/event.js~EventPage#name",
     "access": "public",
     "description": null,
-    "lineNumber": 75,
+    "lineNumber": 157,
     "type": {
       "types": [
         "*"
@@ -1115,7 +1452,7 @@
     }
   },
   {
-    "__docId__": 76,
+    "__docId__": 95,
     "kind": "method",
     "name": "createSignupButton",
     "memberof": "js/event.js~EventPage",
@@ -1125,7 +1462,7 @@
     "longname": "js/event.js~EventPage#createSignupButton",
     "access": "public",
     "description": "Creates the Register button",
-    "lineNumber": 117,
+    "lineNumber": 190,
     "return": {
       "nullable": null,
       "types": [
@@ -1137,7 +1474,117 @@
     "params": []
   },
   {
-    "__docId__": 77,
+    "__docId__": 96,
+    "kind": "method",
+    "name": "createTaskButton",
+    "memberof": "js/event.js~EventPage",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/event.js~EventPage#createTaskButton",
+    "access": "public",
+    "description": "Creates the task list button",
+    "lineNumber": 249,
+    "return": {
+      "nullable": null,
+      "types": [
+        "Element"
+      ],
+      "spread": false,
+      "description": "button for registering for a task"
+    },
+    "params": []
+  },
+  {
+    "__docId__": 97,
+    "kind": "method",
+    "name": "createModal",
+    "memberof": "js/event.js~EventPage",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/event.js~EventPage#createModal",
+    "access": "public",
+    "description": "Creates the modal with the table of registered guests",
+    "lineNumber": 260,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "div"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "div",
+        "description": "an html div object that gives place to insert the modal"
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 98,
+    "kind": "method",
+    "name": "createErrorModal",
+    "memberof": "js/event.js~EventPage",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/event.js~EventPage#createErrorModal",
+    "access": "public",
+    "description": "Creates the modal with the table of registered guests",
+    "lineNumber": 364,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "div"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "div",
+        "description": "an html div object that gives place to insert the modal"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "msg",
+        "description": "a string containing an error message to place in the modal"
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 99,
+    "kind": "method",
+    "name": "createTaskAdder",
+    "memberof": "js/event.js~EventPage",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "js/event.js~EventPage#createTaskAdder",
+    "access": "public",
+    "description": "Create task requests",
+    "lineNumber": 415,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "div"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "parentDiv",
+        "description": "an html div object to place the help out button"
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 100,
     "kind": "method",
     "name": "createEventInfo",
     "memberof": "js/event.js~EventPage",
@@ -1146,8 +1593,8 @@
     "static": false,
     "longname": "js/event.js~EventPage#createEventInfo",
     "access": "public",
-    "description": "Creates a div that contains the Attendee table and Register Button",
-    "lineNumber": 149,
+    "description": "Creates a div that contains the Attendee table, Register Button, and Task List information",
+    "lineNumber": 463,
     "return": {
       "nullable": null,
       "types": [
@@ -1159,18 +1606,35 @@
     "params": []
   },
   {
-    "__docId__": 78,
+    "__docId__": 101,
+    "kind": "member",
+    "name": "eventInfo",
+    "memberof": "js/event.js~EventPage",
+    "static": false,
+    "longname": "js/event.js~EventPage#eventInfo",
+    "access": "public",
+    "description": null,
+    "lineNumber": 464,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 102,
     "kind": "file",
     "name": "js/events.js",
-    "content": "import $ from '/js/init.js'\r\n\r\n/**\r\n * Class for Events Page methods\r\n */\r\nexport class EventsPage {\r\n  /**\r\n   * @param {object[]} event_list - Array of objects containing event information.\r\n   */\r\n  constructor(event_list) {\r\n    /** @member {object[]} events - List of event objects sorted by date */\r\n    this.events = event_list.sort((e1, e2) => (new Date(e1.date)).getTime() - (new Date(e2.date)).getTime())\r\n  }\r\n\r\n  /**\r\n   * Creates the Event List\r\n   * @return {Element} div containing page contents\r\n   */\r\n  createEventList() {\r\n    let divGroup = document.createElement('div')\r\n    if (this.events && this.events.length) {\r\n      for (let i in this.events) {\r\n        let divRow = document.createElement('div')\r\n        divRow.className = \"row\"\r\n\r\n        let dateText = document.createElement('span')\r\n        dateText.appendChild(document.createTextNode(this.events[i].date))\r\n\r\n        let nameText = document.createElement('a')\r\n        nameText.appendChild(document.createTextNode(this.events[i].name))\r\n        nameText.href = '/event?id=' + this.events[i].uid\r\n\r\n        let deleteButton = document.createElement('button')\r\n        deleteButton.innerHTML = 'X'\r\n        deleteButton.className = 'button is-danger is-small is-outlined'\r\n        deleteButton.addEventListener('click', event => {\r\n          if (!confirm(\"Are you sure you want to delete \\'\" + this.events[i].name + \"\\'?\")) return\r\n          fetch(\"/api/events/delete\", {\r\n            headers: {'Content-Type': 'application/json'},\r\n            method: \"POST\",\r\n            body: JSON.stringify({uid:this.events[i].uid})\r\n          }).then(res => res.json()).then(res => {\r\n            if (res.status != \"ok\") {\r\n              alert(\"Could not contact server, please try again\")\r\n              return\r\n            }\r\n            window.location.reload()\r\n          })\r\n        })\r\n\r\n        divRow.appendChild(dateText)\r\n        divRow.appendChild(nameText)\r\n        divRow.appendChild(deleteButton)\r\n        divGroup.appendChild(divRow)\r\n      }\r\n    } else {\r\n      let err = document.createElement('a')\r\n      err.innerHTML = 'No Events'\r\n      divGroup.appendChild(err)\r\n    }\r\n    return divGroup\r\n  }\r\n}\r\n\r\n$(() => {\r\n  fetch('/api/events/').then(res => res.json()).then(event_list => {\r\n    let events_page = new EventsPage(event_list)\r\n    $('.content_card')[0].appendChild(events_page.createEventList())\r\n  })\r\n})\r\n",
+    "content": "import $ from '/js/init.js'\n\n/**\n * Class for Events Page methods\n */\nexport class EventsPage {\n\t/**\n\t * @param {object[]} event_list - Array of objects containing event information.\n\t */\n\tconstructor(event_list) {\n\t\t/** @member {object[]} events - List of event objects sorted by date */\n\t\tthis.events = event_list;\n\t\tfor (let i in this.events) {\n\t\t\tthis.events[i].dates = JSON.parse(this.events[i].dates);\n\t\t}\n\t\tthis.events = this.events.sort((e1, e2) => (new Date(e1.dates[0])).getTime() - (new Date(e2.dates[0])).getTime())\n\t}\n\n\t/**\n\t * Creates the Event List\n\t * @return {Element} div containing page contents\n\t */\n\tcreateEventList() {\n\t\tlet divGroup = document.createElement('div')\n\t\tif (this.events && this.events.length) {\n\t\t\tfor (let i in this.events) {\n\t\t\t\tlet divRow = document.createElement('div')\n\t\t\t\tdivRow.className = \"row\"\n\n\t\t\t\tlet dateText = document.createElement('span')\n\t\t\t\t// this.events[i].dates = JSON.parse(this.events[i].dates);\n\n\t\t\t\tfor (let k in this.events[i].dates) {\n\t\t\t\t\tdateText.appendChild(document.createTextNode(this.events[i].dates[k]));\n\t\t\t\t\tif (!(k == this.events[i].dates.length - 1)) {\n\t\t\t\t\t\tdateText.appendChild(document.createTextNode(\",\"))\n\t\t\t\t\t\tdateText.appendChild(document.createElement(\"br\"));\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\tlet nameText = document.createElement('a')\n\t\t\t\tnameText.appendChild(document.createTextNode(this.events[i].name))\n\t\t\t\tnameText.className = 'has-text-grey-light'\n\t\t\t\tnameText.href = '/event?id=' + this.events[i].uid\n\n\t\t\t\tlet deleteButton = document.createElement('button')\n\t\t\t\tdeleteButton.innerHTML = 'X'\n\t\t\t\tdeleteButton.className = 'button is-danger is-small is-outlined'\n\t\t\t\tdeleteButton.addEventListener('click', event => {\n\t\t\t\t\tif (!confirm(\"Are you sure you want to delete \\'\" + this.events[i].name + \"\\'?\")) return\n\t\t\t\t\tfetch(\"/api/events/delete\", {\n\t\t\t\t\t\theaders: { 'Content-Type': 'application/json' },\n\t\t\t\t\t\tmethod: \"POST\",\n\t\t\t\t\t\tbody: JSON.stringify({ uid: this.events[i].uid })\n\t\t\t\t\t}).then(res => res.json()).then(res => {\n\t\t\t\t\t\tif (res.status != \"ok\") {\n\t\t\t\t\t\t\talert(\"Could not contact server, please try again\")\n\t\t\t\t\t\t\treturn\n\t\t\t\t\t\t}\n\t\t\t\t\t\twindow.location.reload()\n\t\t\t\t\t})\n\t\t\t\t})\n\n\t\t\t\tdivRow.appendChild(dateText)\n\t\t\t\tdivRow.appendChild(nameText)\n\t\t\t\tdivRow.appendChild(deleteButton)\n\t\t\t\tdivGroup.appendChild(divRow)\n\t\t\t}\n\t\t} else {\n\t\t\tlet err = document.createElement('a')\n\t\t\terr.innerHTML = 'No Events'\n\t\t\tdivGroup.appendChild(err)\n\t\t}\n\t\treturn divGroup\n\t}\n}\n\n$(() => {\n\tfetch('/api/events/').then(res => res.json()).then(event_list => {\n\t\tlet events_page = new EventsPage(event_list)\n\t\t$('.content_card')[0].appendChild(events_page.createEventList())\n\t})\n})\n",
     "static": true,
-    "longname": "C:/Users/jacob/Desktop/Project-1/public/js/events.js",
+    "longname": "/home/alex/EECS448/Project-2/public/js/events.js",
     "access": "public",
     "description": null,
     "lineNumber": 1
   },
   {
-    "__docId__": 79,
+    "__docId__": 103,
     "kind": "class",
     "name": "EventsPage",
     "memberof": "js/events.js",
@@ -1185,7 +1649,7 @@
     "interface": false
   },
   {
-    "__docId__": 80,
+    "__docId__": 104,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "js/events.js~EventsPage",
@@ -1210,7 +1674,7 @@
     ]
   },
   {
-    "__docId__": 81,
+    "__docId__": 105,
     "kind": "member",
     "name": "events",
     "memberof": "js/events.js~EventsPage",
@@ -1226,7 +1690,7 @@
     }
   },
   {
-    "__docId__": 82,
+    "__docId__": 107,
     "kind": "method",
     "name": "createEventList",
     "memberof": "js/events.js~EventsPage",
@@ -1236,7 +1700,7 @@
     "longname": "js/events.js~EventsPage#createEventList",
     "access": "public",
     "description": "Creates the Event List",
-    "lineNumber": 19,
+    "lineNumber": 23,
     "return": {
       "nullable": null,
       "types": [
@@ -1248,18 +1712,18 @@
     "params": []
   },
   {
-    "__docId__": 83,
+    "__docId__": 108,
     "kind": "file",
     "name": "js/init.js",
-    "content": "/**\r\n * A lightweight JQuery-like shim\r\n * @param {(string|function)} input - String: An element query selector, Function: a function to be run on page load\r\n * @return {NodeList} A list of matching nodes if input was query selector\r\n */\r\nexport\r\ndefault function $(input) {\r\n  if (typeof(input) === 'string') return document.querySelectorAll(input)\r\n  if (typeof(input) === 'function') document.addEventListener('DOMContentLoaded', input)\r\n}\r\n",
+    "content": "/**\n * A lightweight JQuery-like shim\n * @param {(string|function)} input - String: An element query selector, Function: a function to be run on page load\n * @return {NodeList} A list of matching nodes if input was query selector\n */\nexport\ndefault function $(input) {\n  if (typeof(input) === 'string') return document.querySelectorAll(input)\n  if (typeof(input) === 'function') document.addEventListener('DOMContentLoaded', input)\n}\n",
     "static": true,
-    "longname": "C:/Users/jacob/Desktop/Project-1/public/js/init.js",
+    "longname": "/home/alex/EECS448/Project-2/public/js/init.js",
     "access": "public",
     "description": null,
     "lineNumber": 1
   },
   {
-    "__docId__": 84,
+    "__docId__": 109,
     "kind": "function",
     "name": "$",
     "memberof": "js/init.js",
@@ -1297,24 +1761,24 @@
   },
   {
     "kind": "index",
-    "content": "# Event Planner\r\n\r\nThis repository contains the project 1 submission of Team A' for KU's EECS 448 Fall 2017 course.\r\n\r\nIt is capable of running a website that allows for the creation of persistent events that can be signed up for by attendees.\r\n\r\n## Documentation\r\n\r\nDocumentation can be found in the [docs](docs) directory in the project in a raw format, or viewed on the [live website](https://448.benhaney.com/docs/).\r\n\r\nDocumentation coverage can be viewed [here](https://448.benhaney.com/docs/source.html)\r\n\r\nDocumentation for the backend API can be viewed [here](https://448.benhaney.com/docs/manual/api.html)\r\n\r\n## Works Cited\r\n\r\nThis project uses the following externally included resources:\r\n* [Bulma](http://bulma.io/) CSS Framework [MIT]\r\n* [Pikaday](https://dbushell.com/Pikaday/) calendar widget [MIT]\r\n* [body-parser](https://www.npmjs.com/package/body-parser) body-parser nodejs plugin [MIT]\r\n* [esdoc](https://esdoc.org/) Documentation generator [MIT]\r\n* [express](https://expressjs.com/) Express web server [CC BY-SA 3.0 US]\r\n* [node-sqlite3](https://github.com/mapbox/node-sqlite3) SQLite bindings for nodejs [BSD]\r\n\r\nAnd the following internally included resources:\r\n* [Github-logo.png](public/img/gh.png)\r\n",
-    "longname": "C:\\Users\\jacob\\Desktop\\Project-1\\README.md",
+    "content": "# Event Planner\n\nThis repository contains the project 1 submission of Team A' for KU's EECS 448 Fall 2017 course.\n\nIt is capable of running a website that allows for the creation of persistent events that can be signed up for by attendees.\n\n## Documentation\n\nDocumentation can be found in the [docs](docs) directory in the project in a raw format, or viewed on the [live website](https://448.benhaney.com/docs/).\n\nDocumentation coverage can be viewed [here](https://448.benhaney.com/docs/source.html)\n\nDocumentation for the backend API can be viewed [here](https://448.benhaney.com/docs/manual/api.html)\n\n## Works Cited\n\nThis project uses the following externally included resources:\n* [Bulma](http://bulma.io/) CSS Framework [MIT]\n* [Pikaday](https://dbushell.com/Pikaday/) calendar widget [MIT]\n* [body-parser](https://www.npmjs.com/package/body-parser) body-parser nodejs plugin [MIT]\n* [esdoc](https://esdoc.org/) Documentation generator [MIT]\n* [express](https://expressjs.com/) Express web server [CC BY-SA 3.0 US]\n* [node-sqlite3](https://github.com/mapbox/node-sqlite3) SQLite bindings for nodejs [BSD]\n\nAnd the following internally included resources:\n* [Github-logo.png](public/img/gh.png)\n",
+    "longname": "/home/alex/EECS448/Project-2/README.md",
     "name": "./README.md",
     "static": true,
     "access": "public"
   },
   {
     "kind": "packageJSON",
-    "content": "{\r\n  \"name\": \"Project-1\",\r\n  \"version\": \"0.0.0\",\r\n  \"description\": \"A web app solution for EECS-448 project 1\",\r\n  \"main\": \"src/app.js\",\r\n  \"dependencies\": {\r\n    \"body-parser\": \"^1.18.1\",\r\n    \"esdoc\": \"^1.0.2\",\r\n    \"esdoc-standard-plugin\": \"^1.0.0\",\r\n    \"express\": \"^4.15.4\",\r\n    \"mocha\": \"^3.5.0\",\r\n    \"sqlite3\": \"^3.1.10\"\r\n  },\r\n  \"devDependencies\": {},\r\n  \"scripts\": {\r\n    \"start\": \"node ./src/app.js\",\r\n    \"test\": \"mocha\"\r\n  },\r\n  \"repository\": {\r\n    \"type\": \"git\",\r\n    \"url\": \"https://github.com/Team-A-Prime/Project-1.git\"\r\n  },\r\n  \"author\": \"\",\r\n  \"license\": \"ISC\",\r\n  \"bugs\": {\r\n    \"url\": \"https://github.com/Team-A-Prime/Project-1/issues\"\r\n  }\r\n}\r\n",
-    "longname": "C:\\Users\\jacob\\Desktop\\Project-1\\package.json",
+    "content": "{\n  \"name\": \"Project-1\",\n  \"version\": \"0.0.0\",\n  \"description\": \"A web app solution for EECS-448 project 1\",\n  \"main\": \"src/app.js\",\n  \"dependencies\": {\n    \"body-parser\": \"^1.18.1\",\n    \"esdoc\": \"^1.0.2\",\n    \"esdoc-standard-plugin\": \"^1.0.0\",\n    \"express\": \"^4.15.4\",\n    \"mocha\": \"^3.5.0\",\n    \"sqlite3\": \"^3.1.10\"\n  },\n  \"devDependencies\": {\n    \"esdoc\": \"^1.0.3\",\n    \"esdoc-standard-plugin\": \"^1.0.0\"\n  },\n  \"scripts\": {\n    \"start\": \"node ./src/app.js\",\n    \"test\": \"mocha\"\n  },\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/Team-A-Prime/Project-1.git\"\n  },\n  \"author\": \"\",\n  \"license\": \"ISC\",\n  \"bugs\": {\n    \"url\": \"https://github.com/Team-A-Prime/Project-1/issues\"\n  }\n}\n",
+    "longname": "/home/alex/EECS448/Project-2/package.json",
     "name": "package.json",
     "static": true,
     "access": "public"
   },
   {
     "kind": "manualIndex",
-    "content": "# API Documentation\r\n\r\nAll POST requests are closed without redirecting the page.\r\n\r\n### GET `/api/events`\r\nRetrieves events from the server.\r\n\r\n| Request variable | Type | Description | \r\n| --- | --- | --- |\r\n| `uid` | string | The server-assigned event UID. If empty, the server returns every event. |\r\n\r\nThe return data is a JSON object formatted as:\r\n\r\n| Key | Type | Description | \r\n| --- | --- | --- |\r\n| `name` | string | Name of the event |\r\n| `description` | string | Description of the event |\r\n| `date` | string | Date of the event (format agnostic) |\r\n| `times` | array | Integer array of the time of the event (0-47) |\r\n| `owner` | string | Name of the event owner/creator |\r\n| `attendees` | array | An array of JS objects with two keys: `name` (string), `times` (integer array), which describes the attendees and what times they are attending |\r\n\r\n### POST `/api/events/new`\r\nCreates a new event on the server.\r\n\r\n| Request variable | Type | Description | \r\n| --- | --- | --- |\r\n| `name` | string | Name of the event |\r\n| `description` | string | Description of the event |\r\n| `date` | string | Date of the event (format agnostic) |\r\n| `times` | array | Integer array of the time of the event (0-47) |\r\n| `owner` | string | The person who created the event |\r\n\r\n### POST `/api/events/register`\r\n\r\nRegisters a person to attend an event\r\n\r\n| Request variable | Type | Description | \r\n| --- | --- | --- |\r\n| `uid` | string | UID of the event |\r\n| `name` | string | Name of the attendee |\r\n| `times` | array | Integer array of the times the user is attending |\r\n\r\n### POST `/api/events/delete`\r\nDeletes a given event from the server.\r\n\r\n| Request variable | Type | Description | \r\n| --- | --- | --- |\r\n| `uid` | string | UID of the event to delete. |\r\n",
-    "longname": "C:\\Users\\jacob\\Desktop\\Project-1\\docs\\api.md",
+    "content": "# API Documentation\n\nAll POST requests are closed without redirecting the page.\n\n### GET `/api/events`\nRetrieves events from the server.\n\n| Request variable | Type | Description | \n| --- | --- | --- |\n| `uid` | string | The server-assigned event UID. If empty, the server returns every event. |\n\nThe return data is a JSON object formatted as:\n\n| Key | Type | Description | \n| --- | --- | --- |\n| `name` | string | Name of the event |\n| `description` | string | Description of the event |\n| `date` | string | Date of the event (format agnostic) |\n| `times` | array | Integer array of the time of the event (0-47) |\n| `owner` | string | Name of the event owner/creator |\n| `attendees` | array | An array of JS objects with two keys: `name` (string), `times` (integer array), which describes the attendees and what times they are attending |\n\n### POST `/api/events/new`\nCreates a new event on the server.\n\n| Request variable | Type | Description | \n| --- | --- | --- |\n| `name` | string | Name of the event |\n| `description` | string | Description of the event |\n| `date` | string | Date of the event (format agnostic) |\n| `times` | array | Integer array of the time of the event (0-47) |\n| `owner` | string | The person who created the event |\n\n### POST `/api/events/register`\n\nRegisters a person to attend an event\n\n| Request variable | Type | Description | \n| --- | --- | --- |\n| `uid` | string | UID of the event |\n| `name` | string | Name of the attendee |\n| `times` | array | Integer array of the times the user is attending |\n\n### POST `/api/events/delete`\nDeletes a given event from the server.\n\n| Request variable | Type | Description | \n| --- | --- | --- |\n| `uid` | string | UID of the event to delete. |\n",
+    "longname": "/home/alex/EECS448/Project-2/docs/api.md",
     "name": "./docs/api.md",
     "static": true,
     "access": "public"

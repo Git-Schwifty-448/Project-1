@@ -30,6 +30,8 @@
   <ul>
     
   <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/calendar.js~Calendar.html">Calendar</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~RSlot.html">RSlot</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html">RSlotAdder</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~Slot.html">Slot</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~SlotAdder.html">SlotAdder</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/event.js~EventPage.html">EventPage</a></span></span></li>
@@ -42,183 +44,510 @@
 <div class="content" data-ice="content"><h1 data-ice="title">js/event.js</h1>
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import $ from &apos;/js/init.js&apos;
 import Calendar from &apos;/js/calendar.js&apos;
+
 /**
  * Class for Event Page methods
  */
 export class EventPage {
-  /**
-   * @param {object} event - Contains event information
-   */
-  constructor(event) {
-    /** @member {object} event - Event information */
-    this.event = event
-  }
+	/**
+	 * @param {object} event - Contains event information
+	 */
+	constructor(event) {
+		/** @member {object} event - Event information */
+		this.event = event;
+		this.event.attendees = JSON.parse(this.event.attendees);
+		this.event.dates = JSON.parse(this.event.dates);
+		this.event.times = JSON.parse(this.event.times);
+		this.event.task_list = this.event.task_list.split(&apos;,&apos;);
+		this.attendee_task_list = [];
+		let eventInfo = null
+	}
 
-  /**
-   * Creates the Attendee table
-   * @return {Element} div containing the Attendee Table
-   */
-  createAttendeeTable() {
-    let slots = Calendar.time_slots(false)
-    let t_cont = document.createElement(&apos;div&apos;)
-    t_cont.className = &quot;table_container&quot;
-    let table = document.createElement(&apos;table&apos;)
-    let tbody = document.createElement(&apos;tbody&apos;)
-    let thead = document.createElement(&apos;thead&apos;)
-    let tr = document.createElement(&apos;tr&apos;)
-    let th = document.createElement(&apos;th&apos;)
-    tr.appendChild(th)
-    for (let i in this.event.times) {
-      if (i &amp;&amp; this.event.times[i]-this.event.times[i-1] &gt; 1) {
-        let spacer = document.createElement(&apos;th&apos;)
-        spacer.className = &apos;spacer&apos;
-        tr.appendChild(spacer)
-      }
-      let th = document.createElement(&apos;th&apos;)
-      th.innerHTML = slots[this.event.times[i]]
-      tr.appendChild(th)
-    }
-    thead.appendChild(tr)
-    table.appendChild(thead)
-    table.appendChild(tbody)
-    for (let attendee of this.event.attendees) {
-      let tr = document.createElement(&apos;tr&apos;)
-      let name = document.createElement(&apos;td&apos;)
-      if (attendee.name == this.event.owner) {
-        name.className = &quot;owner&quot;
-      }
-      name.appendChild(document.createTextNode(attendee.name))
-      tr.appendChild(name)
-      for (let i in this.event.times) {
-        let td = document.createElement(&apos;td&apos;)
-        if (i &amp;&amp; this.event.times[i]-this.event.times[i-1] &gt; 1) {
-          let spacer = document.createElement(&apos;td&apos;)
-          spacer.className = &apos;spacer&apos;
-          tr.appendChild(spacer)
-        }
-        let checkbox = document.createElement(&apos;input&apos;)
-        checkbox.type = &apos;checkbox&apos;
-        if (attendee.times.includes(this.event.times[i])) {
-          checkbox.checked = &quot;checked&quot;
-        }
-        checkbox.disabled = true
-        td.appendChild(checkbox)
-        tr.appendChild(td)
-      }
-      tbody.appendChild(tr)
-    }
-    let utr = document.createElement(&apos;tr&apos;)
-    utr.className = &apos;user-tr&apos;
-    let utd = document.createElement(&apos;td&apos;)
-    let uinput = document.createElement(&apos;input&apos;)
-    uinput.className = &quot;input is-small&quot;
-    uinput.placeholder = &quot;Your name&quot;
-    /** @member {object} name - Text field for user registeration */
-    this.name = uinput
-    utd.appendChild(uinput)
-    utr.appendChild(utd)
-    for (let i in this.event.times) {
-      if (i &amp;&amp; this.event.times[i]-this.event.times[i-1] &gt; 1) {
-        let spacer = document.createElement(&apos;td&apos;)
-        spacer.className = &apos;spacer&apos;
-        utr.appendChild(spacer)
-      }
-      let td = document.createElement(&apos;td&apos;)
-      let checkbox = document.createElement(&apos;input&apos;)
-      checkbox.type = &apos;checkbox&apos;
-      checkbox.value = this.event.times[i]
-      td.appendChild(checkbox)
-      utr.appendChild(td)
-    }
-    tbody.appendChild(utr)
-    let ttr = document.createElement(&apos;tr&apos;)
-    let ttd = document.createElement(&apos;td&apos;)
-    ttd.innerHTML = &apos;Participants&apos;
-    ttd.className = &apos;check_count&apos;
-    ttr.appendChild(ttd)
-    for (let i in this.event.times) {
-      if (i &amp;&amp; this.event.times[i]-this.event.times[i-1] &gt; 1) {
-        let spacer = document.createElement(&apos;td&apos;)
-        spacer.className = &apos;spacer&apos;
-        ttr.appendChild(spacer)
-      }
-      let td = document.createElement(&apos;td&apos;)
-      td.className = &apos;check_count&apos;
-      td.innerHTML = [].concat(...this.event.attendees.map(a=&gt;a.times)).filter(a=&gt;a==this.event.times[i]).length
-      ttr.appendChild(td)
-    }
-    tbody.appendChild(ttr)
-    t_cont.appendChild(table)
-    return t_cont
-  }
+	/**
+	 * Creates the Attendee table
+	 * @return {Element} div containing the Attendee Table
+	 */
+	createAttendeeTable() {
+		let slots = Calendar.time_slots(false)
+		let t_cont = document.createElement(&apos;div&apos;)
+		t_cont.className = &quot;table_container&quot;
+		let table = document.createElement(&apos;table&apos;)
+		let tbody = document.createElement(&apos;tbody&apos;)
+		let thead = document.createElement(&apos;thead&apos;)
 
-  /**
-   * Creates the Register button
-   * @return {Element} button for registering a new attendee
-   */
-  createSignupButton() {
-    let button = document.createElement(&apos;button&apos;)
-    button.innerHTML = &apos;Register&apos;
-    button.className = &apos;button is-primary&apos;
-    button.addEventListener(&apos;click&apos;, event =&gt; {
-      let payload = {}
-      payload.uid = this.event.uid
-      payload.name = this.name.value
-      payload.times = Array.from($(&apos;input[type=&quot;checkbox&quot;][value]:checked&apos;)).map(el =&gt; +el.value)
-      if (!payload.name) {
-        alert(&quot;You must enter your name!&quot;)
-        return
-      }
-      fetch(&apos;/api/events/register/&apos;, {
-        headers: {&apos;Content-Type&apos;: &apos;application/json&apos;},
-        method: &quot;POST&quot;,
-        body: JSON.stringify(payload)
-      }).then(res =&gt; res.json()).then(res =&gt; {
-        if (res.status != &quot;ok&quot;) {
-          alert(&quot;Could not contact server, please try again&quot;)
-          return
-        }
-        window.location.reload()
-      })
-    })
-    return button
-  }
+		let date_row = document.createElement(&apos;tr&apos;)
+		let date_cell = document.createElement(&apos;th&apos;)
+		date_row.appendChild(date_cell);
 
-  /**
-   * Creates a div that contains the Attendee table and Register Button
-   * @return {Element} div containing page contents
-   */
-  createEventInfo() {
-    let eventInfo = document.createElement(&apos;div&apos;)
+		let tr = document.createElement(&apos;tr&apos;)
+		let th = document.createElement(&apos;th&apos;)
+		tr.appendChild(th)
 
-    eventInfo.appendChild(this.createAttendeeTable())
-    eventInfo.appendChild(this.createSignupButton())
+		// CREATE TABLE HEADER INFORMATION
+		for (let i = 0; i &lt; this.event.times.length; i++) {
+			for (let k = 0; k &lt; this.event.times[i].length; k++) {
+				if (k == 0 &amp;&amp; i == 0 || k == 1 &amp;&amp; i != 0) {
+					let date_cell = document.createElement(&apos;th&apos;)
+					date_cell.setAttribute(&quot;colspan&quot;, this.event.times[i].length)
+					date_cell.innerHTML = (this.event.dates[i])
+					date_cell.style.textAlign = &apos;left&apos;;
+					date_cell.style.fontWeight = &apos;bold&apos;
+					date_row.appendChild(date_cell)
+				} else if (k == 0) {
+					let date_cell = document.createElement(&apos;th&apos;)
+					date_cell.style.width = &apos;10px&apos;;
+					date_row.appendChild(date_cell)
+				}
 
-    return eventInfo
-  }
+				let th = document.createElement(&apos;th&apos;)
+				th.innerHTML = slots[this.event.times[i][k]]
+				tr.appendChild(th)
+			}
+			if (i &lt; this.event.times.length - 1) {
+				let spacer = document.createElement(&apos;th&apos;)
+				spacer.className = &apos;spacer&apos;
+				tr.appendChild(spacer)
+			}
+		}
+
+		thead.appendChild(date_row);
+		thead.appendChild(tr)
+		table.appendChild(thead)
+		table.appendChild(tbody)
+
+		// CREATE EACH ATTENDEE ROW WITH ATTENDANCE INFORMATION
+		for (let j = 0; j &lt; this.event.attendees.length; j++) {
+
+			let tr = document.createElement(&apos;tr&apos;)
+			let name = document.createElement(&apos;td&apos;)
+
+			if (this.event.attendees[j].name == this.event.attendees[0].name) {
+				name.className = &quot;owner&quot;
+			}
+
+			name.appendChild(document.createTextNode(this.event.attendees[j].name))
+			tr.appendChild(name)
+
+			for (let i = 0; i &lt; this.event.times.length; i++) {
+				for (let k = 0; k &lt; this.event.times[i].length; k++) {
+					let td = document.createElement(&apos;td&apos;)
+
+					if (k == 0 &amp;&amp; i != 0) {
+						let spacer = document.createElement(&apos;td&apos;)
+						spacer.className = &apos;spacer&apos;
+						tr.appendChild(spacer)
+					}
+
+					let checkbox = document.createElement(&apos;input&apos;)
+					checkbox.type = &apos;checkbox&apos;
+
+					if (this.event.attendees[j].times[i].includes(this.event.times[i][k])) {
+						checkbox.checked = &quot;checked&quot;
+					}
+					checkbox.disabled = true
+					td.appendChild(checkbox)
+					tr.appendChild(td)
+				}
+			}
+			tbody.appendChild(tr)
+		}
+
+		// NOT ENTIRELY SURE THAT THE PARTICIPANTS ROW IS NECCESSARY
+		// KNOWN BUG: The participants map in the commented code below does not work
+
+
+		/*
+		let ttr = document.createElement(&apos;tr&apos;)
+		let ttd = document.createElement(&apos;td&apos;)
+		ttd.innerHTML = &apos;Participants&apos;
+		ttd.className = &apos;check_count&apos;
+		ttr.appendChild(ttd)
+
+		for (let i = 0; i &lt; this.event.times.length; i++) {
+			for (let k = 0; k &lt; this.event.times[i].length; k++) {
+				if (k == 0 &amp;&amp; i != 0) {
+					let spacer = document.createElement(&apos;td&apos;)
+					spacer.className = &apos;spacer&apos;
+					ttr.appendChild(spacer)
+				}
+				let td = document.createElement(&apos;td&apos;)
+				td.className = &apos;check_count&apos;
+				td.innerHTML = [].concat(...this.event.attendees[i].times.map(a =&gt; a.times)).filter(a =&gt; a == this.event.times[i][k]).length
+				ttr.appendChild(td)
+			}
+		}
+
+		tbody.appendChild(ttr)
+		*/
+
+		// CREATE SPACER ROW
+		let str = document.createElement(&apos;tr&apos;);
+		let std = document.createElement(&apos;td&apos;);
+
+		std.appendChild(document.createElement(&apos;br&apos;));
+		std.appendChild(document.createTextNode(&quot;Sign Up&quot;));
+		std.className = &quot;owner&quot;
+		str.appendChild(std);
+		tbody.appendChild(str)
+
+		// SET UP REGISTRATION DATA
+		let utr = document.createElement(&apos;tr&apos;)
+		utr.className = &apos;user-tr&apos;
+		let utd = document.createElement(&apos;td&apos;)
+		let uinput = document.createElement(&apos;input&apos;)
+		uinput.className = &quot;input is-small&quot;
+		uinput.placeholder = &quot;Your name&quot;
+		/** @member {object} name - Text field for user registeration */
+		this.name = uinput
+		utd.appendChild(uinput)
+		utr.appendChild(utd)
+
+		for (let i = 0; i &lt; this.event.times.length; i++) {
+			for (let k = 0; k &lt; this.event.times[i].length; k++) {
+
+				if (k == 0 &amp;&amp; i != 0) {
+					let spacer = document.createElement(&apos;td&apos;)
+					spacer.className = &apos;spacer&apos;
+					utr.appendChild(spacer)
+				}
+
+				let td = document.createElement(&apos;td&apos;)
+				let checkbox = document.createElement(&apos;input&apos;)
+				checkbox.type = &apos;checkbox&apos;
+				checkbox.value = i + &quot;,&quot; + this.event.times[i][k]
+				checkbox.setAttribute(&quot;Day&quot;, i)
+				td.appendChild(checkbox)
+				utr.appendChild(td)
+
+			}
+		}
+		tbody.appendChild(utr)
+
+		t_cont.appendChild(table)
+		return t_cont
+	}
+
+	/**
+	 * Creates the Register button
+	 * @return {Element} button for registering a new attendee
+	 */
+	createSignupButton() {
+		let button = document.createElement(&apos;button&apos;)
+		button.innerHTML = &apos;Register&apos;
+		button.className = &apos;submit button is-dark&apos;
+
+		button.addEventListener(&apos;click&apos;, event =&gt; {
+
+			let unprocessed_times = Array.from($(&apos;input[type=&quot;checkbox&quot;][value]:checked&apos;)).map(el =&gt; el.value)
+			let time = []
+
+			for (let i in this.event.dates) {
+				time[i] = []
+			}
+
+			for (let i in unprocessed_times) {
+				unprocessed_times[i] = unprocessed_times[i].split(&apos;,&apos;)
+				time[unprocessed_times[i][0]].push(parseInt(unprocessed_times[i][1]))
+			}
+
+
+			let payload = {}
+			payload.event_uid = this.event.uid
+			payload.all_attendees = this.event.attendees;
+
+			payload.name = this.name.value
+			payload.times = time
+			payload.attendee_task_list = this.attendee_task_list;
+			payload.new_event_task_list = this.event.task_list.filter(x =&gt; this.attendee_task_list.indexOf(x) == -1);
+			if (!payload.name) {
+				this.createErrorModal(this.eventInfo, &quot;You must enter a name.&quot;)
+				return
+			}
+			if (payload.times.every((day_array) =&gt; {
+				if (day_array.length == 0) { return (true) }
+			})) {
+				this.createErrorModal(this.eventInfo, &quot;You must choose at least one time.&quot;)
+				return
+			}
+
+			console.log(payload);
+			fetch(&apos;/api/events/register/&apos;, {
+				headers: { &apos;Content-Type&apos;: &apos;application/json&apos; },
+				method: &quot;POST&quot;,
+				body: JSON.stringify(payload)
+			}).then(res =&gt; res.json()).then(res =&gt; {
+				if (res.status != &quot;ok&quot;) {
+					alert(&quot;Could not contact server, please try again&quot;)
+					return
+				}
+				window.location.reload()
+			})
+		})
+		return button
+	}
+
+	/**
+	 * Creates the task list button
+	 * @return {Element} button for registering for a task
+	 */
+	createTaskButton() {
+		let button = document.createElement(&apos;button&apos;)
+		button.innerHTML = &apos;Help Out&apos;
+		button.className = &apos;submit button is-small&apos;
+		return button
+	}
+
+	/**
+	 * Creates the modal with the table of registered guests
+	 * @param {div} div an html div object that gives place to insert the modal
+	 */
+	createModal(div) {
+		let task_table = document.createElement(&apos;div&apos;);
+		div.appendChild(task_table);
+
+		if (this.event.task_list_master.length) {
+
+			let info_tab = document.createElement(&apos;div&apos;);
+			info_tab.innerHTML = &quot;&lt;a class=&apos;has-text-grey-light&apos;&gt;Clear here to see what people are already bringing&lt;/a&gt;&quot;;
+			div.appendChild(info_tab)
+
+
+
+			info_tab.addEventListener(&quot;click&quot;, event =&gt; {
+				let modal = document.createElement(&apos;div&apos;)
+				modal.className = &quot;modal&quot;
+
+				let modal_background = document.createElement(&apos;div&apos;)
+				modal_background.className = &quot;modal-background&quot;
+
+				let modal_content = document.createElement(&apos;div&apos;)
+				modal_content.className = &quot;modal-content&quot;
+				modal_content.style.backgroundColor = &quot;#fff&quot;
+				modal_content.style.borderRadius = &quot;5px&quot;
+				modal_content.style.padding = &quot;2%&quot;
+
+				let header = document.createElement(&apos;h1&apos;)
+				header.className = &quot;title&quot;
+				header.textContent = this.event.name + &quot; Guests&quot;
+				modal_content.appendChild(header)
+
+				let subheader = document.createElement(&apos;h2&apos;)
+				subheader.className = &quot;subtitle&quot;
+				subheader.innerHTML = &quot;Who is bringing what?&quot;
+				modal_content.appendChild(subheader)
+
+				let task_list_table = document.createElement(&apos;table&apos;)
+				task_list_table.style.width = &quot;100%&quot;
+				let tr = document.createElement(&apos;tr&apos;)
+				let td_attendee = document.createElement(&apos;td&apos;)
+				td_attendee.innerHTML = &quot;Attendee&quot;
+				td_attendee.style.fontWeight = &quot;bold&quot;
+
+				td_attendee.setAttribute(&quot;colspan&quot;, 2)
+				tr.appendChild(td_attendee)
+				task_list_table.appendChild(tr)
+
+				for (let i in this.event.attendees) {
+
+					let atr = document.createElement(&apos;tr&apos;)
+					let atd = document.createElement(&apos;td&apos;)
+					atd.textContent = this.event.attendees[i].name
+					atd.style.width = &quot;30%&quot;
+
+					let ttd = document.createElement(&apos;td&apos;)
+
+					if (this.event.attendees[i].task_list == undefined || this.event.attendees[i].task_list == &quot;&quot;) {
+						ttd.innerHTML = &quot;&amp;nbsp;-&quot;
+					} else {
+						ttd.textContent = this.event.attendees[i].task_list
+					}
+					ttd.style.width = &quot;70%&quot;
+					task_list_table.appendChild(atr)
+
+					// style the table
+					if (i % 2 == 0) {
+						atd.style.backgroundColor = &quot;#f0f0f0&quot;
+						atr.style.backgroundColor = &quot;#f0f0f0&quot;
+					}
+
+					atd.style.borderWidth = &quot;1px&quot;;
+					atd.style.borderColor = &quot;#fff&quot;;
+					atd.style.borderStyle = &quot;solid&quot;;
+					ttd.style.borderWidth = &quot;1px&quot;;
+					ttd.style.borderColor = &quot;#fff&quot;;
+					ttd.style.borderStyle = &quot;solid&quot;;
+
+					atr.appendChild(atd)
+					atr.appendChild(ttd)
+				}
+
+				let modal_close = document.createElement(&apos;button&apos;)
+				modal_close.className = &quot;modal-close is-large&quot;
+				modal_close.setAttribute(&quot;aria-label&quot;, &quot;close&quot;)
+
+				modal_close.addEventListener(&quot;click&quot;, event =&gt; {
+					modal.className = &quot;modal&quot;
+				})
+
+				modal.appendChild(modal_background)
+				modal_content.appendChild(task_list_table)
+				modal_content.appendChild(modal_close)
+				modal.appendChild(modal_content)
+
+				modal.className = &quot;modal is-active&quot;
+				task_table.appendChild(modal)
+			})
+		}
+	}
+
+	/**
+	 * Creates the modal with the table of registered guests
+	 * @param {div} div an html div object that gives place to insert the modal
+	 * @param {string} msg a string containing an error message to place in the modal
+	 */
+	createErrorModal(div, msg) {
+		let task_table = document.createElement(&apos;div&apos;);
+		div.appendChild(task_table);
+
+		let info_tab = document.createElement(&apos;div&apos;);
+		div.appendChild(info_tab)
+
+		let modal = document.createElement(&apos;div&apos;)
+		modal.className = &quot;modal&quot;
+
+		let modal_background = document.createElement(&apos;div&apos;)
+		modal_background.className = &quot;modal-background&quot;
+
+		let modal_content = document.createElement(&apos;div&apos;)
+		modal_content.className = &quot;modal-content&quot;
+		modal_content.style.backgroundColor = &quot;#fff&quot;
+		modal_content.style.borderRadius = &quot;5px&quot;
+		modal_content.style.padding = &quot;2%&quot;
+
+		let header = document.createElement(&apos;h1&apos;)
+		header.className = &quot;title&quot;
+		header.innerHTML = &quot;Error&quot;
+		modal_content.appendChild(header)
+
+		let subheader = document.createElement(&apos;h2&apos;)
+		subheader.className = &quot;subtitle&quot;
+		subheader.innerHTML = msg
+		modal_content.appendChild(subheader)
+
+
+		let modal_close = document.createElement(&apos;a&apos;)
+		modal_close.className = &quot;button is-warning&quot;
+		modal_close.innerHTML = &quot;Ok&quot;
+
+		modal_close.addEventListener(&quot;click&quot;, event =&gt; {
+			modal.className = &quot;modal&quot;
+		})
+
+		modal.appendChild(modal_background)
+		modal_content.appendChild(modal_close)
+		modal.appendChild(modal_content)
+
+		modal.className = &quot;modal is-active&quot;
+		task_table.appendChild(modal)
+	}
+
+
+	/**
+	 * Create task requests
+	 * @param {div} parentDiv an html div object to place the help out button
+	 */
+	createTaskAdder(parentDiv) {
+		let task_list = document.createElement(&apos;div&apos;);
+		parentDiv.appendChild(task_list);
+
+		let task_button = document.createElement(&apos;div&apos;);
+		let task_list_button = this.createTaskButton()
+		task_button.appendChild(task_list_button)
+
+		parentDiv.appendChild(task_button);
+
+		task_list_button.addEventListener(&apos;click&apos;, event =&gt; {
+			parentDiv.removeChild(task_button);
+			let header = document.createElement(&apos;div&apos;)
+			header.innerHTML = &quot;Select tasks&quot;
+			task_list.appendChild(header);
+
+			let task_button_container = document.createElement(&apos;div&apos;);
+			task_button_container.className = &quot;field is-grouped is-grouped-multiline&quot;;
+			let tasks = [];
+
+			for (let i in this.event.task_list) {
+				let task = document.createElement(&apos;p&apos;)
+				task.className = &quot;control button is-small&quot;;
+				task.textContent = this.event.task_list[i];
+				task_button_container.appendChild(task);
+				tasks.push(task);
+			}
+
+			for (let i in tasks) {
+				tasks[i].addEventListener(&apos;click&apos;, event =&gt; {
+					if (!this.attendee_task_list.includes(tasks[i].innerHTML)) {
+						tasks[i].className = &quot;control button is-dark is-small&quot;;
+						this.attendee_task_list.push(tasks[i].innerHTML)
+					} else {
+						tasks[i].className = &quot;control button is-small task&quot;;
+						let loc = this.attendee_task_list.indexOf(tasks[i].innerHTML);
+						this.attendee_task_list.splice(loc, 1)
+					}
+				})
+			}
+			task_list.appendChild(task_button_container);
+		})
+	}
+
+	/**
+	 * Creates a div that contains the Attendee table, Register Button, and Task List information
+	 * @return {Element} div containing page contents
+	 */
+	createEventInfo() {
+		this.eventInfo = document.createElement(&apos;div&apos;)
+		this.eventInfo.appendChild(this.createAttendeeTable())
+
+		// If there are requests still needing assigned, create the button and list 
+		// else print that all requests have been met
+		if (this.event.task_list.length &gt; 0 &amp;&amp; this.event.task_list[0].length &gt; 1) {
+			this.createTaskAdder(this.eventInfo);
+		} else {
+			this.eventInfo.appendChild(document.createTextNode(&quot;All requests have been met.&quot;))
+		}
+
+		// Registration Button
+		let submit_button = document.createElement(&apos;div&apos;);
+		submit_button.className = &quot;submit_container&quot;;
+		submit_button.appendChild(this.createSignupButton())
+		this.eventInfo.appendChild(submit_button);
+
+		// Handle modal that holds which requests have been met by attendees
+		this.createModal(this.eventInfo)
+
+		return this.eventInfo
+	}
 }
 
 $(() =&gt; {
-  let event_id = (new URLSearchParams(window.location.search)).get(&apos;id&apos;)
-  fetch(&apos;/api/events/?uid=&apos;+event_id).then(res =&gt; res.json()).then(event =&gt; {
-    if (!event) {
-      $(&apos;.content_card&apos;)[0].innerHTML = &quot;This event does not exist&quot;
-      return
-    }
-    event.attendees = [].concat({name: event.owner, times: event.times}, event.attendees)
-    let event_page = new EventPage(event)
-    $(&apos;h1.title&apos;)[0].appendChild(document.createTextNode(event.name))
-    $(&apos;h2.event_date&apos;)[0].appendChild(document.createTextNode(event.date))
-    $(&apos;h2.subtitle&apos;)[0].appendChild(document.createTextNode(event.description))
-    $(&apos;.content_card&apos;)[0].appendChild(event_page.createEventInfo(event))
-  })
-})
-</code></pre>
+	let event_id = (new URLSearchParams(window.location.search)).get(&apos;id&apos;)
+	fetch(&apos;/api/events/?uid=&apos; + event_id).then(res =&gt; res.json()).then(event =&gt; {
+		if (!event) {
+			$(&apos;.content_card&apos;)[0].innerHTML = &quot;This event does not exist&quot;
+			return
+		}
+		let event_page = new EventPage(event)
+		$(&apos;h1.titleext&apos;)[0].appendChild(document.createTextNode(event.name))
+		$(&apos;h2.event_date&apos;)[0].appendChild(document.createTextNode(&quot;Starting &quot; + event.dates[0]))
+		$(&apos;h2.subtitleext&apos;)[0].appendChild(document.createTextNode(event.description))
+		$(&apos;.content_card&apos;)[0].appendChild(event_page.createEventInfo(event))
+	})
+})</code></pre>
 
 </div>
 
 <footer class="footer">
-  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.2)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.3)</span><img src="./image/esdoc-logo-mini-black.png"></a>
 </footer>
 
 <script src="script/search_index.js"></script>
