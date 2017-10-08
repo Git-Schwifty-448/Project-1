@@ -29,7 +29,7 @@ function Database(path, callback) {
                               + "dates TEXT NOT NULL, "
                               + "times TEXT NOT NULL, "
                               + "task_list TEXT, "
-                              + "task_list_taken TEXT, "
+                              + "task_list_master TEXT, "
                               + "attendee_list TEXT "
                               + ");";
 
@@ -58,42 +58,6 @@ Database.prototype.delete_event = function(event_uid) {
 } // end of Database#delete_event
 
 /**
- * Database#keyval_parse(event, key, value, payload)
- * @pre: nothing
- * @post: the event parameter is modified
- * @param: 'event' is the event to modify, 'key' and 'value' are the given keyval pair, 'payload' is an optional payload
- * @return: nothing
- */
-Database.prototype.keyval_parse = function(event, key, value, payload) {
-    if (key == "name") {
-        event.name = value;
-    }
-    if (key == "description") {
-        event.description = value;
-    }
-    if (key == "date") {
-        event.date = value;
-    }
-    if (key == "task_list") {
-        event.task_list = value;
-    }
-    if (key == "times") {
-        event.times = value;
-    }
-    if (key == "owner") {
-        event.owner = value;
-    }
-    if (key == "attendee") {
-        let attendee = {};
-        attendee.name  = value;
-        payload = payload.split('|');
-        attendee.task_list = payload[1].split(',');
-        attendee.times = payload[0]?payload[0].split(',').map(a=>+a):[];
-        event.attendees.push(attendee);
-    }
-}; // end of function Database#keyval_parse
-
-/**
  * Database#read_event(uid, callback)
  * @pre: the db being initialized
  * @post: the db is read
@@ -105,14 +69,15 @@ Database.prototype.read_event = function(uid, callback) {
     let obj   = this;
 
     this.db.each("SELECT * FROM tb_events WHERE uid = ? ;", [uid], function(err, row) {
-        event.uid           = uid;
-        event.name          = row.name;
-        event.description   = row.description;
-        event.task_list     = row.task_list;
-        event.dates         = row.dates;
-        event.times         = row.times;
-        event.attendees     = row.attendee_list;
-        event.owner         = row.owner;
+        event.uid               = uid;
+        event.name              = row.name;
+        event.description       = row.description;
+        event.task_list         = row.task_list;
+        event.task_list_master  = row.task_list_master
+        event.dates             = row.dates;
+        event.times             = row.times;
+        event.attendees         = row.attendee_list;
+        event.owner             = row.owner;
 
     }, function(err, rows) {
         if (rows != undefined && rows != 0) {
@@ -188,8 +153,8 @@ Database.prototype.write_event = function(event) {
 
     // Add the event to the event table
     obj.db.run(
-        "INSERT INTO tb_events (uid, name, description, owner, dates, times, task_list, attendee_list) VALUES ( ? , ? , ? , ? , ? , ? , ?, ?);",
-        [event.uid, event.name, event.description, event.owner, event.dates, event.times, event.task_list, event.attendees]
+        "INSERT INTO tb_events (uid, name, description, owner, dates, times, task_list, task_list_master, attendee_list) VALUES ( ? , ? , ? , ? , ? , ? , ?, ? , ?);",
+        [event.uid, event.name, event.description, event.owner, event.dates, event.times, event.task_list, event.task_list,event.attendees]
     );
 
 }; // end of function Database#write_event

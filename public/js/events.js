@@ -40,6 +40,7 @@ export class EventsPage {
 
         let nameText = document.createElement('a')
         nameText.appendChild(document.createTextNode(this.events[i].name))
+        nameText.className = 'has-text-grey-light'
         nameText.href = '/event?id=' + this.events[i].uid
 
         let deleteButton = document.createElement('button')

@@ -21,14 +21,15 @@ var crypto = require('crypto');
  * @return: an Event object
  */
 function Event() {
-    this.name        = "";
-    this.description = "";
-    this.dates       = [];
-    this.times       = [];
-    this.task_list   = [];
-    this.owner       = "";
-    this.attendees   = [];
-    this.uid         = "";
+    this.name               = "";
+    this.description        = "";
+    this.dates              = [];
+    this.times              = [];
+    this.task_list          = [];
+    this.task_list_master   = [];
+    this.owner              = "";
+    this.attendees          = [];
+    this.uid                = "";
 } // end of function Event
 
 /**
