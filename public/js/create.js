@@ -580,7 +580,18 @@ $(() => {
 				error.createErrorModal($('.error_container')[0], "You must select a date for Day " + (parseInt(i) + 1) + "!")
 				return
 			}
+
 		}
+
+		let duplicate = function hasDuplicates(array) {
+			return (new Set(array)).size !== array.length;
+		}
+
+		if (duplicate(date_array)) {
+			error.createErrorModal($('.error_container')[0], "You have selected the same date twice!")
+			return
+		}
+
 
 		// Posting
 		let payload = {
