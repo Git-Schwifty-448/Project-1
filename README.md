@@ -9,7 +9,7 @@ It is capable of running a website that allows for the creation of persistent ev
 
 ### Git Schwifty
 
-#### To Run
+#### To Run (Chrome and Javascript must be at current version)
 * Download repository
 * Open terminal and change to directory
 * "npm install"
