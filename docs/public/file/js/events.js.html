@@ -30,6 +30,8 @@
   <ul>
     
   <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/calendar.js~Calendar.html">Calendar</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~RSlot.html">RSlot</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html">RSlotAdder</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~Slot.html">Slot</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~SlotAdder.html">SlotAdder</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/event.js~EventPage.html">EventPage</a></span></span></li>
@@ -46,76 +48,89 @@
  * Class for Events Page methods
  */
 export class EventsPage {
-  /**
-   * @param {object[]} event_list - Array of objects containing event information.
-   */
-  constructor(event_list) {
-    /** @member {object[]} events - List of event objects sorted by date */
-    this.events = event_list.sort((e1, e2) =&gt; (new Date(e1.date)).getTime() - (new Date(e2.date)).getTime())
-  }
+	/**
+	 * @param {object[]} event_list - Array of objects containing event information.
+	 */
+	constructor(event_list) {
+		/** @member {object[]} events - List of event objects sorted by date */
+		this.events = event_list;
+		for (let i in this.events) {
+			this.events[i].dates = JSON.parse(this.events[i].dates);
+		}
+		this.events = this.events.sort((e1, e2) =&gt; (new Date(e1.dates[0])).getTime() - (new Date(e2.dates[0])).getTime())
+	}
 
-  /**
-   * Creates the Event List
-   * @return {Element} div containing page contents
-   */
-  createEventList() {
-    let divGroup = document.createElement(&apos;div&apos;)
-    if (this.events &amp;&amp; this.events.length) {
-      for (let i in this.events) {
-        let divRow = document.createElement(&apos;div&apos;)
-        divRow.className = &quot;row&quot;
+	/**
+	 * Creates the Event List
+	 * @return {Element} div containing page contents
+	 */
+	createEventList() {
+		let divGroup = document.createElement(&apos;div&apos;)
+		if (this.events &amp;&amp; this.events.length) {
+			for (let i in this.events) {
+				let divRow = document.createElement(&apos;div&apos;)
+				divRow.className = &quot;row&quot;
 
-        let dateText = document.createElement(&apos;span&apos;)
-        dateText.appendChild(document.createTextNode(this.events[i].date))
+				let dateText = document.createElement(&apos;span&apos;)
+				// this.events[i].dates = JSON.parse(this.events[i].dates);
 
-        let nameText = document.createElement(&apos;a&apos;)
-        nameText.appendChild(document.createTextNode(this.events[i].name))
-        nameText.href = &apos;/event?id=&apos; + this.events[i].uid
+				for (let k in this.events[i].dates) {
+					dateText.appendChild(document.createTextNode(this.events[i].dates[k]));
+					if (!(k == this.events[i].dates.length - 1)) {
+						dateText.appendChild(document.createTextNode(&quot;,&quot;))
+						dateText.appendChild(document.createElement(&quot;br&quot;));
+					}
+				}
 
-        let deleteButton = document.createElement(&apos;button&apos;)
-        deleteButton.innerHTML = &apos;X&apos;
-        deleteButton.className = &apos;button is-danger is-small is-outlined&apos;
-        deleteButton.addEventListener(&apos;click&apos;, event =&gt; {
-          if (!confirm(&quot;Are you sure you want to delete \&apos;&quot; + this.events[i].name + &quot;\&apos;?&quot;)) return
-          fetch(&quot;/api/events/delete&quot;, {
-            headers: {&apos;Content-Type&apos;: &apos;application/json&apos;},
-            method: &quot;POST&quot;,
-            body: JSON.stringify({uid:this.events[i].uid})
-          }).then(res =&gt; res.json()).then(res =&gt; {
-            if (res.status != &quot;ok&quot;) {
-              alert(&quot;Could not contact server, please try again&quot;)
-              return
-            }
-            window.location.reload()
-          })
-        })
+				let nameText = document.createElement(&apos;a&apos;)
+				nameText.appendChild(document.createTextNode(this.events[i].name))
+				nameText.className = &apos;has-text-grey-light&apos;
+				nameText.href = &apos;/event?id=&apos; + this.events[i].uid
 
-        divRow.appendChild(dateText)
-        divRow.appendChild(nameText)
-        divRow.appendChild(deleteButton)
-        divGroup.appendChild(divRow)
-      }
-    } else {
-      let err = document.createElement(&apos;a&apos;)
-      err.innerHTML = &apos;No Events&apos;
-      divGroup.appendChild(err)
-    }
-    return divGroup
-  }
+				let deleteButton = document.createElement(&apos;button&apos;)
+				deleteButton.innerHTML = &apos;X&apos;
+				deleteButton.className = &apos;button is-danger is-small is-outlined&apos;
+				deleteButton.addEventListener(&apos;click&apos;, event =&gt; {
+					if (!confirm(&quot;Are you sure you want to delete \&apos;&quot; + this.events[i].name + &quot;\&apos;?&quot;)) return
+					fetch(&quot;/api/events/delete&quot;, {
+						headers: { &apos;Content-Type&apos;: &apos;application/json&apos; },
+						method: &quot;POST&quot;,
+						body: JSON.stringify({ uid: this.events[i].uid })
+					}).then(res =&gt; res.json()).then(res =&gt; {
+						if (res.status != &quot;ok&quot;) {
+							alert(&quot;Could not contact server, please try again&quot;)
+							return
+						}
+						window.location.reload()
+					})
+				})
+
+				divRow.appendChild(dateText)
+				divRow.appendChild(nameText)
+				divRow.appendChild(deleteButton)
+				divGroup.appendChild(divRow)
+			}
+		} else {
+			let err = document.createElement(&apos;a&apos;)
+			err.innerHTML = &apos;No Events&apos;
+			divGroup.appendChild(err)
+		}
+		return divGroup
+	}
 }
 
 $(() =&gt; {
-  fetch(&apos;/api/events/&apos;).then(res =&gt; res.json()).then(event_list =&gt; {
-    let events_page = new EventsPage(event_list)
-    $(&apos;.content_card&apos;)[0].appendChild(events_page.createEventList())
-  })
+	fetch(&apos;/api/events/&apos;).then(res =&gt; res.json()).then(event_list =&gt; {
+		let events_page = new EventsPage(event_list)
+		$(&apos;.content_card&apos;)[0].appendChild(events_page.createEventList())
+	})
 })
 </code></pre>
 
 </div>
 
 <footer class="footer">
-  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.2)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.3)</span><img src="./image/esdoc-logo-mini-black.png"></a>
 </footer>
 
 <script src="script/search_index.js"></script>

@@ -144,12 +144,17 @@ export class SlotAdder {
 export class RSlot {
 
   constructor(id, parent) {
+    /** @member {int} id - ID, passed in by the RSlotAdder */
     this.identifier = id
 
     // generate html
+
+    /** @member {Element} - div containing the entire slot */
     this.request_div = document.createElement('div');
+    /** @member {Element} - input box */
     this.request_input = document.createElement('input');
     this.request_input.className = "request input " + id;
+    /** @member {Element} - button for deleting slot */
     this.request_button = document.createElement('button')
     this.request_button.innerHTML = 'X'
     this.request_button.className = 'button is-danger is-outlined'
@@ -159,10 +164,12 @@ export class RSlot {
 	  })
 
   	//input and button each get their own div
+    /** @member {Element} - div for containing input */
   	this.request_input_div = document.createElement('div');
   	this.request_input_div.style.float = 'left'
   	this.request_input_div.style.width = '88%'
   	this.request_input_div.appendChild(this.request_input)
+    /** @member {Element} - div for containing remove button */
   	this.request_button_div = document.createElement('div');
   	this.request_button_div.style.float = 'right'
   	this.request_button_div.appendChild(this.request_button)

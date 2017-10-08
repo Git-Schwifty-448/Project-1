@@ -30,6 +30,8 @@
   <ul>
     
   <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/calendar.js~Calendar.html">Calendar</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~RSlot.html">RSlot</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~RSlotAdder.html">RSlotAdder</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~Slot.html">Slot</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/create.js~SlotAdder.html">SlotAdder</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/js/event.js~EventPage.html">EventPage</a></span></span></li>
@@ -178,8 +180,109 @@ export class SlotAdder {
   }
 }
 
+
+
+/**
+ * Class for creating request slots
+ */
+export class RSlot {
+
+  constructor(id, parent) {
+    this.identifier = id
+
+    // generate html
+    this.request_div = document.createElement(&apos;div&apos;);
+    this.request_input = document.createElement(&apos;input&apos;);
+    this.request_input.className = &quot;request input &quot; + id;
+    this.request_button = document.createElement(&apos;button&apos;)
+    this.request_button.innerHTML = &apos;X&apos;
+    this.request_button.className = &apos;button is-danger is-outlined&apos;
+    this.request_button.addEventListener(&apos;click&apos;, event =&gt; {
+      parent.deleteRequest(this);
+      this.request_div.parentNode.removeChild(this.request_div);
+	  })
+
+  	//input and button each get their own div
+  	this.request_input_div = document.createElement(&apos;div&apos;);
+  	this.request_input_div.style.float = &apos;left&apos;
+  	this.request_input_div.style.width = &apos;88%&apos;
+  	this.request_input_div.appendChild(this.request_input)
+  	this.request_button_div = document.createElement(&apos;div&apos;);
+  	this.request_button_div.style.float = &apos;right&apos;
+  	this.request_button_div.appendChild(this.request_button)
+
+    this.request_div.appendChild(this.request_input_div)
+    this.request_div.appendChild(this.request_button_div)
+  }
+
+  /**
+   * Get element that stores the request
+   * @ret {Element} Element that stores requests
+   */
+  getSlotGroup() {
+    return this.request_div
+  }
+
+  getValue() {
+    alert(this.request_input.value);
+    return this.request_input.value;
+  }
+
+}
+
+/**
+ * Class for managing button that adds request slots
+ * and returning the strings of requests entered by the user
+ */
+export class RSlotAdder {
+
+   // Initialize the slot adder
+  constructor() {
+    // Array of requests elements
+    this.slots = []
+    this.identifier_prefix = &quot;req&quot;
+    this.identifier_number = 0;
+  }
+
+  /**
+   * Creates the button that adds a request slot
+   * @return {Element} button that adds a request slot
+   */
+  createButton() {
+    let button = document.createElement(&apos;button&apos;)
+
+    button.className = &quot;button&quot;
+    button.innerHTML = &apos;Add a Request&apos;
+    button.addEventListener(&apos;click&apos;, event =&gt; {
+      let slot = new RSlot(this.identifier_prefix+this.identifier_number, this);
+      this.identifier_number++;
+      this.slots.push(slot)
+      $(&apos;.r_slots&apos;)[0].appendChild(slot.getSlotGroup())
+    })
+    return button
+  }
+
+  deleteRequest(request) {
+    this.slots.splice(this.slots.indexOf(request), 1);
+  }
+
+  /**
+   * Creates array of all requests entered by the user
+   * @ret: {string[]} Array of all requests
+   */
+  getRequests() {
+    let requests = []
+
+    for(let i = 0; i &lt; this.slots.length; i++){
+      requests.push(this.slots[i].getValue());
+    }
+    return(requests)
+  }
+}
+
 $(() =&gt; {
   let slot_adder = new SlotAdder()
+  let rslot_adder = new RSlotAdder()
 
   $(&apos;.is24&apos;)[0].addEventListener(&apos;click&apos;, event =&gt; {
     slot_adder.is24 = true
@@ -205,6 +308,7 @@ $(() =&gt; {
     })
   })
 
+  $(&apos;.rslot_button_wrap&apos;)[0].appendChild(rslot_adder.createButton())
   $(&apos;.slot_button_wrap&apos;)[0].appendChild(slot_adder.createButton())
 
   let picker = new Pikaday({ field: $(&apos;input.date&apos;)[0], minDate: new Date(), trigger: $(&apos;button#date_picker&apos;)[0] })
@@ -213,19 +317,10 @@ $(() =&gt; {
     let payload = {
       name: $(&apos;input.intitle&apos;)[0].value,
       description: $(&apos;input.description&apos;)[0].value,
-      date: $(&apos;input.date&apos;)[0].value,
+      task_list: rslot_adder.getRequests(),
+      dates: [$(&apos;input.date&apos;)[0].value],
       owner: $(&apos;input.name&apos;)[0].value,
       times: slot_adder.getTimes()
-    }
-
-    for (let i of [&apos;title&apos;, &apos;name&apos;, &apos;date&apos;]) {
-      if (!payload[i.replace(&apos;name&apos;,&apos;owner&apos;).replace(&apos;title&apos;,&apos;name&apos;)]) {
-        alert(&quot;You need to enter a &quot;+i+&quot;!&quot;)
-        return
-      }
-    }
-    if (!payload.times.length) {
-      payload.times = Array.from({length: 48}).map((_,i)=&gt;i)
     }
 
     fetch(&quot;/api/events/new/&quot;, {
@@ -246,7 +341,7 @@ $(() =&gt; {
 </div>
 
 <footer class="footer">
-  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.2)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.3)</span><img src="./image/esdoc-logo-mini-black.png"></a>
 </footer>
 
 <script src="script/search_index.js"></script>
