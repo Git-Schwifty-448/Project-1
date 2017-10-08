@@ -42,18 +42,16 @@ export class EventPage {
 		// CREATE TABLE HEADER INFORMATION
 		for (let i = 0; i < this.event.times.length; i++) {
 			for (let k = 0; k < this.event.times[i].length; k++) {
-				if (k == 0 && i == 0 || k == 1 && i != 0) {
+				// if (k == 0 && i == 0 || k == 1 && i != 0) {
+				if(k == 0) {
 					let date_cell = document.createElement('th')
-					date_cell.setAttribute("colspan", this.event.times[i].length)
+					date_cell.setAttribute("colspan", this.event.times[i].length+1)
+					date_cell.style.minWidth = "110px"
 					date_cell.innerHTML = (this.event.dates[i])
 					date_cell.style.textAlign = 'left';
 					date_cell.style.fontWeight = 'bold'
 					date_row.appendChild(date_cell)
-				} else if (k == 0) {
-					let date_cell = document.createElement('th')
-					date_cell.style.width = '10px';
-					date_row.appendChild(date_cell)
-				}
+				} 
 
 				let th = document.createElement('th')
 				th.innerHTML = slots[this.event.times[i][k]]

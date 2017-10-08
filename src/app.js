@@ -51,7 +51,7 @@ const Attendee = require('./attendee.js');
         let owner = new Attendee();
         owner.uid = owner.hash().substr(0, 11);
         owner.name = req.body.owner;
-        owner.times = [req.body.times];
+        owner.times = req.body.times;
         owner.task_list = JSON.stringify(req.body.owner.task_list);
 
         let event = new Event();
@@ -61,7 +61,7 @@ const Attendee = require('./attendee.js');
         event.task_list = req.body.task_list.toString();
         event.owner = owner.name;
         event.attendees = JSON.stringify([owner]);
-        event.times = JSON.stringify([req.body.times]);
+        event.times = JSON.stringify(req.body.times);
         event.uid = event.hash().substr(0, 11);
 
         database.write_event(event);
