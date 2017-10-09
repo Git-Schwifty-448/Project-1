@@ -1,0 +1,9 @@
+Previous functionality - Inherited fully working project
+
+Multi-Day - ~5 Hours, hardest part was updating the UI
+
+Task-list - ~10 Hours, required reworking the database model due to original team implementation
+
+Event Creator View - ~1 Hour, simple UI update
+
+Event Attendee View - ~1 Hour on top of implementing the task_list db rewrite
