@@ -11,14 +11,16 @@ Retrieves events from the server.
 
 The return data is a JSON object formatted as:
 
-| Key | Type | Description | 
+| Attribute | Type | Description | 
 | --- | --- | --- |
 | `name` | string | Name of the event |
 | `description` | string | Description of the event |
 | `date` | string | Date of the event (format agnostic) |
 | `times` | array | Integer array of the time of the event (0-47) |
 | `owner` | string | Name of the event owner/creator |
-| `attendees` | array | An array of JS objects with two keys: `name` (string), `times` (integer array), which describes the attendees and what times they are attending |
+| `task_list` | string | A string of tasks that need assigned |
+| `task_list_master` | string | A string of all the tasks assigned to an event |
+| `attendees` | array | An array of Attendee objects which describes the attendee and what times they are attending |
 
 ### POST `/api/events/new`
 Creates a new event on the server.
@@ -29,6 +31,8 @@ Creates a new event on the server.
 | `description` | string | Description of the event |
 | `date` | string | Date of the event (format agnostic) |
 | `times` | array | Integer array of the time of the event (0-47) |
+| `task_list` | string | A string of tasks that need assigned |
+| `task_list_master` | string | A string of all the tasks assigned to an event |
 | `owner` | string | The person who created the event |
 
 ### POST `/api/events/register`
@@ -38,8 +42,8 @@ Registers a person to attend an event
 | Request variable | Type | Description | 
 | --- | --- | --- |
 | `uid` | string | UID of the event |
-| `name` | string | Name of the attendee |
-| `times` | array | Integer array of the times the user is attending |
+| `task_list` | string | Updated task list of the parent event |
+| `attendee` | Attendee Obj | Instance of Attendee that includes updated task_list |
 
 ### POST `/api/events/delete`
 Deletes a given event from the server.

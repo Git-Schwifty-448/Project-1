@@ -96,9 +96,19 @@
 <td>Name of the event owner/creator</td>
 </tr>
 <tr>
+  <td><code>task_list</code></td>
+  <td>string</td>
+  <td>A string of tasks that need assigned</td>
+  </tr>
+  <tr>
+    <td><code>task_list_master</code></td>
+    <td>string</td>
+    <td>A string of all the tasks assigned to an event</td>
+    </tr>
+<tr>
 <td><code>attendees</code></td>
 <td>array</td>
-<td>An array of JS objects with two keys: <code>name</code> (string), <code>times</code> (integer array), which describes the attendees and what times they are attending</td>
+<td>An array of Attendee objects which describes the attendee and what times they are attending</td>
 </tr>
 </tbody>
 </table>
@@ -132,6 +142,16 @@
 <td>array</td>
 <td>Integer array of the time of the event (0-47)</td>
 </tr>
+<tr>
+  <td><code>task_list</code></td>
+  <td>string</td>
+  <td>A string of tasks that need assigned</td>
+  </tr>
+  <tr>
+    <td><code>task_list_master</code></td>
+    <td>string</td>
+    <td>A string of all the tasks assigned to an event</td>
+    </tr>
 <tr>
 <td><code>owner</code></td>
 <td>string</td>

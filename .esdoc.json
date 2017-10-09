@@ -10,7 +10,8 @@
     "option": {
       "manual": {
         "index": "./docs/api.md",
-        "files": []
+        "files": [],
+        "database": "./docs/api.md"
       }
     }
   }]
