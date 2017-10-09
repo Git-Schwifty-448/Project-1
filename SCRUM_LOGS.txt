@@ -1,0 +1,38 @@
+
+Meeting : September 26, 7pm
+--> Division of Labor
+--> Abe, Q, Alex
+
+Meeting 1 : September 27
+--> Daily Scrum in class
+--> Division, continued
+--> Abe, Q, Alex
+
+Meeting 2 : September 29
+--> Daily Scrum in class
+--> How to store attendees
+--> Abe, Q, Alex
+
+Meeting 3 : October 2
+--> Daily Scrum in class
+--> Changes to UI details
+--> Abe, Q, Alex
+
+Meeting : October 4
+--> Daily Scrum in class
+--> Task list details
+--> Abe, Q, Alex
+
+Meeting : October 6
+--> Daily Scrum in class
+--> Game plan for final weekend
+--> Abe, Q, Alex
+
+Meeting : October 7
+--> Finishing how days are created over multiple events
+--> Abe, Alex
+
+Meeting : October 8
+--> Final cleanup
+--> Documentation update
+--> Abe, Q, Alex
